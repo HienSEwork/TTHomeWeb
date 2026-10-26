@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import vn.tthome.identity.models.dtos.ChangeContactRequest;
+import vn.tthome.identity.models.dtos.ChangePasswordRequest;
+import vn.tthome.identity.models.dtos.ConfirmContactRequest;
 import vn.tthome.identity.models.dtos.EmailRegisterRequest;
 import vn.tthome.identity.models.dtos.EmailVerifyRequest;
 import vn.tthome.identity.models.dtos.AccessClaims;
@@ -26,6 +29,7 @@ import vn.tthome.identity.models.dtos.ResetPasswordRequest;
 import vn.tthome.identity.models.dtos.TokenPair;
 import vn.tthome.common.error.ApiException;
 import vn.tthome.identity.services.account.AccountService;
+import vn.tthome.identity.services.contact.ContactService;
 import vn.tthome.identity.services.emailauth.EmailAuthService;
 import vn.tthome.identity.services.login.LoginService;
 import vn.tthome.identity.services.password.PasswordService;
@@ -42,15 +46,18 @@ public class AuthController {
 	private final SessionService sessions;
 	private final AccountService accounts;
 	private final PasswordService passwords;
+	private final ContactService contacts;
 
 	public AuthController(PhoneAuthService phoneAuth, EmailAuthService emailAuth, LoginService loginService,
-			SessionService sessions, AccountService accounts, PasswordService passwords) {
+			SessionService sessions, AccountService accounts, PasswordService passwords,
+			ContactService contacts) {
 		this.phoneAuth = phoneAuth;
 		this.emailAuth = emailAuth;
 		this.loginService = loginService;
 		this.sessions = sessions;
 		this.accounts = accounts;
 		this.passwords = passwords;
+		this.contacts = contacts;
 	}
 
 	@PostMapping("/register/phone/request")
@@ -124,6 +131,26 @@ public class AuthController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void resetPassword(@Valid @RequestBody ResetPasswordRequest body) {
 		passwords.reset(body);
+	}
+
+	@PostMapping("/password/change")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void changePassword(@AuthenticationPrincipal AccessClaims claims, @Valid @RequestBody ChangePasswordRequest body) {
+		passwords.change(claims, body);
+	}
+
+	@PostMapping("/contact/change/request")
+	@ResponseStatus(HttpStatus.ACCEPTED)
+	public void requestContactChange(@AuthenticationPrincipal AccessClaims claims,
+			@Valid @RequestBody ChangeContactRequest body, HttpServletRequest request) {
+		contacts.requestChange(claims, body, request.getRemoteAddr());
+	}
+
+	@PostMapping("/contact/change/confirm")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void confirmContactChange(@AuthenticationPrincipal AccessClaims claims,
+			@Valid @RequestBody ConfirmContactRequest body) {
+		contacts.confirmChange(claims, body);
 	}
 
 }

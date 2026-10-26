@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import vn.tthome.common.error.ApiException;
+import vn.tthome.identity.models.dtos.AccessClaims;
+import vn.tthome.identity.models.dtos.ChangePasswordRequest;
 import vn.tthome.identity.models.dtos.ResetPasswordRequest;
 import vn.tthome.identity.models.entities.UserAccount;
 import vn.tthome.identity.models.enums.OtpChannel;
@@ -58,6 +60,21 @@ public class PasswordServiceImpl implements PasswordService {
 		}
 		accounts.resetPassword(user, request.newPassword(), email);
 		sessions.logoutAll(user.getId());
+	}
+
+	@Override
+	public void change(AccessClaims caller, ChangePasswordRequest request) {
+		UserAccount user = accounts.findById(caller.userId())
+				.orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "TOKEN_INVALID", "Invalid or expired token"));
+		if (user.getStatus() != UserStatus.ACTIVE) {
+			throw new ApiException(HttpStatus.FORBIDDEN, "ACCOUNT_DISABLED", "Account is not active");
+		}
+		if (user.getPasswordHash() == null) {
+			throw new ApiException(HttpStatus.CONFLICT, "PASSWORD_NOT_SET", "Use password reset to set a password");
+		}
+		accounts.requireCurrentPassword(user, request.currentPassword());
+		accounts.changePassword(user.getId(), request.newPassword());
+		sessions.revokeOthers(user.getId(), caller.sessionId());
 	}
 
 	private Optional<UserAccount> find(boolean email, String target) {
