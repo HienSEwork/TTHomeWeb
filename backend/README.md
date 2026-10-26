@@ -9,7 +9,7 @@ Sinh bởi tthome_init_backend.py từ Spring Initializr.
 
 ## Cần có trước khi chạy service (database = Supabase)
 1. Chạy `db/tthome_schema.sql` trong Supabase SQL Editor, rồi `db/supabase_roles.sql` (đổi mật khẩu role).
-2. Sao chép `infra/docker/.env.example` thành `.env`, điền SUPABASE_PROJECT_REF, SUPABASE_DB_URL, DB_PASSWORD.
+2. Sao chép `backend/.env.example` thành `backend/.env` (đã được git bỏ qua), điền SUPABASE_PROJECT_REF, SUPABASE_DB_URL, DB_PASSWORD.
 3. Dùng **session pooler (cổng 5432)** cho service; transaction pooler (6543) không hỗ trợ prepared statement nên không hợp với JPA.
 4. RabbitMQ (mặc định localhost:5672). Không có container Postgres trong Docker Compose.
 5. JPA để `ddl-auto: validate`: thiếu bảng thì app dừng ngay khi khởi động.
