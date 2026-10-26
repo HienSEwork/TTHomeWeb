@@ -100,7 +100,12 @@ Chỉ commit khi **tất cả** các bước liên quan đã xanh. Chạy các l
 
 **Điều kiện chung**
 - Việc mới phải có test đi kèm: service/controller có test đơn vị; luồng chính có test tích hợp; frontend có test cho logic hoặc component chính.
-- **Tuyệt đối không chạy test trỏ vào database Supabase thật.** Test dùng Testcontainers/H2-compatible riêng; kết nối Supabase chỉ qua biến môi trường của môi trường chạy thật.
+- **Không chạy test trỏ vào database Supabase thật (production).** Test mặc định dùng Testcontainers/H2-compatible riêng; kết nối Supabase chỉ qua biến môi trường của môi trường chạy thật.
+- **Ngoại lệ đã được người dùng cho phép (2026-10-27): database Supabase dành riêng cho dev.** Bộ test gắn `@Tag("supabase")` (tên lớp `*SupabaseIT`) được chạy với database dev đó để kiểm tra migration Flyway và luồng thật, với các ràng buộc:
+  - Chỉ chạy khi người dùng yêu cầu, bằng lệnh riêng (profile Maven `supabase`); không bao giờ chạy trong CI và không nằm trong `./mvnw clean verify` mặc định.
+  - Chỉ trỏ vào database dev. Nếu không chắc đó là dev hay production: dừng và hỏi.
+  - Dữ liệu test tự tạo với giá trị ngẫu nhiên và tự dọn sau test; không sửa hay xóa dữ liệu có sẵn; migration chỉ thêm (expand), không xóa dữ liệu.
+  - Thông tin kết nối chỉ nằm trong `backend/.env` (git-ignored) hoặc biến môi trường; không dán vào chat, không in ra log, không commit.
 - Không để lại `System.out`, `console.log`, `TODO` chưa có mã việc, code bị comment.
 - Quét bí mật: `git diff --cached` không chứa chuỗi kết nối, mật khẩu, khóa API.
 - Một bước đỏ → sửa, chạy lại **từ bước đầu**. Không commit "tạm" để qua mặt hook.
