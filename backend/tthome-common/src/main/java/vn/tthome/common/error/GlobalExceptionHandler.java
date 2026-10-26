@@ -2,6 +2,7 @@ package vn.tthome.common.error;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -23,7 +24,7 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler({ MethodArgumentNotValidException.class, HttpMessageNotReadableException.class,
-			ConstraintViolationException.class })
+			ConstraintViolationException.class, TypeMismatchException.class })
 	ResponseEntity<ApiError> handleValidation(Exception e) {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 				.body(new ApiError("VALIDATION_ERROR", "Invalid request"));
