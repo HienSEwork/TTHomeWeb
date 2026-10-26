@@ -1,0 +1,10 @@
+#!/bin/sh
+# Chặn push lên main/dev (CLAUDE.md mục 1, 9). stdin: <local ref> <local sha> <remote ref> <remote sha>
+while read -r _ _ remote_ref _; do
+  case "$remote_ref" in
+    refs/heads/main|refs/heads/master|refs/heads/dev)
+      echo "pre-push: không push trực tiếp lên '${remote_ref#refs/heads/}'. Push nhánh feature và mở Pull Request vào dev." >&2
+      exit 1 ;;
+  esac
+done
+exit 0

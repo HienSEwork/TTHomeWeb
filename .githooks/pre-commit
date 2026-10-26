@@ -1,0 +1,15 @@
+#!/bin/sh
+# Chặn commit trên main/dev và nhánh sai tên (CLAUDE.md mục 2, 9).
+branch=$(git symbolic-ref --short -q HEAD) || exit 0   # detached HEAD (vd: đang rebase): bỏ qua
+
+case "$branch" in
+  main|master|dev)
+    echo "pre-commit: không commit trực tiếp lên '$branch'. Tạo nhánh <type>/<module>/<chuc-nang> từ dev." >&2
+    exit 1 ;;
+esac
+
+re='^(feat|fix|chore|refactor|test|docs|ci|perf)/[a-z0-9]+(-[a-z0-9]+)*/[a-z0-9]+(-[a-z0-9]+)*$'
+if ! printf '%s' "$branch" | grep -Eq "$re"; then
+  echo "pre-commit: tên nhánh '$branch' không hợp lệ. Dạng đúng: <type>/<module>/<chuc-nang>" >&2
+  exit 1
+fi
