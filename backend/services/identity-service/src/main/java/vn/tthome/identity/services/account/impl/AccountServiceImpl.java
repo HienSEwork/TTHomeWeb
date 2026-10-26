@@ -59,7 +59,7 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	@Transactional
 	public Optional<UserAccount> registerUnverifiedEmailAccount(String email, String password, String fullName) {
-		Optional<UserAccount> existing = users.findByEmailIgnoreCaseAndDeletedAtIsNull(email);
+		Optional<UserAccount> existing = users.findActiveByEmail(email);
 		if (existing.isPresent()) {
 			UserAccount pending = existing.get();
 			if (pending.getEmailVerifiedAt() != null || pending.getPhoneVerifiedAt() != null) {
@@ -74,27 +74,21 @@ public class AccountServiceImpl implements AccountService {
 		user.setFullName(fullName);
 		user.setPasswordHash(hasher.hash(password));
 		user.getRoles().add(roles.findByCode(DEFAULT_ROLE).orElseThrow());
-		try {
-			return Optional.of(users.saveAndFlush(user));
-		} catch (DataIntegrityViolationException e) {
-			return Optional.empty(); // a concurrent registration of the same email won
-		}
+		// A concurrent registration of the same email fails here with DataIntegrityViolationException; it is left to
+		// propagate (the transaction rolls back cleanly) and the caller treats it as "already registered".
+		return Optional.of(users.saveAndFlush(user));
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public Optional<UserAccount> findByEmail(String email) {
-		return users.findByEmailIgnoreCaseAndDeletedAtIsNull(email);
+		return users.findActiveByEmail(email);
 	}
 
 	@Override
 	@Transactional
 	public void markEmailVerified(UserAccount user) {
-		users.findById(user.getId()).ifPresent(u -> {
-			if (u.getEmailVerifiedAt() == null) {
-				u.setEmailVerifiedAt(clock.instant());
-			}
-		});
+		users.markEmailVerified(user.getId(), clock.instant());
 	}
 
 	@Override
@@ -106,11 +100,7 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	@Transactional
 	public void recordLogin(UserAccount user) {
-		users.findById(user.getId()).ifPresent(u -> {
-			u.setLastLoginAt(clock.instant());
-			u.setFailedLoginCount((short) 0);
-			u.setLockedUntil(null);
-		});
+		users.recordLogin(user.getId(), clock.instant());
 	}
 
 	@Override
@@ -129,18 +119,22 @@ public class AccountServiceImpl implements AccountService {
 		});
 	}
 
-	/** A wrong password must count even though the request fails, hence no rollback on ApiException. */
+	/** The attempt is counted before the check and must stay counted when the request fails: no rollback on ApiException. */
 	@Override
 	@Transactional(noRollbackFor = ApiException.class)
-	public void requireCurrentPassword(UserAccount user, String password) {
+	public void authenticate(UserAccount user, String password) {
 		Instant now = clock.instant();
 		if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(now)) {
 			throw new ApiException(HttpStatus.LOCKED, "ACCOUNT_LOCKED", "Account is temporarily locked");
 		}
+		int attempt = users.beginLoginAttempt(user.getId(), props.maxFailedLogins(), now, now.plus(props.lockDuration()));
+		if (attempt > props.maxFailedLogins()) {
+			throw new ApiException(HttpStatus.LOCKED, "ACCOUNT_LOCKED", "Account is temporarily locked");
+		}
 		if (user.getPasswordHash() == null || !hasher.verify(user.getPasswordHash(), password)) {
-			users.recordFailedLogin(user.getId(), props.maxFailedLogins(), now, now.plus(props.lockDuration()));
 			throw new ApiException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "Invalid credentials");
 		}
+		users.clearLoginAttempts(user.getId(), now);
 	}
 
 	@Override
@@ -175,13 +169,6 @@ public class AccountServiceImpl implements AccountService {
 		} catch (DataIntegrityViolationException e) {
 			throw new ApiException(HttpStatus.CONFLICT, "CONTACT_TAKEN", "Contact already in use");
 		}
-	}
-
-	@Override
-	@Transactional
-	public void recordFailedLogin(UserAccount user) {
-		Instant now = clock.instant();
-		users.recordFailedLogin(user.getId(), props.maxFailedLogins(), now, now.plus(props.lockDuration()));
 	}
 
 	@Override

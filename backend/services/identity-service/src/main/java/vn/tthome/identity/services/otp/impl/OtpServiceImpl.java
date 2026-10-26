@@ -96,14 +96,17 @@ public class OtpServiceImpl implements OtpService {
 			throw invalid();
 		}
 		OtpChallenge challenge = open.get();
-		if (!challenge.getExpiresAt().isAfter(now) || challenge.getAttempts() >= props.otpMaxAttempts()) {
+		if (!challenge.getExpiresAt().isAfter(now)) {
+			throw invalid();
+		}
+		// The attempt is spent before the code is compared, atomically, so parallel guesses cannot exceed the budget.
+		if (!challenges.takeAttempt(challenge.getId(), props.otpMaxAttempts())) {
 			throw invalid();
 		}
 		boolean matches = code != null && MessageDigest.isEqual(
 				hash(target, purpose, code).getBytes(StandardCharsets.UTF_8),
 				challenge.getCodeHash().getBytes(StandardCharsets.UTF_8));
 		if (!matches) {
-			challenges.incrementAttempts(challenge.getId());
 			throw invalid();
 		}
 		if (!challenges.consumeIfOpen(challenge.getId(), now)) {

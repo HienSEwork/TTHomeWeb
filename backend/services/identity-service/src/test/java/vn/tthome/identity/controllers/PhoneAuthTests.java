@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.Duration;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -221,6 +222,38 @@ class PhoneAuthTests extends IdentityIntegrationTestBase {
 				.content("{\"phone\":\"not-a-phone\"}").with(fromIp(ip())))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+	}
+
+	@Test
+	void parallelWrongCodesCannotSpendMoreThanFiveAttempts() throws Exception {
+		String phone = newPhone();
+		String ip = ip();
+		post202("/api/v1/auth/register/phone/request", "{\"phone\":\"" + phone + "\"}", ip);
+		String code = sender.lastCode(normalized(phone), OtpPurpose.REGISTER);
+		String wrong = code.equals("000000") ? "111111" : "000000";
+		CountDownLatch go = new CountDownLatch(1);
+		Callable<Integer> guess = () -> {
+			go.await();
+			return mvc.perform(post("/api/v1/auth/register/phone/verify").contentType(MediaType.APPLICATION_JSON)
+					.content("{\"phone\":\"" + phone + "\",\"code\":\"" + wrong + "\"}").with(fromIp(ip)))
+					.andReturn().getResponse().getStatus();
+		};
+		ExecutorService pool = Executors.newFixedThreadPool(20);
+		try {
+			List<Future<Integer>> futures = new ArrayList<>();
+			for (int i = 0; i < 20; i++) {
+				futures.add(pool.submit(guess));
+			}
+			go.countDown();
+			for (Future<Integer> f : futures) {
+				assertThat(f.get()).isEqualTo(400);
+			}
+		} finally {
+			pool.shutdownNow();
+		}
+
+		assertThat(jdbc.sql("select max(attempts) from identity.otp_challenge where target = :t")
+				.param("t", normalized(phone)).query(Integer.class).single()).isLessThanOrEqualTo(5);
 	}
 
 }

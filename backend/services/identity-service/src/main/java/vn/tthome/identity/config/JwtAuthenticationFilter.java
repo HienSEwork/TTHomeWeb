@@ -42,8 +42,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				SecurityContextHolder.getContext()
 						.setAuthentication(new UsernamePasswordAuthenticationToken(claims, null, authorities));
 			} catch (ApiException e) {
-				writeUnauthorized(response);
-				return;
+				// An expired or malformed token only means "not authenticated": public endpoints (refresh, login,
+				// logout) must keep working with a stale header, and protected ones answer 401 via the entry point.
+				SecurityContextHolder.clearContext();
 			}
 		}
 		chain.doFilter(request, response);

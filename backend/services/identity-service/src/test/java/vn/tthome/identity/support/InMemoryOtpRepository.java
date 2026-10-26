@@ -40,10 +40,10 @@ public final class InMemoryOtpRepository {
 					case "countRecentByIp" -> rows.stream()
 							.filter(r -> args[0].equals(r.getIp()) && r.getCreatedAt().isAfter((Instant) args[1]))
 							.count();
-					case "incrementAttempts" -> {
-						byId((UUID) args[0]).ifPresent(r -> r.setAttempts((short) (r.getAttempts() + 1)));
-						yield null;
-					}
+					case "takeAttempt" -> byId((UUID) args[0]).filter(r -> r.getAttempts() < (int) args[1]).map(r -> {
+						r.setAttempts((short) (r.getAttempts() + 1));
+						return true;
+					}).orElse(false);
 					case "consumeIfOpen" -> byId((UUID) args[0]).filter(r -> r.getConsumedAt() == null).map(r -> {
 						r.setConsumedAt((Instant) args[1]);
 						return true;

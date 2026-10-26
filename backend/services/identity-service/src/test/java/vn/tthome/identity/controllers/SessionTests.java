@@ -7,6 +7,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
@@ -170,6 +177,49 @@ class SessionTests extends IdentityIntegrationTestBase {
 	@Test
 	void meWithoutTokenIs401() throws Exception {
 		mvc.perform(get("/api/v1/auth/me")).andExpect(status().isUnauthorized());
+	}
+
+	private List<Integer> parallelLogins(String phone, String password, int threads) throws Exception {
+		CountDownLatch go = new CountDownLatch(1);
+		Callable<Integer> attempt = () -> {
+			go.await();
+			return mvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON)
+					.content("{\"identifier\":\"" + phone + "\",\"password\":\"" + password + "\"}")
+					.with(fromIp(ip()))).andReturn().getResponse().getStatus();
+		};
+		ExecutorService pool = Executors.newFixedThreadPool(threads);
+		try {
+			List<Future<Integer>> futures = new ArrayList<>();
+			for (int i = 0; i < threads; i++) {
+				futures.add(pool.submit(attempt));
+			}
+			go.countDown();
+			List<Integer> statuses = new ArrayList<>();
+			for (Future<Integer> f : futures) {
+				statuses.add(f.get());
+			}
+			return statuses;
+		} finally {
+			pool.shutdownNow();
+		}
+	}
+
+	@Test
+	void parallelLoginsOfOneAccountAllSucceed() throws Exception {
+		String phone = newAccount();
+
+		assertThat(parallelLogins(phone, PASSWORD, 8)).containsOnly(200);
+	}
+
+	@Test
+	void parallelWrongPasswordsCannotSpendMoreThanTheAttemptBudget() throws Exception {
+		String phone = newAccount();
+
+		List<Integer> statuses = parallelLogins(phone, "wrong-password-parallel", 24);
+
+		assertThat(statuses).allMatch(s -> s == 401 || s == 423);
+		assertThat(statuses.stream().filter(s -> s == 401).count()).isLessThanOrEqualTo(5);
+		login(phone, PASSWORD).andExpect(status().isLocked());
 	}
 
 }

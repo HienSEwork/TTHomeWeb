@@ -44,11 +44,12 @@ public interface AccountService {
 	void resetPassword(UserAccount user, String newPassword, boolean viaEmail);
 
 	/**
-	 * Checks the password of a signed-in user before a sensitive change. A wrong password counts toward the lockout.
+	 * Checks a password against the account. The attempt is counted before the check, atomically, so parallel guesses
+	 * cannot exceed the budget; a correct password clears the counter and any lock.
 	 *
 	 * @throws vn.tthome.common.error.ApiException 401 INVALID_CREDENTIALS, 423 ACCOUNT_LOCKED.
 	 */
-	void requireCurrentPassword(UserAccount user, String password);
+	void authenticate(UserAccount user, String password);
 
 	/** Stores a new password without touching verification or lockout state. */
 	void changePassword(UUID userId, String newPassword);
@@ -59,7 +60,5 @@ public interface AccountService {
 	/** Replaces the email with a verified one; 409 CONTACT_TAKEN when another account owns it. */
 	void changeEmail(UUID userId, String email);
 
-	/** Counts a wrong password and locks the account once the configured number of failures is reached. */
-	void recordFailedLogin(UserAccount user);
 
 }

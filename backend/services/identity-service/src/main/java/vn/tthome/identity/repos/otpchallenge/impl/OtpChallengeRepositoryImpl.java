@@ -45,10 +45,12 @@ public class OtpChallengeRepositoryImpl implements OtpChallengeRepositoryCustom 
 
 	@Override
 	@Transactional
-	public void incrementAttempts(UUID id) {
-		em.createNativeQuery("update identity.otp_challenge set attempts = attempts + 1 where id = :id")
+	public boolean takeAttempt(UUID id, int max) {
+		return em.createNativeQuery(
+				"update identity.otp_challenge set attempts = attempts + 1 where id = :id and attempts < :max")
 				.setParameter("id", id)
-				.executeUpdate();
+				.setParameter("max", max)
+				.executeUpdate() == 1;
 	}
 
 }

@@ -15,7 +15,7 @@ public interface OtpChallengeRepositoryCustom {
 	/** Marks the challenge consumed only if nobody consumed it yet; exactly one concurrent caller gets true. */
 	boolean consumeIfOpen(UUID id, Instant now);
 
-	/** Atomically adds one wrong attempt. */
-	void incrementAttempts(UUID id);
+	/** Spends one attempt if fewer than max were spent; false means the budget is gone. Exactly max callers win. */
+	boolean takeAttempt(UUID id, int max);
 
 }

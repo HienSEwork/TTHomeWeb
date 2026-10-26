@@ -1,5 +1,7 @@
 server:
   port: 8081
+  # Behind the gateway the client address comes from X-Forwarded-For; Tomcat honours it only from internal proxies.
+  forward-headers-strategy: native
 
 # Database = Supabase PostgreSQL (không dùng DB local). Chuỗi kết nối lấy ở Dashboard > Connect > JDBC.
 # Mỗi service nên dùng role riêng: identity_svc.<PROJECT-REF> (xem db/supabase_roles.sql).

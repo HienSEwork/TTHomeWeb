@@ -75,7 +75,7 @@ class RepositoriesTests extends IdentityIntegrationTestBase {
 		em.clear();
 
 		assertThat(users.findByPhoneAndDeletedAtIsNull(phone)).isPresent();
-		assertThat(users.findByEmailIgnoreCaseAndDeletedAtIsNull(users.findByPhoneAndDeletedAtIsNull(phone).get().getEmail().toLowerCase()))
+		assertThat(users.findActiveByEmail(users.findByPhoneAndDeletedAtIsNull(phone).get().getEmail().toLowerCase()))
 				.isPresent();
 		assertThat(users.findByPhoneAndDeletedAtIsNull(phone).get().getUserType().value()).isEqualTo("tenant");
 	}
@@ -134,7 +134,7 @@ class RepositoriesTests extends IdentityIntegrationTestBase {
 	}
 
 	@Test
-	void consumeIfOpenSucceedsOnlyOnceAndIncrementAttemptsCounts() throws Exception {
+	void consumeIfOpenSucceedsOnlyOnceAndTakeAttemptCounts() throws Exception {
 		OtpChallenge c = new OtpChallenge();
 		c.setTarget(randomPhone());
 		c.setPurpose(OtpPurpose.LOGIN);
@@ -144,8 +144,8 @@ class RepositoriesTests extends IdentityIntegrationTestBase {
 		c = otps.saveAndFlush(c);
 		Instant now = Instant.now();
 
-		otps.incrementAttempts(c.getId());
-		otps.incrementAttempts(c.getId());
+		otps.takeAttempt(c.getId(), 5);
+		otps.takeAttempt(c.getId(), 5);
 		boolean first = otps.consumeIfOpen(c.getId(), now);
 		boolean second = otps.consumeIfOpen(c.getId(), now);
 		em.clear();
@@ -153,6 +153,61 @@ class RepositoriesTests extends IdentityIntegrationTestBase {
 		assertThat(first).isTrue();
 		assertThat(second).isFalse();
 		assertThat(otps.findById(c.getId()).get().getAttempts()).isEqualTo((short) 2);
+	}
+
+	@Test
+	void takeAttemptRefusesOnceTheBudgetIsSpent() throws Exception {
+		OtpChallenge c = new OtpChallenge();
+		c.setTarget(randomPhone());
+		c.setPurpose(OtpPurpose.LOGIN);
+		c.setChannel(OtpChannel.SMS);
+		c.setCodeHash("x");
+		c.setExpiresAt(Instant.now().plusSeconds(300));
+		c = otps.saveAndFlush(c);
+
+		for (int i = 0; i < 5; i++) {
+			assertThat(otps.takeAttempt(c.getId(), 5)).isTrue();
+		}
+
+		assertThat(otps.takeAttempt(c.getId(), 5)).isFalse();
+		em.clear();
+		assertThat(otps.findById(c.getId()).get().getAttempts()).isEqualTo((short) 5);
+	}
+
+	@Test
+	void findActiveByEmailMatchesAnyCaseAndSkipsDeletedAccounts() {
+		String mixed = "Mixed" + UUID.randomUUID().toString().substring(0, 8) + "@Example.com";
+		UserAccount live = newUser(null, mixed);
+		UserAccount gone = newUser(null, "gone" + UUID.randomUUID().toString().substring(0, 8) + "@example.com");
+		gone.setDeletedAt(Instant.now());
+		users.saveAndFlush(gone);
+		em.clear();
+
+		assertThat(users.findActiveByEmail(mixed.toLowerCase())).get().extracting(UserAccount::getId).isEqualTo(live.getId());
+		assertThat(users.findActiveByEmail(gone.getEmail().toLowerCase())).isEmpty();
+	}
+
+	@Test
+	void beginLoginAttemptCountsLocksAtTheThresholdAndRestartsAfterTheLockExpired() {
+		UserAccount user = newUser(randomPhone(), null);
+		Instant now = Instant.now();
+		for (int expected = 1; expected <= 4; expected++) {
+			assertThat(users.beginLoginAttempt(user.getId(), 5, now, now.plusSeconds(900))).isEqualTo(expected);
+		}
+		assertThat(lockedUntil(user)).isEmpty();
+
+		assertThat(users.beginLoginAttempt(user.getId(), 5, now, now.plusSeconds(900))).isEqualTo(5);
+		assertThat(lockedUntil(user)).isPresent();
+		assertThat(users.beginLoginAttempt(user.getId(), 5, now, now.plusSeconds(900))).isEqualTo(6);
+
+		Instant afterExpiry = now.plusSeconds(901);
+		assertThat(users.beginLoginAttempt(user.getId(), 5, afterExpiry, afterExpiry.plusSeconds(900))).isEqualTo(1);
+		assertThat(lockedUntil(user)).isEmpty();
+	}
+
+	private java.util.Optional<java.sql.Timestamp> lockedUntil(UserAccount user) {
+		return jdbc.sql("select locked_until from identity.user_account where id = :id")
+				.param("id", user.getId()).query((rs, n) -> java.util.Optional.ofNullable(rs.getTimestamp(1))).single();
 	}
 
 }

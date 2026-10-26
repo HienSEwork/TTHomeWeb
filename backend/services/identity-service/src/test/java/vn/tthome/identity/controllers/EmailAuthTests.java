@@ -7,7 +7,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
@@ -195,6 +201,34 @@ class EmailAuthTests extends IdentityIntegrationTestBase {
 
 		login(phone, PASSWORD, false, ip).andExpect(status().isOk());
 		login("+84 " + phone.substring(1), PASSWORD, false, ip).andExpect(status().isOk());
+	}
+
+	@Test
+	void twoConcurrentRegistrationsOfOneEmailNeverFailWithA500AndCreateOneAccount() throws Exception {
+		String email = newEmail();
+		String body = "{\"email\":\"" + email + "\",\"password\":\"" + PASSWORD + "\"}";
+		CountDownLatch go = new CountDownLatch(1);
+		Callable<Integer> register = () -> {
+			go.await();
+			return mvc.perform(post("/api/v1/auth/register/email").contentType(MediaType.APPLICATION_JSON)
+					.content(body).with(fromIp(ip()))).andReturn().getResponse().getStatus();
+		};
+		ExecutorService pool = Executors.newFixedThreadPool(2);
+		try {
+			Future<Integer> a = pool.submit(register);
+			Future<Integer> b = pool.submit(register);
+			go.countDown();
+
+			// The second caller may arrive after the code was sent and hit the 60 s resend cooldown (429): both are fine,
+			// a 500 is not.
+			List<Integer> statuses = List.of(a.get(), b.get());
+			assertThat(statuses).allMatch(code -> code == 202 || code == 429);
+			assertThat(statuses).contains(202);
+		} finally {
+			pool.shutdownNow();
+		}
+		assertThat(jdbc.sql("select count(*) from identity.user_account where lower(email) = :e")
+				.param("e", email.toLowerCase()).query(Integer.class).single()).isEqualTo(1);
 	}
 
 }

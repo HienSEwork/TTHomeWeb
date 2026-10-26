@@ -11,6 +11,4 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, UUID>,
 
 	Optional<UserAccount> findByPhoneAndDeletedAtIsNull(String phone);
 
-	Optional<UserAccount> findByEmailIgnoreCaseAndDeletedAtIsNull(String email);
-
 }

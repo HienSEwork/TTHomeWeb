@@ -40,6 +40,11 @@ class GlobalExceptionHandlerTest {
 					org.springframework.http.HttpMethod.GET, "/missing-resource", "missing-resource");
 		}
 
+		@GetMapping("/stale")
+		void stale() {
+			throw new org.springframework.dao.OptimisticLockingFailureException("version mismatch");
+		}
+
 		@GetMapping("/typed/{id}")
 		void typed(@PathVariable java.util.UUID id) {
 		}
@@ -115,6 +120,13 @@ class GlobalExceptionHandlerTest {
 		mvc.perform(get("/typed/not-a-uuid"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+	}
+
+	@Test
+	void optimisticLockingFailureIs409Conflict() throws Exception {
+		mvc.perform(get("/stale"))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.code").value("CONFLICT"));
 	}
 
 }

@@ -1,5 +1,6 @@
 package vn.tthome.identity.services.emailauth.impl;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +37,13 @@ public class EmailAuthServiceImpl implements EmailAuthService {
 	@Override
 	public void register(EmailRegisterRequest request, String ip) {
 		String email = normalizer.email(request.email());
-		if (accounts.registerUnverifiedEmailAccount(email, request.password(), request.fullName()).isPresent()) {
+		boolean pending;
+		try {
+			pending = accounts.registerUnverifiedEmailAccount(email, request.password(), request.fullName()).isPresent();
+		} catch (DataIntegrityViolationException e) {
+			pending = false; // a concurrent registration of the same address won
+		}
+		if (pending) {
 			otp.request(email, OtpPurpose.REGISTER, OtpChannel.EMAIL, ip);
 		} else {
 			otp.reserve(email, OtpPurpose.REGISTER, OtpChannel.EMAIL, ip);

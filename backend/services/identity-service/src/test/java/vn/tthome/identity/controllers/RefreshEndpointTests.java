@@ -5,6 +5,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -15,7 +20,10 @@ import vn.tthome.identity.IdentityIntegrationTestBase;
 import vn.tthome.identity.models.dtos.TokenPair;
 import vn.tthome.identity.models.entities.UserAccount;
 import vn.tthome.identity.repos.useraccount.UserAccountRepository;
+import vn.tthome.identity.services.jwt.impl.JwtServiceImpl;
 import vn.tthome.identity.services.session.SessionService;
+import vn.tthome.identity.support.MutableClock;
+import vn.tthome.identity.support.TestAuthProperties;
 
 @AutoConfigureMockMvc
 class RefreshEndpointTests extends IdentityIntegrationTestBase {
@@ -56,6 +64,35 @@ class RefreshEndpointTests extends IdentityIntegrationTestBase {
 		mvc.perform(post("/api/v1/auth/refresh").contentType(MediaType.APPLICATION_JSON).content("{}"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+	}
+
+	private TokenPair newSession() {
+		UserAccount user = new UserAccount();
+		user.setPhone("+849" + String.format("%08d", (long) (Math.random() * 100_000_000L)));
+		return sessions.issue(users.saveAndFlush(user), false, null, null);
+	}
+
+	@Test
+	void refreshWorksEvenWithAnExpiredBearerHeaderStillAttached() throws Exception {
+		TokenPair pair = newSession();
+		String expired = new JwtServiceImpl(TestAuthProperties.defaults(), new MutableClock(Instant.now().minus(Duration.ofHours(2))))
+				.issueAccessToken(UUID.randomUUID(), UUID.randomUUID(), List.of("TENANT"));
+
+		mvc.perform(post("/api/v1/auth/refresh").contentType(MediaType.APPLICATION_JSON)
+				.content("{\"refreshToken\":\"" + pair.refreshToken() + "\"}")
+				.header("Authorization", "Bearer " + expired))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.accessToken").isNotEmpty());
+	}
+
+	@Test
+	void logoutWorksWithAGarbageBearerHeader() throws Exception {
+		TokenPair pair = newSession();
+
+		mvc.perform(post("/api/v1/auth/logout").contentType(MediaType.APPLICATION_JSON)
+				.content("{\"refreshToken\":\"" + pair.refreshToken() + "\"}")
+				.header("Authorization", "Bearer not.a.token"))
+				.andExpect(status().isNoContent());
 	}
 
 }

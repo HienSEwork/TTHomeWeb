@@ -44,7 +44,7 @@ public class ContactServiceImpl implements ContactService {
 			if (request.currentPassword() == null || request.currentPassword().isBlank()) {
 				throw new ApiException(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "Current password is required");
 			}
-			accounts.requireCurrentPassword(user, request.currentPassword());
+			accounts.authenticate(user, request.currentPassword());
 		}
 		String target = normalize(request.type(), request.newValue());
 		OtpChannel channel = request.type() == ContactType.PHONE ? OtpChannel.SMS : OtpChannel.EMAIL;

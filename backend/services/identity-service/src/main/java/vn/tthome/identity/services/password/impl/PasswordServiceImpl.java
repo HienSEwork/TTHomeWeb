@@ -72,7 +72,7 @@ public class PasswordServiceImpl implements PasswordService {
 		if (user.getPasswordHash() == null) {
 			throw new ApiException(HttpStatus.CONFLICT, "PASSWORD_NOT_SET", "Use password reset to set a password");
 		}
-		accounts.requireCurrentPassword(user, request.currentPassword());
+		accounts.authenticate(user, request.currentPassword());
 		accounts.changePassword(user.getId(), request.newPassword());
 		sessions.revokeOthers(user.getId(), caller.sessionId());
 	}
