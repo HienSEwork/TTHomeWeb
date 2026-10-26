@@ -21,6 +21,7 @@
 - Same 401 `INVALID_CREDENTIALS` for unknown account and wrong password. OTP request endpoints always answer `202` with an empty body, whether or not the target is registered.
 - Plan decisions the spec leaves open (builder may not change them silently): phones are accepted as `0xxxxxxxxx`, `84xxxxxxxxx` or `+84xxxxxxxxx` (Vietnamese mobile, 10 digits after the leading 0) and stored as `+84xxxxxxxxx`; emails are trimmed and lower-cased; `jti` of an access token is the id of the `refresh_token` row backing it ("session id").
 - Java style of the repo: tabs, Lombok allowed, package root `vn.tthome.identity`.
+- Interface rule (section 11 of `.claude/CLAUDE.md`, added after this plan was approved): every service class named in this plan is an **interface** in `services/` with its implementation `<Name>Impl` in `services/impl/`; every repository is three files in `repos/` — `XRepository` (Spring Data, extends `XRepositoryCustom`), `XRepositoryCustom` and `XRepositoryImpl` — with the `@Modifying` bulk updates and the counting queries of Task 5 written in `XRepositoryImpl` (native SQL / `EntityManager`) and simple derived finders left on `XRepository`; `MessageSender` is already an interface, so `LoggingMessageSender` goes in `services/impl/`. Controllers and other services depend on the interface only. The signatures in the Interfaces blocks are the interface methods.
 
 ## Review Focus
 

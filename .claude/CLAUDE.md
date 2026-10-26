@@ -200,3 +200,10 @@ Ví dụ: `feat(auth): add OTP sign-in` kèm `Refs: AUTH-03`.
 - [ ] Đã theo dõi CI; nếu đỏ thì nói rõ, không báo "xong".
 - [ ] Chỉ merge khi đủ điều kiện mục 7.5; đã xóa nhánh phụ ở remote và local sau khi merge.
 - [ ] Skill (nếu dùng) đúng loại việc và không vi phạm quy tắc nào ở trên.
+
+## 11. Quy ước code backend
+
+- **Mỗi lớp service có một interface tương ứng.** Interface `XService` đặt trong `services/`, lớp cài đặt `XServiceImpl` đặt trong `services/impl/` (ví dụ `PasswordHasher` + `impl/PasswordHasherImpl`). Controller và các service khác chỉ phụ thuộc vào interface, không phụ thuộc lớp `Impl`.
+- **Mỗi repository có đủ ba file trong `repos/`:** `XRepository` (interface Spring Data, kế thừa `JpaRepository` và `XRepositoryCustom`), `XRepositoryCustom` (interface khai báo các truy vấn viết tay) và `XRepositoryImpl` (cài đặt `XRepositoryCustom`, dùng `EntityManager`, `JdbcClient` hoặc SQL native). Truy vấn đơn giản vẫn khai báo kiểu derived/`@Query` trong `XRepository`; truy vấn cần tối ưu (cập nhật hàng loạt, đếm, join, chọn đúng cột và chỉ mục, giảm số lần round-trip và độ phức tạp thuật toán) viết trong `XRepositoryImpl`. Chỉ thêm phương thức vào `Custom` khi có truy vấn thật sự cần, không tạo phương thức giả. Lưu ý: Spring Data nhận ra `XRepositoryImpl` theo tên, nên giữ đúng tên này.
+- Cổng (port) vốn đã là interface (ví dụ `MessageSender`) thì giữ nguyên, không tạo thêm một interface bọc ngoài; các cài đặt của nó đặt trong `services/impl/`.
+- Bean cấu hình thuần (ví dụ `AuthConfig`, `SecurityConfig`, bộ lọc) không phải service nên không cần interface.
