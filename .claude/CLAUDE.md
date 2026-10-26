@@ -133,9 +133,16 @@ Ví dụ: `feat(auth): add OTP sign-in` kèm `Refs: AUTH-03`.
 1. Trước khi push: `git fetch origin && git rebase origin/dev`, chạy lại mục 5 nếu có thay đổi mới từ `dev`.
 2. Push chỉ nhánh feature: `git push -u origin <nhánh-hiện-tại>`. Không bao giờ `git push origin dev` hay `main`.
 3. Mở Pull Request **vào `dev`**, viết bằng tiếng Anh: tiêu đề giống commit chính; mô tả gồm mã việc Excel, tóm tắt thay đổi, cách đã kiểm tra, ảnh hưởng đến DB/sự kiện RabbitMQ.
-4. Theo dõi CI. CI đỏ → sửa trên cùng nhánh bằng commit mới, push lại. Không tự đánh dấu hoàn thành khi CI đỏ.
-5. **AI không tự merge PR.** Người dùng (hoặc quy trình review) quyết định merge vào `dev`. Sau khi merge, xóa nhánh feature trên remote.
-6. Việc tiếp theo bắt đầu lại từ mục 4 (tách nhánh mới từ `dev` đã cập nhật).
+4. Theo dõi CI bằng `gh pr checks <số-PR> --watch`. CI đỏ → đọc log (`gh run view <id> --log-failed`), sửa trên cùng nhánh bằng commit mới, push lại. Không tự đánh dấu hoàn thành khi CI đỏ.
+5. **AI được tự merge PR** (người dùng đã cho phép trực tiếp trong phiên làm việc ngày 2026-10-27), chỉ khi đủ **tất cả** điều kiện:
+   - PR đích là `dev`. Tuyệt đối không merge vào `main`, `master`.
+   - Tên nhánh hợp lệ theo mục 2 và mọi check của CI đều xanh (`gh pr checks`), `mergeStateStatus` là `CLEAN`.
+   - Đã chạy kiểm tra mục 5 ở máy khi có thể. Máy không có Docker thì CI thay cho bước Testcontainers.
+   - Diff không chứa bí mật, không sửa migration đã merge, không cần chạy tay schema Supabase (mục 8).
+   - Cách merge: `gh pr merge <số-PR> --squash`. Không dùng `--admin`, không bỏ qua check, không dùng `--delete-branch` (gh sẽ tự checkout nhánh mặc định là `main`).
+   - Mọi trường hợp khác, hoặc có nghi ngờ: dừng và hỏi người dùng.
+6. Sau khi merge, xóa nhánh phụ: remote bằng `git push origin --delete <nhánh>`, local bằng `git branch -d <nhánh>` (nhánh squash-merge cần `-D`, chỉ dùng cho nhánh của chính mình đã merge xong).
+7. Việc tiếp theo bắt đầu lại từ mục 4 (tách nhánh mới từ `dev` đã cập nhật).
 
 ## 8. Khi nào phải dừng và hỏi người dùng
 
@@ -186,4 +193,5 @@ Ví dụ: `feat(auth): add OTP sign-in` kèm `Refs: AUTH-03`.
 - [ ] Commit theo mẫu, có `Refs:` mã việc Excel; message commit, tên nhánh, PR đều bằng tiếng Anh.
 - [ ] Đã push nhánh feature (không push `dev`/`main`), đã mở PR vào `dev`.
 - [ ] Đã theo dõi CI; nếu đỏ thì nói rõ, không báo "xong".
+- [ ] Chỉ merge khi đủ điều kiện mục 7.5; đã xóa nhánh phụ ở remote và local sau khi merge.
 - [ ] Skill (nếu dùng) đúng loại việc và không vi phạm quy tắc nào ở trên.
