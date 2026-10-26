@@ -6,21 +6,26 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import vn.tthome.common.error.ApiException;
 import vn.tthome.identity.config.AuthProperties;
 import vn.tthome.identity.models.dtos.TokenPair;
 import vn.tthome.identity.models.entities.RefreshToken;
 import vn.tthome.identity.models.entities.Role;
 import vn.tthome.identity.models.entities.UserAccount;
+import vn.tthome.identity.models.enums.UserStatus;
 import vn.tthome.identity.repos.refreshtoken.RefreshTokenRepository;
+import vn.tthome.identity.repos.useraccount.UserAccountRepository;
 import vn.tthome.identity.services.jwt.JwtService;
 import vn.tthome.identity.services.session.SessionService;
 
@@ -31,14 +36,16 @@ public class SessionServiceImpl implements SessionService {
 	private static final int DEVICE_INFO_MAX = 255;
 
 	private final RefreshTokenRepository refreshTokens;
+	private final UserAccountRepository users;
 	private final JwtService jwt;
 	private final AuthProperties props;
 	private final Clock clock;
 	private final SecureRandom random = new SecureRandom();
 
-	public SessionServiceImpl(RefreshTokenRepository refreshTokens, JwtService jwt, AuthProperties props,
-			Clock clock) {
+	public SessionServiceImpl(RefreshTokenRepository refreshTokens, UserAccountRepository users, JwtService jwt,
+			AuthProperties props, Clock clock) {
 		this.refreshTokens = refreshTokens;
+		this.users = users;
 		this.jwt = jwt;
 		this.props = props;
 		this.clock = clock;
@@ -64,6 +71,28 @@ public class SessionServiceImpl implements SessionService {
 		return new TokenPair(accessToken, jwt.expiresAt(accessToken), refreshToken, row.getExpiresAt());
 	}
 
+	/** Reuse detection revokes the user's sessions and then fails, so that revocation must be committed. */
+	@Override
+	@Transactional(noRollbackFor = ApiException.class)
+	public TokenPair refresh(String refreshToken, String deviceInfo, String ip) {
+		Instant now = clock.instant();
+		RefreshToken row = refreshTokens.findByTokenHash(sha256Hex(refreshToken)).orElseThrow(SessionServiceImpl::invalid);
+		if (row.getRevokedAt() != null) {
+			refreshTokens.revokeAllActive(row.getUserId(), now);
+			throw invalid();
+		}
+		if (!row.getExpiresAt().isAfter(now)) {
+			throw invalid();
+		}
+		UserAccount user = users.findById(row.getUserId()).filter(u -> u.getDeletedAt() == null)
+				.filter(u -> u.getStatus() == UserStatus.ACTIVE).orElseThrow(SessionServiceImpl::invalid);
+		if (!refreshTokens.revokeIfActive(row.getId(), now)) {
+			throw invalid(); // a concurrent refresh of the same token won
+		}
+		boolean remembered = Duration.between(row.getCreatedAt(), row.getExpiresAt()).compareTo(props.refreshTtl()) > 0;
+		return issue(user, remembered, deviceInfo, ip);
+	}
+
 	private String newOpaqueToken() {
 		byte[] raw = new byte[32];
 		random.nextBytes(raw);
@@ -87,6 +116,10 @@ public class SessionServiceImpl implements SessionService {
 		} catch (Exception e) {
 			return null;
 		}
+	}
+
+	private static ApiException invalid() {
+		return new ApiException(HttpStatus.UNAUTHORIZED, "TOKEN_INVALID", "Invalid or expired token");
 	}
 
 }

@@ -26,6 +26,16 @@ public class RefreshTokenRepositoryImpl implements RefreshTokenRepositoryCustom 
 
 	@Override
 	@Transactional
+	public boolean revokeIfActive(UUID id, Instant now) {
+		return em.createNativeQuery(
+				"update identity.refresh_token set revoked_at = :now where id = :id and revoked_at is null")
+				.setParameter("now", now)
+				.setParameter("id", id)
+				.executeUpdate() == 1;
+	}
+
+	@Override
+	@Transactional
 	public int revokeAllActiveExcept(UUID userId, UUID keepId, Instant now) {
 		return em.createNativeQuery(
 				"update identity.refresh_token set revoked_at = :now"

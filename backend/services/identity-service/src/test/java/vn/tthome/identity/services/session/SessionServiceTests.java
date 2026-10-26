@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.security.MessageDigest;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.HexFormat;
 import java.util.List;
 
@@ -19,6 +18,7 @@ import vn.tthome.identity.models.entities.RefreshToken;
 import vn.tthome.identity.models.entities.UserAccount;
 import vn.tthome.identity.repos.refreshtoken.RefreshTokenRepository;
 import vn.tthome.identity.repos.useraccount.UserAccountRepository;
+import vn.tthome.identity.support.MutableClock;
 import vn.tthome.identity.services.jwt.JwtService;
 
 @Transactional
@@ -34,6 +34,8 @@ class SessionServiceTests extends IdentityIntegrationTestBase {
 	RefreshTokenRepository refreshTokens;
 	@Autowired
 	JdbcClient jdbc;
+	@Autowired
+	MutableClock clock;
 
 	private UserAccount user() {
 		UserAccount u = new UserAccount();
@@ -79,7 +81,7 @@ class SessionServiceTests extends IdentityIntegrationTestBase {
 
 		TokenPair pair = sessions.issue(user, true, null, null);
 
-		assertThat(Duration.between(Instant.now(), pair.refreshExpiresAt()).toDays()).isEqualTo(29);
+		assertThat(Duration.between(clock.instant(), pair.refreshExpiresAt()).toDays()).isEqualTo(30);
 		assertThat(pair.refreshExpiresAt()).isEqualTo(rowOf(user).getExpiresAt());
 	}
 
@@ -89,7 +91,7 @@ class SessionServiceTests extends IdentityIntegrationTestBase {
 
 		TokenPair pair = sessions.issue(user, false, null, null);
 
-		assertThat(Duration.between(Instant.now(), pair.refreshExpiresAt()).toHours()).isEqualTo(23);
+		assertThat(Duration.between(clock.instant(), pair.refreshExpiresAt()).toHours()).isEqualTo(24);
 	}
 
 }
