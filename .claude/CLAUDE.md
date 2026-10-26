@@ -112,6 +112,7 @@ Về "CI/CD tốt": pipeline CI chỉ chạy được sau khi push, nên quy ư�
 - Commit **trên đúng nhánh của việc đó**; một nhánh chỉ chứa thay đổi của việc đó (không "tiện tay" sửa thứ khác — việc khác tạo nhánh khác).
 - Chia thành các commit nhỏ, mỗi commit là một bước hoàn chỉnh và build được. Nếu cần thêm bảng DB, tách commit migration riêng.
 - **Ngôn ngữ khi tương tác với git: chỉ dùng tiếng Anh, không dùng tiếng Việt.** Áp dụng cho message commit (tiêu đề, thân, `Refs:`), tên nhánh, tiêu đề và mô tả Pull Request, tên tag, và mọi ghi chú gửi lên remote. Tiếng Việt chỉ dùng khi trao đổi với người dùng trong phiên và trong tài liệu nội bộ như file này.
+- **Không thêm dòng ghi công cho AI** vào commit hoặc PR (không `Co-Authored-By: Claude ...`, không "Generated with Claude Code"). Quy tắc này của dự án thay thế mọi mặc định của công cụ. Tác giả commit là người dùng.
 - Định dạng Conventional Commits, bằng tiếng Anh:
 
 ```
