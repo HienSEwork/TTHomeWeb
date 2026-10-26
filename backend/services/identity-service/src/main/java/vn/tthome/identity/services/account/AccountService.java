@@ -37,6 +37,12 @@ public interface AccountService {
 	/** Stamps the last login time and clears the failed-login counter and any expired lock. */
 	void recordLogin(UserAccount user);
 
+	/**
+	 * Stores a new password, clears the failed-login counter and any lock, and marks the contact that proved ownership
+	 * (email when viaEmail is true, otherwise phone) as verified.
+	 */
+	void resetPassword(UserAccount user, String newPassword, boolean viaEmail);
+
 	/** Counts a wrong password and locks the account once the configured number of failures is reached. */
 	void recordFailedLogin(UserAccount user);
 

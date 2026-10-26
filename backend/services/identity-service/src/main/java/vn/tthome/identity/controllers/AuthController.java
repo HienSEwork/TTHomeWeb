@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import vn.tthome.identity.models.dtos.EmailRegisterRequest;
 import vn.tthome.identity.models.dtos.EmailVerifyRequest;
 import vn.tthome.identity.models.dtos.AccessClaims;
+import vn.tthome.identity.models.dtos.ForgotPasswordRequest;
 import vn.tthome.identity.models.dtos.LoginRequest;
 import vn.tthome.identity.models.dtos.LogoutRequest;
 import vn.tthome.identity.models.dtos.MeResponse;
@@ -21,11 +22,13 @@ import vn.tthome.identity.models.dtos.OtpLoginVerifyRequest;
 import vn.tthome.identity.models.dtos.PhoneRequest;
 import vn.tthome.identity.models.dtos.PhoneVerifyRequest;
 import vn.tthome.identity.models.dtos.RefreshRequest;
+import vn.tthome.identity.models.dtos.ResetPasswordRequest;
 import vn.tthome.identity.models.dtos.TokenPair;
 import vn.tthome.common.error.ApiException;
 import vn.tthome.identity.services.account.AccountService;
 import vn.tthome.identity.services.emailauth.EmailAuthService;
 import vn.tthome.identity.services.login.LoginService;
+import vn.tthome.identity.services.password.PasswordService;
 import vn.tthome.identity.services.phoneauth.PhoneAuthService;
 import vn.tthome.identity.services.session.SessionService;
 
@@ -38,14 +41,16 @@ public class AuthController {
 	private final LoginService loginService;
 	private final SessionService sessions;
 	private final AccountService accounts;
+	private final PasswordService passwords;
 
 	public AuthController(PhoneAuthService phoneAuth, EmailAuthService emailAuth, LoginService loginService,
-			SessionService sessions, AccountService accounts) {
+			SessionService sessions, AccountService accounts, PasswordService passwords) {
 		this.phoneAuth = phoneAuth;
 		this.emailAuth = emailAuth;
 		this.loginService = loginService;
 		this.sessions = sessions;
 		this.accounts = accounts;
+		this.passwords = passwords;
 	}
 
 	@PostMapping("/register/phone/request")
@@ -107,6 +112,18 @@ public class AuthController {
 	public MeResponse me(@AuthenticationPrincipal AccessClaims claims) {
 		return accounts.findById(claims.userId()).map(MeResponse::from)
 				.orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "TOKEN_INVALID", "Invalid or expired token"));
+	}
+
+	@PostMapping("/password/forgot")
+	@ResponseStatus(HttpStatus.ACCEPTED)
+	public void forgotPassword(@Valid @RequestBody ForgotPasswordRequest body, HttpServletRequest request) {
+		passwords.forgot(body.identifier(), request.getRemoteAddr());
+	}
+
+	@PostMapping("/password/reset")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void resetPassword(@Valid @RequestBody ResetPasswordRequest body) {
+		passwords.reset(body);
 	}
 
 }

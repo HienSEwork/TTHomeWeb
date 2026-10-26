@@ -115,6 +115,22 @@ public class AccountServiceImpl implements AccountService {
 
 	@Override
 	@Transactional
+	public void resetPassword(UserAccount user, String newPassword, boolean viaEmail) {
+		users.findById(user.getId()).ifPresent(u -> {
+			Instant now = clock.instant();
+			u.setPasswordHash(hasher.hash(newPassword));
+			u.setFailedLoginCount((short) 0);
+			u.setLockedUntil(null);
+			if (viaEmail && u.getEmailVerifiedAt() == null) {
+				u.setEmailVerifiedAt(now);
+			} else if (!viaEmail && u.getPhoneVerifiedAt() == null) {
+				u.setPhoneVerifiedAt(now);
+			}
+		});
+	}
+
+	@Override
+	@Transactional
 	public void recordFailedLogin(UserAccount user) {
 		Instant now = clock.instant();
 		users.recordFailedLogin(user.getId(), props.maxFailedLogins(), now, now.plus(props.lockDuration()));
