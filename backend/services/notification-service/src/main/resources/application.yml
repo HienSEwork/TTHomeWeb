@@ -1,0 +1,45 @@
+server:
+  port: 8090
+
+# Database = Supabase PostgreSQL (không dùng DB local). Chuỗi kết nối lấy ở Dashboard > Connect > JDBC.
+# Mỗi service nên dùng role riêng: notify_svc.<PROJECT-REF> (xem db/supabase_roles.sql).
+spring:
+  application:
+    name: notification-service
+  profiles:
+    default: dev                              # chạy local không cần đặt gì; production đặt SPRING_PROFILES_ACTIVE=prod
+  datasource:
+    # Session pooler (cổng 5432, hỗ trợ IPv4 + prepared statement). Không dùng transaction pooler 6543 cho JPA.
+    url: ${SUPABASE_DB_URL}              # jdbc:postgresql://<POOLER-HOST>:5432/postgres?sslmode=require
+    username: ${DB_USER:notify_svc.${SUPABASE_PROJECT_REF}}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX:3}   # 11 service x pool: giữ tổng dưới giới hạn kết nối của gói Supabase
+      minimum-idle: 1
+      # KHÔNG đặt hikari.schema: Hikari chạy SET search_path theo phiên, không an toàn qua pooler
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: notify              # Hibernate tự ghi tên schema vào SQL nên không cần search_path
+  flyway:
+    schemas: notify
+    default-schema: notify
+    # Schema nền (db/tthome_schema.sql) đã chạy tay trên Supabase = V1. Migration của service bắt đầu từ V2.
+    baseline-on-migrate: true
+    baseline-version: 1
+    # Migrate nên chạy bằng kết nối direct/session: đặt FLYWAY_URL riêng nếu cần
+    url: ${FLYWAY_URL:${SUPABASE_DB_URL}}
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+    port: 5672
+    username: ${RABBIT_USER:guest}
+    password: ${RABBIT_PASSWORD:guest}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

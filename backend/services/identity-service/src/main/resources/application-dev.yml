@@ -1,0 +1,6 @@
+# Profile dev (mặc định): chưa dùng RabbitMQ nên tắt auto-config, service khởi động được khi chưa có broker.
+# Bật lại khi bắt đầu viết messaging: xóa khối exclude này (hoặc chạy với profile khác) và cài RabbitMQ.
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.amqp.autoconfigure.RabbitAutoConfiguration
