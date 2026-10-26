@@ -43,3 +43,8 @@ management:
     web:
       exposure:
         include: health,info
+
+tthome:
+  auth:
+    jwt-secret: ${JWT_SECRET}      # at least 32 bytes, no default
+    otp-pepper: ${OTP_PEPPER}      # at least 16 bytes, no default

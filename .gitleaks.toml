@@ -1,0 +1,12 @@
+title = "TTHome gitleaks config"
+
+[extend]
+useDefault = true
+
+# Dummy values used only by tests (never real credentials). Matched against the detected secret.
+[allowlist]
+description = "Test-only placeholder secrets"
+regexes = [
+  '''0123456789abcdef0123456789abcdef''',
+  '''test-only-[A-Za-z0-9-]+''',
+]

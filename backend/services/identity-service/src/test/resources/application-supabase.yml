@@ -1,0 +1,6 @@
+# Profile for *SupabaseIT: connection details come from the real environment variables
+# (SUPABASE_DB_URL, SUPABASE_PROJECT_REF, DB_PASSWORD, JWT_SECRET, OTP_PEPPER), never from this file.
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.amqp.autoconfigure.RabbitAutoConfiguration
