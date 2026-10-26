@@ -53,7 +53,9 @@ public class RefreshToken {
 
 	@PrePersist
 	void onCreate() {
-		createdAt = Instant.now();
+		if (createdAt == null) {
+			createdAt = Instant.now();
+		}
 	}
 
 }

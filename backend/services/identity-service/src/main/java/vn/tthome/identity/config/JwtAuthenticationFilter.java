@@ -17,7 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import vn.tthome.common.error.ApiException;
 import vn.tthome.identity.models.dtos.AccessClaims;
-import vn.tthome.identity.services.JwtService;
+import vn.tthome.identity.services.jwt.JwtService;
 
 /** Authenticates a request from its Bearer access token; any invalid token ends the request with 401. */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {

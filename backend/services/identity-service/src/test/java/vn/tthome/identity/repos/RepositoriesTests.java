@@ -22,6 +22,10 @@ import vn.tthome.identity.models.entities.Role;
 import vn.tthome.identity.models.entities.UserAccount;
 import vn.tthome.identity.models.enums.OtpChannel;
 import vn.tthome.identity.models.enums.OtpPurpose;
+import vn.tthome.identity.repos.otpchallenge.OtpChallengeRepository;
+import vn.tthome.identity.repos.refreshtoken.RefreshTokenRepository;
+import vn.tthome.identity.repos.role.RoleRepository;
+import vn.tthome.identity.repos.useraccount.UserAccountRepository;
 
 @Transactional
 class RepositoriesTests extends IdentityIntegrationTestBase {
@@ -127,6 +131,28 @@ class RepositoriesTests extends IdentityIntegrationTestBase {
 		assertThat(otps.countRecentByTarget(target, now.minusSeconds(3600))).isEqualTo(2);
 		assertThat(otps.countRecentByTarget(target, now.plusSeconds(60))).isZero();
 		assertThat(otps.countRecentByIp(ip, now.minusSeconds(3600))).isGreaterThanOrEqualTo(2);
+	}
+
+	@Test
+	void consumeIfOpenSucceedsOnlyOnceAndIncrementAttemptsCounts() throws Exception {
+		OtpChallenge c = new OtpChallenge();
+		c.setTarget(randomPhone());
+		c.setPurpose(OtpPurpose.LOGIN);
+		c.setChannel(OtpChannel.SMS);
+		c.setCodeHash("x");
+		c.setExpiresAt(Instant.now().plusSeconds(300));
+		c = otps.saveAndFlush(c);
+		Instant now = Instant.now();
+
+		otps.incrementAttempts(c.getId());
+		otps.incrementAttempts(c.getId());
+		boolean first = otps.consumeIfOpen(c.getId(), now);
+		boolean second = otps.consumeIfOpen(c.getId(), now);
+		em.clear();
+
+		assertThat(first).isTrue();
+		assertThat(second).isFalse();
+		assertThat(otps.findById(c.getId()).get().getAttempts()).isEqualTo((short) 2);
 	}
 
 }

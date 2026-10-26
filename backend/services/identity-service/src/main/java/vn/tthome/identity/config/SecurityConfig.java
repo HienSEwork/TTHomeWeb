@@ -13,7 +13,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import vn.tthome.identity.services.JwtService;
+import vn.tthome.identity.services.jwt.JwtService;
 
 @Configuration
 @EnableWebSecurity

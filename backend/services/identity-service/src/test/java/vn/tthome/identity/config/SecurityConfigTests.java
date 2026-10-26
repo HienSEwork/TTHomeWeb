@@ -14,8 +14,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 
 import vn.tthome.identity.IdentityIntegrationTestBase;
-import vn.tthome.identity.services.JwtService;
-import vn.tthome.identity.services.impl.JwtServiceImpl;
+import vn.tthome.identity.services.jwt.JwtService;
+import vn.tthome.identity.services.jwt.impl.JwtServiceImpl;
 import vn.tthome.identity.support.MutableClock;
 import vn.tthome.identity.support.TestAuthProperties;
 
