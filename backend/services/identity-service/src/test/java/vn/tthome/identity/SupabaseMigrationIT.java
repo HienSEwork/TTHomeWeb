@@ -13,7 +13,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 /**
  * Starts the service against the dev-only Supabase database: Flyway baselines at V1 (schema applied by hand)
- * and applies V2. Run on request only: ./mvnw -pl services/identity-service -am -Psupabase test
+ * and applies V2 and V3. Run on request only: ./mvnw -pl services/identity-service -am -Psupabase test
  */
 @Tag("supabase")
 @SpringBootTest
@@ -24,11 +24,11 @@ class SupabaseMigrationIT {
 	JdbcClient jdbc;
 
 	@Test
-	void flywayMigratedTheDevDatabaseToV2() {
+	void flywayMigratedTheDevDatabaseToTheLatestVersion() {
 		List<String> versions = jdbc.sql("select version from identity.flyway_schema_history where success")
 				.query(String.class).list();
 
-		assertThat(versions).contains("1", "2");
+		assertThat(versions).contains("1", "2", "3");
 	}
 
 	@Test

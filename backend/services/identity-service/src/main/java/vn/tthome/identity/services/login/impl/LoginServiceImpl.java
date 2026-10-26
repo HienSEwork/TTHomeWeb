@@ -1,5 +1,6 @@
 package vn.tthome.identity.services.login.impl;
 
+import java.time.Clock;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
@@ -23,13 +24,15 @@ public class LoginServiceImpl implements LoginService {
 	private final AccountService accounts;
 	private final PasswordHasher hasher;
 	private final SessionService sessions;
+	private final Clock clock;
 
 	public LoginServiceImpl(ContactNormalizer normalizer, AccountService accounts, PasswordHasher hasher,
-			SessionService sessions) {
+			SessionService sessions, Clock clock) {
 		this.normalizer = normalizer;
 		this.accounts = accounts;
 		this.hasher = hasher;
 		this.sessions = sessions;
+		this.clock = clock;
 	}
 
 	@Override
@@ -43,7 +46,11 @@ public class LoginServiceImpl implements LoginService {
 			throw invalidCredentials();
 		}
 		UserAccount user = found.get();
+		if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(clock.instant())) {
+			throw new ApiException(HttpStatus.LOCKED, "ACCOUNT_LOCKED", "Account is temporarily locked");
+		}
 		if (!hasher.verify(user.getPasswordHash(), request.password())) {
+			accounts.recordFailedLogin(user);
 			throw invalidCredentials();
 		}
 		if (user.getStatus() != UserStatus.ACTIVE) {

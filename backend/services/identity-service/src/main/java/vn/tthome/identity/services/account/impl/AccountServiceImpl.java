@@ -1,7 +1,9 @@
 package vn.tthome.identity.services.account.impl;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import vn.tthome.common.error.ApiException;
+import vn.tthome.identity.config.AuthProperties;
 import vn.tthome.identity.models.entities.UserAccount;
 import vn.tthome.identity.repos.role.RoleRepository;
 import vn.tthome.identity.repos.useraccount.UserAccountRepository;
@@ -24,12 +27,15 @@ public class AccountServiceImpl implements AccountService {
 	private final RoleRepository roles;
 	private final PasswordHasher hasher;
 	private final Clock clock;
+	private final AuthProperties props;
 
-	public AccountServiceImpl(UserAccountRepository users, RoleRepository roles, PasswordHasher hasher, Clock clock) {
+	public AccountServiceImpl(UserAccountRepository users, RoleRepository roles, PasswordHasher hasher, Clock clock,
+			AuthProperties props) {
 		this.users = users;
 		this.roles = roles;
 		this.hasher = hasher;
 		this.clock = clock;
+		this.props = props;
 	}
 
 	@Override
@@ -100,7 +106,24 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	@Transactional
 	public void recordLogin(UserAccount user) {
-		users.findById(user.getId()).ifPresent(u -> u.setLastLoginAt(clock.instant()));
+		users.findById(user.getId()).ifPresent(u -> {
+			u.setLastLoginAt(clock.instant());
+			u.setFailedLoginCount((short) 0);
+			u.setLockedUntil(null);
+		});
+	}
+
+	@Override
+	@Transactional
+	public void recordFailedLogin(UserAccount user) {
+		Instant now = clock.instant();
+		users.recordFailedLogin(user.getId(), props.maxFailedLogins(), now, now.plus(props.lockDuration()));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Optional<UserAccount> findById(UUID id) {
+		return users.findById(id).filter(u -> u.getDeletedAt() == null);
 	}
 
 }

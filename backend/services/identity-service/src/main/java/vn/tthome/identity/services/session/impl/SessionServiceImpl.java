@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.springframework.http.HttpStatus;
@@ -54,6 +55,13 @@ public class SessionServiceImpl implements SessionService {
 	@Override
 	@Transactional
 	public TokenPair issue(UserAccount user, boolean rememberMe, String deviceInfo, String ip) {
+		return create(user, rememberMe, deviceInfo, ip).pair();
+	}
+
+	private record Session(TokenPair pair, UUID sessionId) {
+	}
+
+	private Session create(UserAccount user, boolean rememberMe, String deviceInfo, String ip) {
 		Instant now = clock.instant();
 		String refreshToken = newOpaqueToken();
 		RefreshToken row = new RefreshToken();
@@ -68,7 +76,8 @@ public class SessionServiceImpl implements SessionService {
 
 		List<String> roles = user.getRoles().stream().map(Role::getCode).toList();
 		String accessToken = jwt.issueAccessToken(user.getId(), row.getId(), roles);
-		return new TokenPair(accessToken, jwt.expiresAt(accessToken), refreshToken, row.getExpiresAt());
+		return new Session(new TokenPair(accessToken, jwt.expiresAt(accessToken), refreshToken, row.getExpiresAt()),
+				row.getId());
 	}
 
 	/** Reuse detection revokes the user's sessions and then fails, so that revocation must be committed. */
@@ -78,7 +87,9 @@ public class SessionServiceImpl implements SessionService {
 		Instant now = clock.instant();
 		RefreshToken row = refreshTokens.findByTokenHash(sha256Hex(refreshToken)).orElseThrow(SessionServiceImpl::invalid);
 		if (row.getRevokedAt() != null) {
-			refreshTokens.revokeAllActive(row.getUserId(), now);
+			if (row.getReplacedBy() != null) {
+				refreshTokens.revokeAllActive(row.getUserId(), now); // a rotated token came back: likely stolen
+			}
 			throw invalid();
 		}
 		if (!row.getExpiresAt().isAfter(now)) {
@@ -90,7 +101,28 @@ public class SessionServiceImpl implements SessionService {
 			throw invalid(); // a concurrent refresh of the same token won
 		}
 		boolean remembered = Duration.between(row.getCreatedAt(), row.getExpiresAt()).compareTo(props.refreshTtl()) > 0;
-		return issue(user, remembered, deviceInfo, ip);
+		Session next = create(user, remembered, deviceInfo, ip);
+		refreshTokens.markReplaced(row.getId(), next.sessionId());
+		return next.pair();
+	}
+
+	@Override
+	@Transactional
+	public void logout(String refreshToken) {
+		refreshTokens.findByTokenHash(sha256Hex(refreshToken))
+				.ifPresent(row -> refreshTokens.revokeIfActive(row.getId(), clock.instant()));
+	}
+
+	@Override
+	@Transactional
+	public void logoutAll(UUID userId) {
+		refreshTokens.revokeAllActive(userId, clock.instant());
+	}
+
+	@Override
+	@Transactional
+	public void revokeOthers(UUID userId, UUID keepSessionId) {
+		refreshTokens.revokeAllActiveExcept(userId, keepSessionId, clock.instant());
 	}
 
 	private String newOpaqueToken() {

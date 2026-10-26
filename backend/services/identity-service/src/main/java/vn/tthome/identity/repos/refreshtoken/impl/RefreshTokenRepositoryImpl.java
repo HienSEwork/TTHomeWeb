@@ -36,6 +36,15 @@ public class RefreshTokenRepositoryImpl implements RefreshTokenRepositoryCustom 
 
 	@Override
 	@Transactional
+	public void markReplaced(UUID id, UUID replacedBy) {
+		em.createNativeQuery("update identity.refresh_token set replaced_by = :replacedBy where id = :id")
+				.setParameter("replacedBy", replacedBy)
+				.setParameter("id", id)
+				.executeUpdate();
+	}
+
+	@Override
+	@Transactional
 	public int revokeAllActiveExcept(UUID userId, UUID keepId, Instant now) {
 		return em.createNativeQuery(
 				"update identity.refresh_token set revoked_at = :now"

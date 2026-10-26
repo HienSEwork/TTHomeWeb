@@ -48,6 +48,9 @@ public class RefreshToken {
 	@Column(name = "revoked_at")
 	private Instant revokedAt;
 
+	@Column(name = "replaced_by")
+	private UUID replacedBy;
+
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private Instant createdAt;
 

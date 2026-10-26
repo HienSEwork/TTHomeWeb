@@ -1,6 +1,7 @@
 package vn.tthome.identity.services.account;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import vn.tthome.identity.models.entities.UserAccount;
 
@@ -30,7 +31,13 @@ public interface AccountService {
 	/** Finds a non-deleted account by its normalized phone. */
 	Optional<UserAccount> findByPhone(String phone);
 
-	/** Stamps the last login time. */
+	/** Finds a non-deleted account by id. */
+	Optional<UserAccount> findById(UUID id);
+
+	/** Stamps the last login time and clears the failed-login counter and any expired lock. */
 	void recordLogin(UserAccount user);
+
+	/** Counts a wrong password and locks the account once the configured number of failures is reached. */
+	void recordFailedLogin(UserAccount user);
 
 }

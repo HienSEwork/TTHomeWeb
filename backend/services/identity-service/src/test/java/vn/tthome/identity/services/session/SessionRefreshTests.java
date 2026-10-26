@@ -142,4 +142,17 @@ class SessionRefreshTests extends IdentityIntegrationTestBase {
 		assertTokenInvalid(() -> sessions.refresh("definitely-not-a-token", null, null));
 	}
 
+	@Test
+	void presentingALoggedOutTokenFailsButKeepsTheOtherSessions() {
+		UserAccount user = newUser();
+		TokenPair first = sessions.issue(user, false, null, null);
+		TokenPair second = sessions.issue(user, false, null, null);
+		sessions.logout(first.refreshToken());
+
+		assertTokenInvalid(() -> sessions.refresh(first.refreshToken(), null, null));
+
+		assertThat(activeSessions(user)).isEqualTo(1);
+		sessions.refresh(second.refreshToken(), null, null);
+	}
+
 }

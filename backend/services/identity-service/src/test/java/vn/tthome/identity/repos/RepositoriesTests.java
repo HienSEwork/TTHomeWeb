@@ -55,11 +55,11 @@ class RepositoriesTests extends IdentityIntegrationTestBase {
 	}
 
 	@Test
-	void flywayAppliedV2OnTopOfBaseline() {
+	void flywayAppliedV2AndV3OnTopOfBaseline() {
 		List<String> versions = jdbc.sql("select version from identity.flyway_schema_history where success order by installed_rank")
 				.query(String.class).list();
 
-		assertThat(versions).contains("1", "2");
+		assertThat(versions).contains("1", "2", "3");
 	}
 
 	@Test
