@@ -1,0 +1,11 @@
+# Test profile: the real values come from Testcontainers (@ServiceConnection); these only satisfy
+# the placeholders in application.yml so tests never touch Supabase.
+spring:
+  datasource:
+    url: jdbc:postgresql://unused:5432/postgres
+    username: unused
+    password: unused
+  flyway:
+    url: jdbc:postgresql://unused:5432/postgres
+    user: unused
+    password: unused
