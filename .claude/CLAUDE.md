@@ -159,7 +159,7 @@ Ví dụ: `feat(auth): add OTP sign-in` kèm `Refs: AUTH-03`.
 1. **Git hooks** (thư mục `.githooks/`): bật một lần sau khi clone bằng `git config core.hooksPath .githooks`.
    - `pre-commit`: chặn commit trên `main`/`dev` và nhánh sai tên.
    - `pre-push`: chặn push lên `main`/`dev`.
-2. **Branch protection trên GitHub** (quan trọng nhất, hook có thể bị bỏ qua): bảo vệ `main` và `dev`: bắt buộc PR, bắt buộc CI xanh, cấm force push và cấm xóa nhánh.
+2. **Branch protection trên GitHub: hiện KHÔNG dùng được.** Repo là private trên gói GitHub Free nên GitHub từ chối bật branch protection/ruleset (lỗi `Upgrade to GitHub Pro or make this repository public`). Người dùng đã quyết định không nâng cấp (2026-10-27). Hệ quả: GitHub không tự chặn merge khi CI đỏ hay push thẳng lên `dev`/`main`, nên việc tuân thủ dựa hoàn toàn vào hook local (mục 9.1), danh sách `deny` (mục 9.3) và điều kiện merge ở mục 7.5. Bắt buộc kiểm tra `gh pr checks` đủ xanh trước mỗi lần merge, không bao giờ phụ thuộc vào việc GitHub sẽ chặn. Khi repo chuyển sang gói trả phí hoặc public, bật lại: bắt buộc PR, bắt buộc 3 check `Branch name`, `Secret scan`, `Backend`, cấm force push và cấm xóa nhánh `dev`/`main`.
 3. **Quyền của Claude Code** – `.claude/settings.json`:
 
 ```json
