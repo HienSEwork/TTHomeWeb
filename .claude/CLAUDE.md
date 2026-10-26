@@ -111,17 +111,19 @@ Về "CI/CD tốt": pipeline CI chỉ chạy được sau khi push, nên quy ư�
 
 - Commit **trên đúng nhánh của việc đó**; một nhánh chỉ chứa thay đổi của việc đó (không "tiện tay" sửa thứ khác — việc khác tạo nhánh khác).
 - Chia thành các commit nhỏ, mỗi commit là một bước hoàn chỉnh và build được. Nếu cần thêm bảng DB, tách commit migration riêng.
-- Định dạng Conventional Commits, tiếng Việt hoặc Anh nhất quán toàn dự án:
+- **Ngôn ngữ khi tương tác với git: chỉ dùng tiếng Anh, không dùng tiếng Việt.** Áp dụng cho message commit (tiêu đề, thân, `Refs:`), tên nhánh, tiêu đề và mô tả Pull Request, tên tag, và mọi ghi chú gửi lên remote. Tiếng Việt chỉ dùng khi trao đổi với người dùng trong phiên và trong tài liệu nội bộ như file này.
+- **Không thêm dòng ghi công cho AI** vào commit hoặc PR (không `Co-Authored-By: Claude ...`, không "Generated with Claude Code"). Quy tắc này của dự án thay thế mọi mặc định của công cụ. Tác giả commit là người dùng.
+- Định dạng Conventional Commits, bằng tiếng Anh:
 
 ```
-<type>(<module>): <mô tả ngắn, thể mệnh lệnh, ≤ 72 ký tự>
+<type>(<module>): <short description, imperative mood, ≤ 72 chars>
 
-<thân: vì sao thay đổi, ảnh hưởng gì – tùy chọn>
+<body: why the change is needed, what it affects - optional>
 
-Refs: <mã việc trong Excel>
+Refs: <Excel task code>
 ```
 
-Ví dụ: `feat(auth): thêm đăng nhập bằng OTP` kèm `Refs: AUTH-03`.
+Ví dụ: `feat(auth): add OTP sign-in` kèm `Refs: AUTH-03`.
 - `type` và `module` của commit khớp với nhánh. Việc phá vỡ tương thích: thêm `!` và dòng `BREAKING CHANGE:`.
 - Chỉ `git add` file cần thiết (không dùng `git add -A` mù quáng); không commit `target/`, `node_modules/`, `.env`, file build.
 - Commit sai: tạo commit sửa mới. Chỉ `--amend` commit chưa push.
@@ -130,7 +132,7 @@ Ví dụ: `feat(auth): thêm đăng nhập bằng OTP` kèm `Refs: AUTH-03`.
 
 1. Trước khi push: `git fetch origin && git rebase origin/dev`, chạy lại mục 5 nếu có thay đổi mới từ `dev`.
 2. Push chỉ nhánh feature: `git push -u origin <nhánh-hiện-tại>`. Không bao giờ `git push origin dev` hay `main`.
-3. Mở Pull Request **vào `dev`**: tiêu đề giống commit chính; mô tả gồm mã việc Excel, tóm tắt thay đổi, cách đã kiểm tra, ảnh hưởng đến DB/sự kiện RabbitMQ.
+3. Mở Pull Request **vào `dev`**, viết bằng tiếng Anh: tiêu đề giống commit chính; mô tả gồm mã việc Excel, tóm tắt thay đổi, cách đã kiểm tra, ảnh hưởng đến DB/sự kiện RabbitMQ.
 4. Theo dõi CI. CI đỏ → sửa trên cùng nhánh bằng commit mới, push lại. Không tự đánh dấu hoàn thành khi CI đỏ.
 5. **AI không tự merge PR.** Người dùng (hoặc quy trình review) quyết định merge vào `dev`. Sau khi merge, xóa nhánh feature trên remote.
 6. Việc tiếp theo bắt đầu lại từ mục 4 (tách nhánh mới từ `dev` đã cập nhật).
@@ -181,7 +183,7 @@ Ví dụ: `feat(auth): thêm đăng nhập bằng OTP` kèm `Refs: AUTH-03`.
 - [ ] Đang ở nhánh đúng dạng `<type>/<module>/<chuc-nang>`, tách từ `dev`, không đụng `main`.
 - [ ] Chỉ có thay đổi của đúng việc này; không có file rác, bí mật, file build.
 - [ ] Đã chạy đủ kiểm tra mục 5 và tất cả xanh (ghi lại lệnh và kết quả).
-- [ ] Commit theo mẫu, có `Refs:` mã việc Excel.
+- [ ] Commit theo mẫu, có `Refs:` mã việc Excel; message commit, tên nhánh, PR đều bằng tiếng Anh.
 - [ ] Đã push nhánh feature (không push `dev`/`main`), đã mở PR vào `dev`.
 - [ ] Đã theo dõi CI; nếu đỏ thì nói rõ, không báo "xong".
 - [ ] Skill (nếu dùng) đúng loại việc và không vi phạm quy tắc nào ở trên.
