@@ -8,7 +8,7 @@ net="tthome-gw-test-$$"
 port="${GATEWAY_TEST_PORT:-18080}"
 
 cleanup() {
-    docker rm -f "gw-echo-$$" "gw-listing-$$" "gw-media-$$" "gw-cms-$$" "gw-nginx-$$" >/dev/null 2>&1 || true
+    docker rm -f "gw-echo-$$" "gw-listing-$$" "gw-media-$$" "gw-cms-$$" "gw-booking-$$" "gw-nginx-$$" >/dev/null 2>&1 || true
     docker network rm "$net" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
@@ -64,6 +64,18 @@ class H(BaseHTTPRequestHandler):
 HTTPServer(("", 8089), H).serve_forever()
 ' >/dev/null
 
+docker run -d --name "gw-booking-$$" --network "$net" --network-alias booking-service python:3.12-alpine python -c '
+from http.server import BaseHTTPRequestHandler, HTTPServer
+class H(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-Length", "7")
+        self.end_headers()
+        self.wfile.write(b"booking")
+    do_POST = do_PUT = do_DELETE = do_GET
+HTTPServer(("", 8087), H).serve_forever()
+' >/dev/null
+
 docker run -d --name "gw-nginx-$$" --network "$net" -p "$port:80" -v "$PWD/conf.d:/etc/nginx/conf.d:ro" \
     nginx:1.27-alpine >/dev/null
 
@@ -81,6 +93,7 @@ status() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
 [ "$(curl -s "http://localhost:$port/api/v1/admin/catalog/areas")" = listing ] || fail "/api/v1/admin/catalog is not proxied to listing-service"
 [ "$(curl -s "http://localhost:$port/api/v1/admin/media/assets")" = media ] || fail "/api/v1/admin/media is not proxied to media-service"
 [ "$(curl -s "http://localhost:$port/api/v1/admin/cms/banners")" = cms ] || fail "/api/v1/admin/cms is not proxied to cms-service"
+[ "$(curl -s "http://localhost:$port/api/v1/admin/booking/appointments")" = booking ] || fail "/api/v1/admin/booking is not proxied to booking-service"
 [ "$(status "http://localhost:$port/actuator/health")" = 404 ] || fail "/actuator must not be exposed"
 [ "$(status "http://localhost:$port/")" = 404 ] || fail "unknown paths must be 404"
 

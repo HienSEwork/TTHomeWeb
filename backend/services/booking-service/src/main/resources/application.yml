@@ -44,6 +44,10 @@ spring:
     username: ${RABBIT_USER:guest}
     password: ${RABBIT_PASSWORD:guest}
 
+tthome:
+  security:
+    jwt-secret: ${JWT_SECRET}      # the secret identity-service signs access tokens with
+
 management:
   endpoints:
     web:
