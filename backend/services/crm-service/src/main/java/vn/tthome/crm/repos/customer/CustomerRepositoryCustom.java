@@ -11,9 +11,9 @@ import vn.tthome.crm.models.entities.Customer;
 public interface CustomerRepositoryCustom {
 
 	/**
-	 * One page of non-deleted customers, most recently created first. Every filter is optional (null): stage, owner
-	 * and source exactly, text as a case-insensitive substring of the name, phone or email.
+	 * One page of non-deleted customers, most recently created first. Every filter is optional (null): stage, owner,
+	 * referrer and source exactly, text as a case-insensitive substring of the name, phone or email.
 	 */
-	Page<Customer> search(String stage, UUID ownerUserId, String source, String text, Pageable pageable);
+	Page<Customer> search(String stage, UUID ownerUserId, UUID referrerUserId, String source, String text, Pageable pageable);
 
 }

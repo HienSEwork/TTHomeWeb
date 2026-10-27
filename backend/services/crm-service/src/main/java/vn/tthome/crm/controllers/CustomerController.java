@@ -49,10 +49,11 @@ public class CustomerController {
 
 	@GetMapping
 	public PageResponse<CustomerResponse> list(@RequestParam(required = false) @Size(max = 16) String stage,
-			@RequestParam(required = false) UUID ownerUserId, @RequestParam(required = false) @Size(max = 16) String source,
+			@RequestParam(required = false) UUID ownerUserId, @RequestParam(required = false) UUID referrerUserId,
+			@RequestParam(required = false) @Size(max = 16) String source,
 			@RequestParam(required = false) @Size(max = 100) String q, @RequestParam(defaultValue = "0") @Min(0) int page,
 			@RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-		return customers.list(stage, ownerUserId, source, q, page, size);
+		return customers.list(stage, ownerUserId, referrerUserId, source, q, page, size);
 	}
 
 	@GetMapping("/{id}")

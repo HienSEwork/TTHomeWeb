@@ -11,7 +11,8 @@ import vn.tthome.common.web.PageResponse;
 public interface CustomerService {
 
 	/** One page of customers, newest first; blank filters are ignored. */
-	PageResponse<CustomerResponse> list(String stage, UUID ownerUserId, String source, String text, int page, int size);
+	PageResponse<CustomerResponse> list(String stage, UUID ownerUserId, UUID referrerUserId, String source, String text, int page,
+			int size);
 
 	/** @throws vn.tthome.common.error.ApiException 404 NOT_FOUND for an unknown or deleted customer. */
 	CustomerResponse get(UUID id);

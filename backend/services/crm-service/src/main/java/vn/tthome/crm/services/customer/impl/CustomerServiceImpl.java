@@ -34,9 +34,9 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public PageResponse<CustomerResponse> list(String stage, UUID ownerUserId, String source, String text, int page,
-			int size) {
-		return PageResponse.of(customers.search(blank(stage), ownerUserId, blank(source), blank(text), PageRequest.of(page, size)),
+	public PageResponse<CustomerResponse> list(String stage, UUID ownerUserId, UUID referrerUserId, String source, String text,
+			int page, int size) {
+		return PageResponse.of(customers.search(blank(stage), ownerUserId, referrerUserId, blank(source), blank(text), PageRequest.of(page, size)),
 				CustomerResponse::from);
 	}
 

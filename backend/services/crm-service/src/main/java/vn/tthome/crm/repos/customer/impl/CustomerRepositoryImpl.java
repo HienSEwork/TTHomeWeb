@@ -25,7 +25,7 @@ public class CustomerRepositoryImpl implements CustomerRepositoryCustom {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Page<Customer> search(String stage, UUID ownerUserId, String source, String text, Pageable pageable) {
+	public Page<Customer> search(String stage, UUID ownerUserId, UUID referrerUserId, String source, String text, Pageable pageable) {
 		StringBuilder where = new StringBuilder(" where c.deletedAt is null");
 		Map<String, Object> params = new HashMap<>();
 		if (stage != null) {
@@ -35,6 +35,10 @@ public class CustomerRepositoryImpl implements CustomerRepositoryCustom {
 		if (ownerUserId != null) {
 			where.append(" and c.ownerUserId = :owner");
 			params.put("owner", ownerUserId);
+		}
+		if (referrerUserId != null) {
+			where.append(" and c.referrerUserId = :referrer");
+			params.put("referrer", referrerUserId);
 		}
 		if (source != null) {
 			where.append(" and c.source = :source");

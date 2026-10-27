@@ -199,12 +199,12 @@ class CustomerServiceImplTest {
 
 	@Test
 	void listIgnoresBlankFilters() {
-		when(customers.search(any(), any(), any(), any(), any(Pageable.class)))
+		when(customers.search(any(), any(), any(), any(), any(), any(Pageable.class)))
 				.thenReturn(new PageImpl<>(List.of(new Customer()), PageRequest.of(1, 5), 6));
 
-		var page = service().list(" ", null, "", "  ", 1, 5);
+		var page = service().list(" ", null, null, "", "  ", 1, 5);
 
-		verify(customers).search(eq(null), eq(null), eq(null), eq(null), eq(PageRequest.of(1, 5)));
+		verify(customers).search(eq(null), eq(null), eq(null), eq(null), eq(null), eq(PageRequest.of(1, 5)));
 		assertThat(page.total()).isEqualTo(6);
 	}
 

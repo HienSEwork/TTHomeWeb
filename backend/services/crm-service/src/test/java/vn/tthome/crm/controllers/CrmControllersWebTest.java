@@ -96,12 +96,14 @@ class CrmControllersWebTest {
 	@Test
 	void customerListPassesFiltersAndDefaults() throws Exception {
 		UUID owner = UUID.randomUUID();
-		when(customers.list(null, null, null, null, 0, 20)).thenReturn(new PageResponse<>(List.of(sample()), 0, 20, 1));
-		when(customers.list("viewing", owner, "web", "an", 2, 10)).thenReturn(new PageResponse<>(List.of(), 2, 10, 0));
+		UUID referrer = UUID.randomUUID();
+		when(customers.list(null, null, null, null, null, 0, 20)).thenReturn(new PageResponse<>(List.of(sample()), 0, 20, 1));
+		when(customers.list("viewing", owner, referrer, "web", "an", 2, 10)).thenReturn(new PageResponse<>(List.of(), 2, 10, 0));
 
 		asAdmin(get(CUSTOMERS)).andExpect(status().isOk()).andExpect(jsonPath("$.items[0].stage").value("new"));
-		asAdmin(get(CUSTOMERS + "?stage=viewing&ownerUserId=" + owner + "&source=web&q=an&page=2&size=10")).andExpect(status().isOk());
-		for (String query : List.of("ownerUserId=abc", "page=-1", "size=0", "size=101", "q=" + "x".repeat(101))) {
+		asAdmin(get(CUSTOMERS + "?stage=viewing&ownerUserId=" + owner + "&referrerUserId=" + referrer + "&source=web&q=an&page=2&size=10"))
+				.andExpect(status().isOk());
+		for (String query : List.of("ownerUserId=abc", "referrerUserId=abc", "page=-1", "size=0", "size=101", "q=" + "x".repeat(101))) {
 			asAdmin(get(CUSTOMERS + "?" + query)).andExpect(status().isBadRequest());
 		}
 	}
