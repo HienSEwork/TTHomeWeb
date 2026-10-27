@@ -14,6 +14,9 @@ public interface ConsultRequestRepositoryCustom {
 	 * One page of consultation requests, newest first. Every filter is optional (null): status and assignee exactly,
 	 * text as a substring of the name, phone or message.
 	 */
+	/** The requests received within [from, to) counted by status. */
+	java.util.Map<String, Long> countByStatus(java.time.Instant from, java.time.Instant to);
+
 	Page<ConsultRequest> search(String status, UUID assignedTo, String text, Pageable pageable);
 
 }

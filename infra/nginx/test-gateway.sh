@@ -115,6 +115,8 @@ status() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
 [ "$(status "http://localhost:$port/api/v1/auth/me")" = 200 ] || fail "/api/v1/auth is not proxied"
 [ "$(status -X PUT "http://localhost:$port/api/v1/admin/users/x/roles")" = 200 ] || fail "/api/v1/admin is not proxied"
 [ "$(curl -s "http://localhost:$port/api/v1/admin/catalog/areas")" = listing ] || fail "/api/v1/admin/catalog is not proxied to listing-service"
+[ "$(curl -s "http://localhost:$port/api/v1/admin/projects")" = listing ] || fail "/api/v1/admin/projects is not proxied to listing-service"
+[ "$(curl -s "http://localhost:$port/api/v1/admin/rooms/x/media")" = listing ] || fail "/api/v1/admin/rooms is not proxied to listing-service"
 [ "$(curl -s "http://localhost:$port/api/v1/admin/media/assets")" = media ] || fail "/api/v1/admin/media is not proxied to media-service"
 [ "$(curl -s "http://localhost:$port/api/v1/admin/cms/banners")" = cms ] || fail "/api/v1/admin/cms is not proxied to cms-service"
 [ "$(curl -s "http://localhost:$port/api/v1/admin/booking/appointments")" = booking ] || fail "/api/v1/admin/booking is not proxied to booking-service"

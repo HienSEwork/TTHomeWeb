@@ -61,6 +61,18 @@ public class RoomRepositoryImpl implements RoomRepositoryCustom {
 				.executeUpdate();
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public vn.tthome.listing.models.dtos.InventoryStats inventory() {
+		Object[] row = (Object[]) em.createNativeQuery("select (select count(*) from inventory.project where deleted_at is null),"
+				+ " count(*), count(*) filter (where status = 'available'), count(*) filter (where status = 'reserved'),"
+				+ " count(*) filter (where status = 'rented'), count(*) filter (where status = 'hidden')"
+				+ " from inventory.room where deleted_at is null").getSingleResult();
+		return new vn.tthome.listing.models.dtos.InventoryStats(((Number) row[0]).longValue(), ((Number) row[1]).longValue(),
+				((Number) row[2]).longValue(), ((Number) row[3]).longValue(), ((Number) row[4]).longValue(),
+				((Number) row[5]).longValue());
+	}
+
 	private static String escapeLike(String value) {
 		return value.replace("!", "!!").replace("%", "!%").replace("_", "!_");
 	}

@@ -15,6 +15,9 @@ public interface SubmissionRepositoryCustom {
 	 * (null): status exactly, the time of submission within [from, to), text as a case-insensitive substring of the
 	 * code, landlord name, landlord phone or address.
 	 */
+	/** Every submission counted by status. */
+	java.util.Map<String, Long> countByStatus();
+
 	Page<Submission> search(String status, Instant from, Instant to, String text, Pageable pageable);
 
 }

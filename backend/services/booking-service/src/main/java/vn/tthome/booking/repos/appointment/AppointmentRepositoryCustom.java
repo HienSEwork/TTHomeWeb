@@ -19,6 +19,15 @@ public interface AppointmentRepositoryCustom {
 	Page<Appointment> search(String status, UUID staffId, UUID projectId, Instant from, Instant to, String text,
 			Pageable pageable);
 
+	/** The appointments created within [from, to) counted by status. */
+	java.util.Map<String, Long> countByStatusCreatedBetween(Instant from, Instant to);
+
+	/** The open appointments (pending, confirmed, rescheduled) whose visit falls within [from, to). */
+	long countOpenBetween(Instant from, Instant to);
+
+	/** The appointments with this status, whenever the visit is. */
+	long countWithStatus(String status);
+
 	/**
 	 * True when the staff member has another appointment (other than the one given) that is still open (pending,
 	 * confirmed or rescheduled) and whose visit overlaps [start, end).

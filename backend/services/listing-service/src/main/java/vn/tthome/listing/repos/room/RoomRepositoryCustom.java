@@ -17,6 +17,9 @@ public interface RoomRepositoryCustom {
 	 */
 	Page<Room> search(UUID projectId, String status, String text, Pageable pageable);
 
+	/** The rooms that are not deleted counted by status, with the number of live projects. */
+	vn.tthome.listing.models.dtos.InventoryStats inventory();
+
 	/** Appends a row to the room status and price history (kept per month in partitions). */
 	void recordHistory(UUID roomId, String status, BigDecimal price, String source);
 

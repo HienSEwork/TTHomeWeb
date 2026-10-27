@@ -56,6 +56,17 @@ public class SubmissionRepositoryImpl implements SubmissionRepositoryCustom {
 		return new PageImpl<>(page, pageable, count.getSingleResult());
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	@SuppressWarnings("unchecked")
+	public Map<String, Long> countByStatus() {
+		List<Object[]> rows = em.createNativeQuery("select status, count(*) from consignment.submission group by status order by status")
+				.getResultList();
+		Map<String, Long> result = new java.util.LinkedHashMap<>();
+		rows.forEach(r -> result.put((String) r[0], ((Number) r[1]).longValue()));
+		return result;
+	}
+
 	private static String escapeLike(String value) {
 		return value.replace("!", "!!").replace("%", "!%").replace("_", "!_");
 	}

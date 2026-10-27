@@ -57,6 +57,14 @@ public class ProjectRepositoryImpl implements ProjectRepositoryCustom {
 
 	@Override
 	@Transactional(readOnly = true)
+	public java.util.List<Project> busiest(Pageable pageable) {
+		return em.createQuery("select p from Project p where p.deletedAt is null and p.totalRooms > 0"
+				+ " order by p.totalRooms desc, p.name, p.id", Project.class).setFirstResult((int) pageable.getOffset())
+				.setMaxResults(pageable.getPageSize()).getResultList();
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public boolean hasRooms(UUID id) {
 		return (boolean) em.createNativeQuery(
 				"select exists (select 1 from inventory.room where project_id = :id and deleted_at is null)")

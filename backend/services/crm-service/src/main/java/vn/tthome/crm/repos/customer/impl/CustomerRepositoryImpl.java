@@ -61,6 +61,21 @@ public class CustomerRepositoryImpl implements CustomerRepositoryCustom {
 		return new PageImpl<>(page, pageable, count.getSingleResult());
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	@SuppressWarnings("unchecked")
+	public Map<String, Long> countBy(String column, java.time.Instant from, java.time.Instant to) {
+		if (!column.equals("source") && !column.equals("stage")) {
+			throw new IllegalArgumentException("Cannot count by " + column);
+		}
+		List<Object[]> rows = em.createNativeQuery("select " + column + ", count(*) from crm.customer where deleted_at is null"
+				+ " and created_at >= :from and created_at < :to group by " + column + " order by " + column)
+				.setParameter("from", from).setParameter("to", to).getResultList();
+		Map<String, Long> result = new java.util.LinkedHashMap<>();
+		rows.forEach(r -> result.put((String) r[0], ((Number) r[1]).longValue()));
+		return result;
+	}
+
 	private static String escapeLike(String value) {
 		return value.replace("!", "!!").replace("%", "!%").replace("_", "!_");
 	}

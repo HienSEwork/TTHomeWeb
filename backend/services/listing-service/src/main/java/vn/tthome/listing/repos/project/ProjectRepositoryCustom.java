@@ -14,6 +14,9 @@ public interface ProjectRepositoryCustom {
 	 */
 	Page<Project> search(String text, String status, Integer wardId, Integer districtId, Pageable pageable);
 
+	/** The live projects that have rooms, the ones with the most rooms first. */
+	java.util.List<vn.tthome.listing.models.entities.Project> busiest(Pageable pageable);
+
 	/** True when the project still has a non-deleted room. */
 	boolean hasRooms(java.util.UUID id);
 

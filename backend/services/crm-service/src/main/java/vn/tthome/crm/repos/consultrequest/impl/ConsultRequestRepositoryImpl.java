@@ -53,6 +53,18 @@ public class ConsultRequestRepositoryImpl implements ConsultRequestRepositoryCus
 		return new PageImpl<>(page, pageable, count.getSingleResult());
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	@SuppressWarnings("unchecked")
+	public Map<String, Long> countByStatus(java.time.Instant from, java.time.Instant to) {
+		List<Object[]> rows = em.createNativeQuery("select status, count(*) from crm.consult_request where created_at >= :from"
+				+ " and created_at < :to group by status order by status").setParameter("from", from).setParameter("to", to)
+				.getResultList();
+		Map<String, Long> result = new java.util.LinkedHashMap<>();
+		rows.forEach(r -> result.put((String) r[0], ((Number) r[1]).longValue()));
+		return result;
+	}
+
 	private static String escapeLike(String value) {
 		return value.replace("!", "!!").replace("%", "!%").replace("_", "!_");
 	}
