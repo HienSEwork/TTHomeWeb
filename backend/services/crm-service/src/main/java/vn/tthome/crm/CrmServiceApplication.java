@@ -3,7 +3,7 @@ package vn.tthome.crm;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = { "vn.tthome.crm", "vn.tthome.common.error" })
 public class CrmServiceApplication {
 
 	public static void main(String[] args) {
