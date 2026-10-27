@@ -44,6 +44,15 @@ spring:
     username: ${RABBIT_USER:guest}
     password: ${RABBIT_PASSWORD:guest}
 
+tthome:
+  security:
+    jwt-secret: ${JWT_SECRET}      # the secret identity-service signs access tokens with
+  cloudinary:
+    # Leave empty until a Cloudinary account exists; the upload-signature endpoint then answers 503.
+    cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+    api-key: ${CLOUDINARY_API_KEY:}
+    api-secret: ${CLOUDINARY_API_SECRET:}
+
 management:
   endpoints:
     web:

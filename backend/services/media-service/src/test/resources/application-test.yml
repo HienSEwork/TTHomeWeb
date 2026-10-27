@@ -9,3 +9,11 @@ spring:
     url: jdbc:postgresql://unused:5432/postgres
     user: unused
     password: unused
+
+tthome:
+  security:
+    jwt-secret: test-only-jwt-secret-0123456789-abcdefghij
+  cloudinary:
+    cloud-name: demo-cloud
+    api-key: 123456789012345
+    api-secret: test-only-cloudinary-secret
