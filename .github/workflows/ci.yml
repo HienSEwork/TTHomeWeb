@@ -50,6 +50,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  gateway:
+    name: Gateway
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check routing and forwarded headers
+        run: bash infra/nginx/test-gateway.sh
+
   backend:
     name: Backend
     runs-on: ubuntu-latest

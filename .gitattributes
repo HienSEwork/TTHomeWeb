@@ -1,1 +1,3 @@
 .githooks/* text eol=lf
+*.sh text eol=lf
+infra/nginx/conf.d/*.conf text eol=lf
