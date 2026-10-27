@@ -167,9 +167,9 @@ public class ProjectServiceImpl implements ProjectService {
 		project.setLng(r.lng());
 		project.setOwnerUserId(r.ownerUserId());
 		project.setManagerUserId(r.managerUserId());
-		project.setExclusive(r.exclusive());
+		project.setExclusive(Boolean.TRUE.equals(r.exclusive()));
 		project.setPetPolicy(r.petPolicy());
-		project.setEvParking(r.evParking());
+		project.setEvParking(Boolean.TRUE.equals(r.evParking()));
 		project.setFreeHours(r.freeHours());
 		project.setMaxGuestsNote(r.maxGuestsNote());
 		project.setHouseRules(r.houseRules());

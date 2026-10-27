@@ -63,6 +63,20 @@ public class ProjectRepositoryImpl implements ProjectRepositoryCustom {
 				.setParameter("id", id).getSingleResult();
 	}
 
+	@Override
+	@Transactional
+	public void refreshSummary(UUID id) {
+		em.createNativeQuery("update inventory.project p set total_rooms = s.total, vacant_count = s.vacant,"
+				+ " min_price = s.min_price, room_types = s.types from ("
+				+ " select count(*) filter (where status <> 'hidden') as total,"
+				+ " count(*) filter (where status = 'available') as vacant,"
+				+ " min(price) filter (where status = 'available') as min_price,"
+				+ " coalesce(array_agg(distinct room_type order by room_type) filter (where status <> 'hidden'),"
+				+ " '{}'::text[]) as types"
+				+ " from inventory.room where project_id = :id and deleted_at is null) s where p.id = :id")
+				.setParameter("id", id).executeUpdate();
+	}
+
 	private static String escapeLike(String value) {
 		return value.replace("!", "!!").replace("%", "!%").replace("_", "!_");
 	}

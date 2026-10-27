@@ -17,4 +17,10 @@ public interface ProjectRepositoryCustom {
 	/** True when the project still has a non-deleted room. */
 	boolean hasRooms(java.util.UUID id);
 
+	/**
+	 * Recomputes the room counters of a project from its non-deleted rooms: total and vacant rooms, the lowest price
+	 * among the available rooms and the room types of the rooms that are not hidden.
+	 */
+	void refreshSummary(java.util.UUID id);
+
 }
