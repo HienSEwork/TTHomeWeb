@@ -20,8 +20,13 @@ Accounts, sign-in and roles (port 8081, schema `identity`). Design: `docs/superp
 ## Configuration
 
 Required environment variables (see `backend/.env.example`): `SUPABASE_PROJECT_REF`, `SUPABASE_DB_URL`, `DB_PASSWORD`,
-`JWT_SECRET` (at least 32 bytes) and `OTP_PEPPER` (at least 16 bytes). Codes are only logged on the `dev`, `test` and
-`supabase` profiles; the `prod` profile refuses to start until a real `MessageSender` bean (SMS / Zalo / email provider) exists.
+`JWT_SECRET` (at least 32 bytes) and `OTP_PEPPER` (at least 16 bytes).
+
+**Delivering codes.** With `MAIL_ENABLED=true` (plus `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`,
+`MAIL_FROM`) email codes are sent through that SMTP server over STARTTLS, in the background so response time does not
+reveal whether an address is registered. A failed send is logged without the code; the user requests a new one after the
+60 s cooldown. There is no SMS provider yet: SMS codes are only logged on the `dev`, `test` and `supabase` profiles and are
+refused with `503 CHANNEL_UNAVAILABLE` on `prod`. Without `MAIL_ENABLED=true` the `prod` profile refuses to start.
 
 ## Promote the first admin
 

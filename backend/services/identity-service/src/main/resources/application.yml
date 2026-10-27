@@ -39,14 +39,34 @@ spring:
     port: 5672
     username: ${RABBIT_USER:guest}
     password: ${RABBIT_PASSWORD:guest}
+  mail:
+    # Only used when MAIL_ENABLED=true. STARTTLS is mandatory so credentials never travel in clear text.
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      "mail.smtp.auth": true
+      "mail.smtp.starttls.enable": true
+      "mail.smtp.starttls.required": true
+      "mail.smtp.connectiontimeout": 5000
+      "mail.smtp.timeout": 10000
+      "mail.smtp.writetimeout": 10000
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info
+  health:
+    mail:
+      enabled: false               # the health probe is public: do not open an SMTP connection per probe
 
 tthome:
   auth:
     jwt-secret: ${JWT_SECRET}      # at least 32 bytes, no default
     otp-pepper: ${OTP_PEPPER}      # at least 16 bytes, no default
+  mail:
+    enabled: ${MAIL_ENABLED:false}  # true = send email codes through SMTP; false = dev log sender
+    from: ${MAIL_FROM:}             # required when enabled, e.g. TTHome <no-reply@your-domain>
+
