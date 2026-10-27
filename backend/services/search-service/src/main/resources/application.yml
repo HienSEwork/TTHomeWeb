@@ -4,6 +4,9 @@ server:
 # Database = Supabase PostgreSQL (không dùng DB local). Chuỗi kết nối lấy ở Dashboard > Connect > JDBC.
 # Mỗi service nên dùng role riêng: search_svc.<PROJECT-REF> (xem db/supabase_roles.sql).
 spring:
+  config:
+    # Loads backend/.env (git-ignored) when the service runs from services/<name>, as IntelliJ and mvnw do; real environment variables still win.
+    import: optional:file:../../.env[.properties]
   application:
     name: search-service
   profiles:
