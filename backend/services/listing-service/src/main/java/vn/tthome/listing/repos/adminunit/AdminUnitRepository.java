@@ -8,6 +8,8 @@ public interface AdminUnitRepository extends JpaRepository<AdminUnit, Integer>, 
 
 	boolean existsByParentId(Integer parentId);
 
+	boolean existsByIdAndLevelAndScheme(Integer id, Short level, String scheme);
+
 	/** The unique key of a unit; parentId may be null for provinces. */
 	boolean existsBySchemeAndParentIdAndSlug(String scheme, Integer parentId, String slug);
 

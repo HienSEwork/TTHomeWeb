@@ -1,0 +1,20 @@
+package vn.tthome.listing.repos.project;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import vn.tthome.listing.models.entities.Project;
+
+/** Hand-written queries for projects; methods are added when a task needs an optimized query. */
+public interface ProjectRepositoryCustom {
+
+	/**
+	 * One page of non-deleted projects, newest first. Every filter is optional (null): text is a case-insensitive
+	 * substring of the name or street address, status is exact, ward matches the old or the new ward, district exact.
+	 */
+	Page<Project> search(String text, String status, Integer wardId, Integer districtId, Pageable pageable);
+
+	/** True when the project still has a non-deleted room. */
+	boolean hasRooms(java.util.UUID id);
+
+}
