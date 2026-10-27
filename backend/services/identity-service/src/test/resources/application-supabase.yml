@@ -4,3 +4,7 @@ spring:
   autoconfigure:
     exclude:
       - org.springframework.boot.amqp.autoconfigure.RabbitAutoConfiguration
+
+tthome:
+  mail:
+    enabled: false   # tests use the in-memory sender; never send real email from a developer's MAIL_ENABLED
