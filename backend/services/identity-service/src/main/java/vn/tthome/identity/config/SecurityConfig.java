@@ -31,7 +31,8 @@ public class SecurityConfig {
 				.logout(AbstractHttpConfigurer::disable)
 				.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(a -> a
-						.requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+						.requestMatchers("/actuator/health", "/actuator/health/**", "/v3/api-docs/**", "/swagger-ui.html",
+						"/swagger-ui/**").permitAll()
 						.requestMatchers("/api/v1/auth/register/**", "/api/v1/auth/login", "/api/v1/auth/login/**",
 								"/api/v1/auth/refresh", "/api/v1/auth/logout", "/api/v1/auth/password/forgot",
 								"/api/v1/auth/password/reset")

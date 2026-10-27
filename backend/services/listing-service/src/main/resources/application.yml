@@ -46,3 +46,10 @@ management:
     web:
       exposure:
         include: health,info
+
+# Swagger UI and /v3/api-docs are only exposed by the dev profile (application-dev.yml).
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
