@@ -32,6 +32,9 @@ spring:
     baseline-version: 1
     # Migrate nên chạy bằng kết nối direct/session: đặt FLYWAY_URL riêng nếu cần
     url: ${FLYWAY_URL:${SUPABASE_DB_URL}}
+    # Spring Boot does not reuse the datasource credentials once flyway.url is set, so repeat them here.
+    user: ${DB_USER:booking_svc.${SUPABASE_PROJECT_REF}}
+    password: ${DB_PASSWORD}
   rabbitmq:
     host: ${RABBIT_HOST:localhost}
     port: 5672
