@@ -28,7 +28,6 @@
 	<properties>
 		<java.version>21</java.version>
 		<argon2.version>2.12</argon2.version>
-		<jjwt.version>0.13.0</jjwt.version>
 	</properties>
 	<dependencies>
 		<dependency>
