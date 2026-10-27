@@ -102,12 +102,11 @@ class SupabaseAuthFlowIT {
 		String email = "supabase-it-" + UUID.randomUUID().toString().substring(0, 8) + "@example.com";
 		emails.add(email);
 		clock.advance(Duration.ofSeconds(61));
-		postJson("/api/v1/auth/register/email", "{\"email\":\"" + email + "\",\"password\":\"" + PASSWORD + "\"}")
-				.andExpect(status().isAccepted());
+		postJson("/api/v1/auth/register/email", "{\"email\":\"" + email + "\"}").andExpect(status().isAccepted());
 		postJson("/api/v1/auth/login", "{\"identifier\":\"" + email + "\",\"password\":\"" + PASSWORD + "\"}")
-				.andExpect(status().isForbidden());
-		postJson("/api/v1/auth/register/email/verify",
-				"{\"email\":\"" + email + "\",\"code\":\"" + sender.lastCode(email, OtpPurpose.REGISTER) + "\"}")
+				.andExpect(status().isUnauthorized());
+		postJson("/api/v1/auth/register/email/verify", "{\"email\":\"" + email + "\",\"code\":\""
+				+ sender.lastCode(email, OtpPurpose.REGISTER) + "\",\"password\":\"" + PASSWORD + "\"}")
 				.andExpect(status().isOk());
 		postJson("/api/v1/auth/login", "{\"identifier\":\"" + email + "\",\"password\":\"" + PASSWORD + "\"}")
 				.andExpect(status().isOk());

@@ -190,11 +190,10 @@ class ChangeCredentialsTests extends IdentityIntegrationTestBase {
 	@Test
 	void changeToAnAlreadyUsedEmailAnswers202ButNeverChangesAnything() throws Exception {
 		String email = "taken" + UUID.randomUUID().toString().substring(0, 8) + "@example.com";
-		postJson("/api/v1/auth/register/email", "{\"email\":\"" + email + "\",\"password\":\"" + PASSWORD + "\"}")
-				.andExpect(status().isAccepted());
+		postJson("/api/v1/auth/register/email", "{\"email\":\"" + email + "\"}").andExpect(status().isAccepted());
 		String verifyCode = sender.lastCode(email, OtpPurpose.REGISTER);
-		postJson("/api/v1/auth/register/email/verify", "{\"email\":\"" + email + "\",\"code\":\"" + verifyCode + "\"}")
-				.andExpect(status().isOk());
+		postJson("/api/v1/auth/register/email/verify", "{\"email\":\"" + email + "\",\"code\":\"" + verifyCode
+				+ "\",\"password\":\"" + PASSWORD + "\"}").andExpect(status().isOk());
 		String phone = newPhone();
 		String access = field(registerPhone(phone, PASSWORD), "accessToken");
 		int sentBefore = sender.sendCount(email);

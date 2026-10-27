@@ -47,9 +47,6 @@ public class LoginServiceImpl implements LoginService {
 		if (user.getStatus() != UserStatus.ACTIVE) {
 			throw new ApiException(HttpStatus.FORBIDDEN, "ACCOUNT_DISABLED", "Account is not active");
 		}
-		if (user.getEmailVerifiedAt() == null && user.getPhoneVerifiedAt() == null) {
-			throw new ApiException(HttpStatus.FORBIDDEN, "EMAIL_NOT_VERIFIED", "Email address is not verified");
-		}
 		accounts.recordLogin(user);
 		return sessions.issue(user, request.remember(), deviceInfo, ip);
 	}

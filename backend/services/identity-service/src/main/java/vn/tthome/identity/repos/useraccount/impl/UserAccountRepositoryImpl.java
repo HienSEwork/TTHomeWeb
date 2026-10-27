@@ -65,14 +65,4 @@ public class UserAccountRepositoryImpl implements UserAccountRepositoryCustom {
 				.executeUpdate();
 	}
 
-	@Override
-	@Transactional
-	public void markEmailVerified(UUID id, Instant now) {
-		em.createNativeQuery("update identity.user_account set email_verified_at = coalesce(email_verified_at, :now),"
-				+ " updated_at = :now where id = :id")
-				.setParameter("now", now)
-				.setParameter("id", id)
-				.executeUpdate();
-	}
-
 }

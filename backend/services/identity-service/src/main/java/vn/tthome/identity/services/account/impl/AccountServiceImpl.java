@@ -58,37 +58,24 @@ public class AccountServiceImpl implements AccountService {
 
 	@Override
 	@Transactional
-	public Optional<UserAccount> registerUnverifiedEmailAccount(String email, String password, String fullName) {
-		Optional<UserAccount> existing = users.findActiveByEmail(email);
-		if (existing.isPresent()) {
-			UserAccount pending = existing.get();
-			if (pending.getEmailVerifiedAt() != null || pending.getPhoneVerifiedAt() != null) {
-				return Optional.empty();
-			}
-			pending.setPasswordHash(hasher.hash(password));
-			pending.setFullName(fullName);
-			return Optional.of(pending);
-		}
+	public UserAccount createEmailAccount(String email, String fullName, String password) {
 		UserAccount user = new UserAccount();
 		user.setEmail(email);
 		user.setFullName(fullName);
+		user.setEmailVerifiedAt(clock.instant());
 		user.setPasswordHash(hasher.hash(password));
 		user.getRoles().add(roles.findByCode(DEFAULT_ROLE).orElseThrow());
-		// A concurrent registration of the same email fails here with DataIntegrityViolationException; it is left to
-		// propagate (the transaction rolls back cleanly) and the caller treats it as "already registered".
-		return Optional.of(users.saveAndFlush(user));
+		try {
+			return users.saveAndFlush(user);
+		} catch (DataIntegrityViolationException e) {
+			throw new ApiException(HttpStatus.CONFLICT, "CONTACT_TAKEN", "Contact already in use");
+		}
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public Optional<UserAccount> findByEmail(String email) {
 		return users.findActiveByEmail(email);
-	}
-
-	@Override
-	@Transactional
-	public void markEmailVerified(UserAccount user) {
-		users.markEmailVerified(user.getId(), clock.instant());
 	}
 
 	@Override

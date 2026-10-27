@@ -1,10 +1,7 @@
 package vn.tthome.identity.services.emailauth.impl;
 
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import vn.tthome.common.error.ApiException;
 import vn.tthome.identity.models.dtos.EmailRegisterRequest;
 import vn.tthome.identity.models.dtos.EmailVerifyRequest;
 import vn.tthome.identity.models.dtos.TokenPair;
@@ -37,16 +34,10 @@ public class EmailAuthServiceImpl implements EmailAuthService {
 	@Override
 	public void register(EmailRegisterRequest request, String ip) {
 		String email = normalizer.email(request.email());
-		boolean pending;
-		try {
-			pending = accounts.registerUnverifiedEmailAccount(email, request.password(), request.fullName()).isPresent();
-		} catch (DataIntegrityViolationException e) {
-			pending = false; // a concurrent registration of the same address won
-		}
-		if (pending) {
-			otp.request(email, OtpPurpose.REGISTER, OtpChannel.EMAIL, ip);
-		} else {
+		if (accounts.findByEmail(email).isPresent()) {
 			otp.reserve(email, OtpPurpose.REGISTER, OtpChannel.EMAIL, ip);
+		} else {
+			otp.request(email, OtpPurpose.REGISTER, OtpChannel.EMAIL, ip);
 		}
 	}
 
@@ -54,10 +45,7 @@ public class EmailAuthServiceImpl implements EmailAuthService {
 	public TokenPair verify(EmailVerifyRequest request, String deviceInfo, String ip) {
 		String email = normalizer.email(request.email());
 		otp.verify(email, OtpPurpose.REGISTER, request.code());
-		UserAccount user = accounts.findByEmail(email)
-				.orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "OTP_INVALID", "Invalid or expired code"));
-		accounts.markEmailVerified(user);
-		accounts.recordLogin(user);
+		UserAccount user = accounts.createEmailAccount(email, request.fullName(), request.password());
 		return sessions.issue(user, request.remember(), deviceInfo, ip);
 	}
 

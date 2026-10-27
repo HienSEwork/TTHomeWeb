@@ -8,7 +8,7 @@ Accounts, sign-in and roles (port 8081, schema `identity`). Design: `docs/superp
 |---|---|
 | `POST /auth/register/phone/request`, `/register/phone/verify` | Register by phone and one-time code |
 | `POST /auth/login/otp/request`, `/login/otp/verify` | Sign in by one-time code |
-| `POST /auth/register/email`, `/register/email/verify` | Register by email and password, confirmed by a code |
+| `POST /auth/register/email`, `/register/email/verify` | Register by email: the account (with the chosen password) is created only after the emailed code is confirmed |
 | `POST /auth/login` | Sign in with a phone or an email and a password |
 | `POST /auth/refresh`, `/logout`, `/logout-all` | Rotate a refresh token, end one session, end all sessions |
 | `GET /auth/me` | The signed-in user and roles |

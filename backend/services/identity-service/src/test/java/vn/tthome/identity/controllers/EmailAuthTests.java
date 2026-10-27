@@ -64,18 +64,30 @@ class EmailAuthTests extends IdentityIntegrationTestBase {
 		return mvc.perform(post(path).contentType(MediaType.APPLICATION_JSON).content(json).with(fromIp(ip)));
 	}
 
-	private void registerEmail(String email, String password, String ip) throws Exception {
-		send("/api/v1/auth/register/email",
-				"{\"email\":\"" + email + "\",\"password\":\"" + password + "\",\"fullName\":\"Tran B\"}", ip)
-				.andExpect(status().isAccepted());
+	private void requestCode(String email, String ip) throws Exception {
+		send("/api/v1/auth/register/email", "{\"email\":\"" + email + "\"}", ip).andExpect(status().isAccepted());
 	}
 
-	private void verifyEmail(String email, String ip, boolean remember) throws Exception {
-		String code = sender.lastCode(email.trim().toLowerCase(), OtpPurpose.REGISTER);
-		send("/api/v1/auth/register/email/verify",
-				"{\"email\":\"" + email + "\",\"code\":\"" + code + "\",\"rememberMe\":" + remember + "}", ip)
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.accessToken").isNotEmpty());
+	private ResultActions verify(String email, String code, String password, boolean remember, String ip)
+			throws Exception {
+		return send("/api/v1/auth/register/email/verify", "{\"email\":\"" + email + "\",\"code\":\"" + code
+				+ "\",\"password\":\"" + password + "\",\"fullName\":\"Tran B\",\"rememberMe\":" + remember + "}", ip);
+	}
+
+	private String codeFor(String email) {
+		return sender.lastCode(email.trim().toLowerCase(), OtpPurpose.REGISTER);
+	}
+
+	/** Requests a code and confirms it with the password: the whole registration. */
+	private void register(String email, String password, String ip) throws Exception {
+		requestCode(email, ip);
+		verify(email, codeFor(email), password, false, ip)
+				.andExpect(status().isOk()).andExpect(jsonPath("$.accessToken").isNotEmpty());
+	}
+
+	private int accountsOf(String email) {
+		return jdbc.sql("select count(*) from identity.user_account where lower(email) = :e")
+				.param("e", email.toLowerCase()).query(Integer.class).single();
 	}
 
 	private ResultActions login(String identifier, String password, boolean remember, String ip) throws Exception {
@@ -85,12 +97,11 @@ class EmailAuthTests extends IdentityIntegrationTestBase {
 	}
 
 	@Test
-	void registerThenVerifyThenLoginWithEmailInOtherCase() throws Exception {
+	void registerThenLoginWithEmailInOtherCase() throws Exception {
 		String email = newEmail();
 		String ip = ip();
 
-		registerEmail(email, PASSWORD, ip);
-		verifyEmail(email, ip, false);
+		register(email, PASSWORD, ip);
 
 		login(email.toUpperCase(), PASSWORD, false, ip)
 				.andExpect(status().isOk())
@@ -101,22 +112,36 @@ class EmailAuthTests extends IdentityIntegrationTestBase {
 	}
 
 	@Test
-	void loginBeforeVerificationIs403EmailNotVerified() throws Exception {
+	void requestingACodeCreatesNoAccount() throws Exception {
 		String email = newEmail();
 		String ip = ip();
-		registerEmail(email, PASSWORD, ip);
 
+		requestCode(email, ip);
+
+		assertThat(accountsOf(email)).isZero();
 		login(email, PASSWORD, false, ip)
-				.andExpect(status().isForbidden())
-				.andExpect(jsonPath("$.code").value("EMAIL_NOT_VERIFIED"));
+				.andExpect(status().isUnauthorized()).andExpect(jsonPath("$.code").value("INVALID_CREDENTIALS"));
+	}
+
+	@Test
+	void aWrongCodeCreatesNoAccount() throws Exception {
+		String email = newEmail();
+		String ip = ip();
+		requestCode(email, ip);
+		String code = codeFor(email);
+		String wrong = (code.charAt(5) == '0' ? code.substring(0, 5) + "1" : code.substring(0, 5) + "0");
+
+		verify(email, wrong, PASSWORD, false, ip)
+				.andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("OTP_INVALID"));
+
+		assertThat(accountsOf(email)).isZero();
 	}
 
 	@Test
 	void wrongPasswordAndUnknownAccountGiveIdenticalResponses() throws Exception {
 		String email = newEmail();
 		String ip = ip();
-		registerEmail(email, PASSWORD, ip);
-		verifyEmail(email, ip, false);
+		register(email, PASSWORD, ip);
 
 		String wrong = login(email, "not-the-password", false, ip)
 				.andExpect(status().isUnauthorized())
@@ -129,42 +154,28 @@ class EmailAuthTests extends IdentityIntegrationTestBase {
 	}
 
 	@Test
-	void duplicateEmailRegistrationAnswers202WithoutCreatingASecondAccount() throws Exception {
+	void requestForARegisteredEmailSendsNothingAndItsDecoyCodeCannotReplaceThePassword() throws Exception {
 		String email = newEmail();
 		String ip = ip();
-		registerEmail(email, PASSWORD, ip);
-		verifyEmail(email, ip, false);
+		register(email, PASSWORD, ip);
 		clock.advance(Duration.ofSeconds(61));
 		int sentBefore = sender.sendCount(email.toLowerCase());
 
-		registerEmail(email, "another-password-1", ip);
+		requestCode(email, ip);
 
 		assertThat(sender.sendCount(email.toLowerCase())).isEqualTo(sentBefore);
-		assertThat(jdbc.sql("select count(*) from identity.user_account where lower(email) = :e")
-				.param("e", email.toLowerCase()).query(Integer.class).single()).isEqualTo(1);
+		verify(email, "123456", "attacker-password-1", false, ip)
+				.andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("OTP_INVALID"));
+		assertThat(accountsOf(email)).isEqualTo(1);
 		login(email, PASSWORD, false, ip).andExpect(status().isOk());
-	}
-
-	@Test
-	void laterRegistrationOfAnUnverifiedEmailReplacesThePassword() throws Exception {
-		String email = newEmail();
-		String ip = ip();
-		registerEmail(email, "attacker-password-1", ip);
-		clock.advance(Duration.ofSeconds(61));
-
-		registerEmail(email, PASSWORD, ip);
-		verifyEmail(email, ip, false);
-
 		login(email, "attacker-password-1", false, ip).andExpect(status().isUnauthorized());
-		login(email, PASSWORD, false, ip).andExpect(status().isOk());
 	}
 
 	@Test
 	void rememberMeFlagChangesRefreshExpiry() throws Exception {
 		String email = newEmail();
 		String ip = ip();
-		registerEmail(email, PASSWORD, ip);
-		verifyEmail(email, ip, false);
+		register(email, PASSWORD, ip);
 
 		String shortLived = login(email, PASSWORD, false, ip).andReturn().getResponse().getContentAsString();
 		String longLived = login(email, PASSWORD, true, ip).andReturn().getResponse().getContentAsString();
@@ -175,17 +186,21 @@ class EmailAuthTests extends IdentityIntegrationTestBase {
 	}
 
 	@Test
-	void emptyBodyAndOverlongPasswordAreValidationErrors() throws Exception {
+	void invalidBodiesAreValidationErrors() throws Exception {
 		String ip = ip();
+		String email = newEmail();
 
 		send("/api/v1/auth/register/email", "{}", ip)
 				.andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+		send("/api/v1/auth/register/email", "{\"email\":\"not-an-email\"}", ip)
+				.andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
 		send("/api/v1/auth/login", "{}", ip)
 				.andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
-		send("/api/v1/auth/register/email",
-				"{\"email\":\"" + newEmail() + "\",\"password\":\"" + "a".repeat(129) + "\"}", ip)
+		send("/api/v1/auth/register/email/verify", "{\"email\":\"" + email + "\",\"code\":\"123456\"}", ip)
 				.andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
-		send("/api/v1/auth/register/email", "{\"email\":\"not-an-email\",\"password\":\"" + PASSWORD + "\"}", ip)
+		verify(email, "123456", "short", false, ip)
+				.andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+		verify(email, "123456", "a".repeat(129), false, ip)
 				.andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
 	}
 
@@ -204,31 +219,29 @@ class EmailAuthTests extends IdentityIntegrationTestBase {
 	}
 
 	@Test
-	void twoConcurrentRegistrationsOfOneEmailNeverFailWithA500AndCreateOneAccount() throws Exception {
+	void twoConcurrentConfirmationsOfOneCodeCreateExactlyOneAccount() throws Exception {
 		String email = newEmail();
-		String body = "{\"email\":\"" + email + "\",\"password\":\"" + PASSWORD + "\"}";
+		requestCode(email, ip());
+		String code = codeFor(email);
 		CountDownLatch go = new CountDownLatch(1);
-		Callable<Integer> register = () -> {
+		Callable<Integer> confirm = () -> {
 			go.await();
-			return mvc.perform(post("/api/v1/auth/register/email").contentType(MediaType.APPLICATION_JSON)
-					.content(body).with(fromIp(ip()))).andReturn().getResponse().getStatus();
+			return verify(email, code, PASSWORD, false, ip()).andReturn().getResponse().getStatus();
 		};
 		ExecutorService pool = Executors.newFixedThreadPool(2);
 		try {
-			Future<Integer> a = pool.submit(register);
-			Future<Integer> b = pool.submit(register);
+			Future<Integer> a = pool.submit(confirm);
+			Future<Integer> b = pool.submit(confirm);
 			go.countDown();
 
-			// The second caller may arrive after the code was sent and hit the 60 s resend cooldown (429): both are fine,
-			// a 500 is not.
+			// The code is single-use: one caller wins, the other is told the code is no longer valid (never a 500).
 			List<Integer> statuses = List.of(a.get(), b.get());
-			assertThat(statuses).allMatch(code -> code == 202 || code == 429);
-			assertThat(statuses).contains(202);
+			assertThat(statuses).containsOnlyOnce(200);
+			assertThat(statuses).allMatch(status -> status == 200 || status == 400 || status == 409);
 		} finally {
 			pool.shutdownNow();
 		}
-		assertThat(jdbc.sql("select count(*) from identity.user_account where lower(email) = :e")
-				.param("e", email.toLowerCase()).query(Integer.class).single()).isEqualTo(1);
+		assertThat(accountsOf(email)).isEqualTo(1);
 	}
 
 }

@@ -15,18 +15,15 @@ public interface AccountService {
 	UserAccount createPhoneAccount(String phone, String fullName, String passwordOrNull);
 
 	/**
-	 * Registers an account whose email is not verified yet, or refreshes the password and name of a still-unverified one
-	 * (the latest registrant wins, so a stranger cannot pre-claim someone else's address).
+	 * Creates an account for an email whose ownership was just proven by a one-time code: the email is stored as
+	 * verified and the default role is granted.
 	 *
-	 * @return the pending account, or empty when a verified account already uses that email.
+	 * @throws vn.tthome.common.error.ApiException 409 CONTACT_TAKEN if the email is already in use.
 	 */
-	Optional<UserAccount> registerUnverifiedEmailAccount(String email, String password, String fullName);
+	UserAccount createEmailAccount(String email, String fullName, String password);
 
 	/** Finds a non-deleted account by its normalized email. */
 	Optional<UserAccount> findByEmail(String email);
-
-	/** Marks the email as verified (idempotent). */
-	void markEmailVerified(UserAccount user);
 
 	/** Finds a non-deleted account by its normalized phone. */
 	Optional<UserAccount> findByPhone(String phone);

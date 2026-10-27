@@ -124,10 +124,13 @@ class PasswordResetTests extends IdentityIntegrationTestBase {
 	}
 
 	@Test
-	void resetByEmailVerifiesTheAddressAndLetsTheUserIn() throws Exception {
+	void resetByEmailLetsTheUserIn() throws Exception {
 		String email = "reset" + UUID.randomUUID().toString().substring(0, 8) + "@example.com";
-		postJson("/api/v1/auth/register/email",
-				"{\"email\":\"" + email + "\",\"password\":\"" + PASSWORD + "\"}").andExpect(status().isAccepted());
+		postJson("/api/v1/auth/register/email", "{\"email\":\"" + email + "\"}").andExpect(status().isAccepted());
+		postJson("/api/v1/auth/register/email/verify", "{\"email\":\"" + email + "\",\"code\":\""
+				+ sender.lastCode(email, OtpPurpose.REGISTER) + "\",\"password\":\"" + PASSWORD + "\"}")
+				.andExpect(status().isOk());
+		clock.advance(Duration.ofSeconds(61));
 		String code = forgot(email, email);
 
 		reset(email, code, NEW_PASSWORD).andExpect(status().isNoContent());

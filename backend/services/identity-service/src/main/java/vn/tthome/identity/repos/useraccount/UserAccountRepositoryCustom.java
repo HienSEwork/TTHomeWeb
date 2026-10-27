@@ -26,7 +26,4 @@ public interface UserAccountRepositoryCustom {
 	/** Stamps the last login and clears the failed-login counter and any lock, without an optimistic-lock check. */
 	void recordLogin(UUID id, Instant now);
 
-	/** Marks the email verified if it is not yet, without an optimistic-lock check. */
-	void markEmailVerified(UUID id, Instant now);
-
 }
