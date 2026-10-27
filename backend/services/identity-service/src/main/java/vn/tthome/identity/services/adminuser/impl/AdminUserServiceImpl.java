@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.tthome.common.error.ApiException;
 import vn.tthome.identity.models.dtos.AccessClaims;
 import vn.tthome.identity.models.dtos.AdminUserResponse;
-import vn.tthome.identity.models.dtos.PageResponse;
+import vn.tthome.common.web.PageResponse;
 import vn.tthome.identity.models.dtos.SetRolesRequest;
 import vn.tthome.identity.models.entities.Role;
 import vn.tthome.identity.models.entities.UserAccount;

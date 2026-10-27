@@ -21,7 +21,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import vn.tthome.identity.models.dtos.AccessClaims;
 import vn.tthome.identity.models.dtos.AdminUserResponse;
-import vn.tthome.identity.models.dtos.PageResponse;
+import vn.tthome.common.web.PageResponse;
 import vn.tthome.identity.models.dtos.SetRolesRequest;
 import vn.tthome.identity.models.enums.UserStatus;
 import vn.tthome.identity.services.adminuser.AdminUserService;

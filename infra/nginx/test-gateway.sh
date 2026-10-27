@@ -8,7 +8,7 @@ net="tthome-gw-test-$$"
 port="${GATEWAY_TEST_PORT:-18080}"
 
 cleanup() {
-    docker rm -f "gw-echo-$$" "gw-nginx-$$" >/dev/null 2>&1 || true
+    docker rm -f "gw-echo-$$" "gw-listing-$$" "gw-nginx-$$" >/dev/null 2>&1 || true
     docker network rm "$net" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
@@ -28,6 +28,18 @@ class H(BaseHTTPRequestHandler):
 HTTPServer(("", 8081), H).serve_forever()
 ' >/dev/null
 
+docker run -d --name "gw-listing-$$" --network "$net" --network-alias listing-service python:3.12-alpine python -c '
+from http.server import BaseHTTPRequestHandler, HTTPServer
+class H(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-Length", "7")
+        self.end_headers()
+        self.wfile.write(b"listing")
+    do_POST = do_PUT = do_DELETE = do_GET
+HTTPServer(("", 8083), H).serve_forever()
+' >/dev/null
+
 docker run -d --name "gw-nginx-$$" --network "$net" -p "$port:80" -v "$PWD/conf.d:/etc/nginx/conf.d:ro" \
     nginx:1.27-alpine >/dev/null
 
@@ -42,6 +54,7 @@ status() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
 [ "$(status "http://localhost:$port/healthz")" = 200 ] || fail "/healthz is not 200"
 [ "$(status "http://localhost:$port/api/v1/auth/me")" = 200 ] || fail "/api/v1/auth is not proxied"
 [ "$(status -X PUT "http://localhost:$port/api/v1/admin/users/x/roles")" = 200 ] || fail "/api/v1/admin is not proxied"
+[ "$(curl -s "http://localhost:$port/api/v1/admin/catalog/areas")" = listing ] || fail "/api/v1/admin/catalog is not proxied to listing-service"
 [ "$(status "http://localhost:$port/actuator/health")" = 404 ] || fail "/actuator must not be exposed"
 [ "$(status "http://localhost:$port/")" = 404 ] || fail "unknown paths must be 404"
 

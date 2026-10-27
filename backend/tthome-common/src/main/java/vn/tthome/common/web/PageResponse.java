@@ -1,4 +1,4 @@
-package vn.tthome.identity.models.dtos;
+package vn.tthome.common.web;
 
 import java.util.List;
 import java.util.function.Function;

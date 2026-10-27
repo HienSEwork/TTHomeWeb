@@ -32,7 +32,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import vn.tthome.common.error.ApiException;
 import vn.tthome.identity.config.SecurityConfig;
 import vn.tthome.identity.models.dtos.AdminUserResponse;
-import vn.tthome.identity.models.dtos.PageResponse;
+import vn.tthome.common.web.PageResponse;
 import vn.tthome.identity.models.dtos.PermissionResponse;
 import vn.tthome.identity.models.dtos.RoleResponse;
 import vn.tthome.identity.models.dtos.SetPermissionsRequest;

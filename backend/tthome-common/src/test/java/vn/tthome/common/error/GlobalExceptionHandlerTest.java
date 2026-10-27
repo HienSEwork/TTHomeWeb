@@ -45,6 +45,11 @@ class GlobalExceptionHandlerTest {
 			throw new org.springframework.dao.OptimisticLockingFailureException("version mismatch");
 		}
 
+		@GetMapping("/duplicate")
+		void duplicate() {
+			throw new org.springframework.dao.DataIntegrityViolationException("duplicate key value violates constraint x");
+		}
+
 		@GetMapping("/typed/{id}")
 		void typed(@PathVariable java.util.UUID id) {
 		}
@@ -67,6 +72,14 @@ class GlobalExceptionHandlerTest {
 		mvc = MockMvcBuilders.standaloneSetup(new ThrowawayController())
 				.setControllerAdvice(new GlobalExceptionHandler())
 				.build();
+	}
+
+	@Test
+	void aViolatedConstraintBecomesAConflictWithoutLeakingTheDatabaseMessage() throws Exception {
+		mvc.perform(get("/duplicate"))
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.code").value("CONFLICT"))
+				.andExpect(jsonPath("$.message").value("The request conflicts with existing data"));
 	}
 
 	@Test

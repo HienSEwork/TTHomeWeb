@@ -3,6 +3,7 @@ package vn.tthome.common.error;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.TypeMismatchException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +36,13 @@ public class GlobalExceptionHandler {
 	ResponseEntity<ApiError> handleConflict(OptimisticLockingFailureException e) {
 		return ResponseEntity.status(HttpStatus.CONFLICT)
 				.body(new ApiError("CONFLICT", "The resource was changed by another request, retry"));
+	}
+
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	ResponseEntity<ApiError> handleIntegrity(DataIntegrityViolationException e) {
+		// A unique or foreign key that the service checks did not catch, for example two concurrent requests.
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(new ApiError("CONFLICT", "The request conflicts with existing data"));
 	}
 
 	@ExceptionHandler(Exception.class)
