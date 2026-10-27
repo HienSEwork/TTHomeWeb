@@ -8,7 +8,7 @@ net="tthome-gw-test-$$"
 port="${GATEWAY_TEST_PORT:-18080}"
 
 cleanup() {
-    docker rm -f "gw-echo-$$" "gw-listing-$$" "gw-media-$$" "gw-cms-$$" "gw-booking-$$" "gw-crm-$$" "gw-consignment-$$" "gw-nginx-$$" >/dev/null 2>&1 || true
+    docker rm -f "gw-echo-$$" "gw-listing-$$" "gw-media-$$" "gw-cms-$$" "gw-booking-$$" "gw-crm-$$" "gw-consignment-$$" "gw-report-$$" "gw-nginx-$$" >/dev/null 2>&1 || true
     docker network rm "$net" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
@@ -100,6 +100,18 @@ class H(BaseHTTPRequestHandler):
 HTTPServer(("", 8088), H).serve_forever()
 ' >/dev/null
 
+docker run -d --name "gw-report-$$" --network "$net" --network-alias report-service python:3.12-alpine python -c '
+from http.server import BaseHTTPRequestHandler, HTTPServer
+class H(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-Length", "6")
+        self.end_headers()
+        self.wfile.write(b"report")
+    do_POST = do_PUT = do_DELETE = do_GET
+HTTPServer(("", 8091), H).serve_forever()
+' >/dev/null
+
 docker run -d --name "gw-nginx-$$" --network "$net" -p "$port:80" -v "$PWD/conf.d:/etc/nginx/conf.d:ro" \
     nginx:1.27-alpine >/dev/null
 
@@ -122,6 +134,9 @@ status() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
 [ "$(curl -s "http://localhost:$port/api/v1/admin/booking/appointments")" = booking ] || fail "/api/v1/admin/booking is not proxied to booking-service"
 [ "$(curl -s "http://localhost:$port/api/v1/admin/crm/customers")" = crm ] || fail "/api/v1/admin/crm is not proxied to crm-service"
 [ "$(curl -s "http://localhost:$port/api/v1/admin/consignment/submissions")" = consignment ] || fail "/api/v1/admin/consignment is not proxied to consignment-service"
+[ "$(curl -s "http://localhost:$port/api/v1/admin/dashboard")" = report ] || fail "/api/v1/admin/dashboard is not proxied to report-service"
+[ "$(curl -s "http://localhost:$port/api/v1/admin/reports/overview")" = report ] || fail "/api/v1/admin/reports is not proxied to report-service"
+[ "$(curl -s "http://localhost:$port/api/v1/admin/audit-logs")" = report ] || fail "/api/v1/admin/audit-logs is not proxied to report-service"
 [ "$(status "http://localhost:$port/actuator/health")" = 404 ] || fail "/actuator must not be exposed"
 [ "$(status "http://localhost:$port/")" = 404 ] || fail "unknown paths must be 404"
 
