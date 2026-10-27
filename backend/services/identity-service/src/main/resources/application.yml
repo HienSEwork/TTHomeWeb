@@ -69,4 +69,7 @@ tthome:
   mail:
     enabled: ${MAIL_ENABLED:false}  # true = send email codes through SMTP; false = dev log sender
     from: ${MAIL_FROM:}             # required when enabled, e.g. TTHome <no-reply@your-domain>
-
+  bootstrap:
+    # Sets up the first administrator when none exists (see README). Leave empty once an admin exists.
+    admin-email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    admin-password: ${BOOTSTRAP_ADMIN_PASSWORD:}

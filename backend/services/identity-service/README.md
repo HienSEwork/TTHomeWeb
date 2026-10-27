@@ -30,8 +30,12 @@ refused with `503 CHANNEL_UNAVAILABLE` on `prod`. Without `MAIL_ENABLED=true` th
 
 ## Promote the first admin
 
-Nobody is an admin after a fresh install. Register the account normally, then run once in the Supabase SQL editor
-(replace the email):
+Nobody is an admin after a fresh install. Set `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` (8 to 128 characters)
+in the environment and start the service: when no admin exists it creates that account (email already verified) with the
+ADMIN role, or promotes the existing account with that email and keeps its password. It does nothing once any admin exists,
+so it is safe on every start. Afterwards **remove `BOOTSTRAP_ADMIN_PASSWORD`** from the environment and change the password.
+
+Alternatively, register the account normally and run once in the Supabase SQL editor (replace the email):
 
 ```sql
 insert into identity.user_role (user_id, role_id)

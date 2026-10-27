@@ -11,4 +11,7 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, UUID>,
 
 	Optional<UserAccount> findByPhoneAndDeletedAtIsNull(String phone);
 
+	/** True when a non-deleted account holds the role with this code. */
+	boolean existsByRolesCodeAndDeletedAtIsNull(String code);
+
 }
