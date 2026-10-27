@@ -57,7 +57,18 @@ public class HttpStatsClient implements StatsClient {
 		return get(sources.consignmentUrl() + "/api/v1/admin/stats/submissions", authorization, SubmissionFigures.class);
 	}
 
+	@Override
+	public Optional<java.util.List<vn.tthome.report.models.dtos.ProjectFigures>> projects(String authorization, int size) {
+		return get(sources.listingUrl() + "/api/v1/admin/stats/projects?size=" + size, authorization,
+				new org.springframework.core.ParameterizedTypeReference<java.util.List<vn.tthome.report.models.dtos.ProjectFigures>>() {
+				});
+	}
+
 	private <T> Optional<T> get(String url, String authorization, Class<T> type) {
+		return get(url, authorization, org.springframework.core.ParameterizedTypeReference.forType(type));
+	}
+
+	private <T> Optional<T> get(String url, String authorization, org.springframework.core.ParameterizedTypeReference<T> type) {
 		try {
 			return Optional.ofNullable(http.get().uri(java.net.URI.create(url)).header(HttpHeaders.AUTHORIZATION, authorization)
 					.retrieve().body(type));

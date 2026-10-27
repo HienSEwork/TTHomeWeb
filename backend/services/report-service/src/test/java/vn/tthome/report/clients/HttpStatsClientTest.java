@@ -35,6 +35,11 @@ class HttpStatsClientTest {
 			seenQuery.set(exchange.getRequestURI().getRawQuery());
 			reply(exchange, 200, "{\"created\":5,\"createdByStatus\":{\"pending\":3},\"upcomingOpen\":4,\"pendingConfirmation\":3}");
 		});
+		server.createContext("/api/v1/admin/stats/projects", exchange -> {
+			seenQuery.set(exchange.getRequestURI().getRawQuery());
+			reply(exchange, 200, "[{\"id\":\"" + java.util.UUID.randomUUID() + "\",\"name\":\"Green\",\"totalRooms\":20,\"vacantCount\":5,"
+					+ "\"occupancy\":0.75,\"minPrice\":3000000}]");
+		});
 		server.createContext("/api/v1/admin/stats/customers", exchange -> reply(exchange, 500, "{\"code\":\"INTERNAL_ERROR\"}"));
 		server.createContext("/api/v1/admin/stats/submissions", exchange -> {
 			try {
@@ -88,6 +93,19 @@ class HttpStatsClientTest {
 
 		assertThat(figures).hasValueSatisfying(f -> assertThat(f.createdByStatus()).containsEntry("pending", 3L));
 		assertThat(seenQuery.get()).isEqualTo("from=2026-07-01T00:00:00Z&to=2026-07-08T00:00:00Z");
+	}
+
+	@Test
+	void aListOfProjectsIsMapped() {
+		var projects = client(base).projects("Bearer abc", 20);
+
+		assertThat(projects).hasValueSatisfying(list -> {
+			assertThat(list).hasSize(1);
+			assertThat(list.get(0).name()).isEqualTo("Green");
+			assertThat(list.get(0).occupancy()).isEqualTo(0.75);
+			assertThat(list.get(0).minPrice()).isEqualTo(3_000_000L);
+		});
+		assertThat(seenQuery.get()).isEqualTo("size=20");
 	}
 
 	@Test

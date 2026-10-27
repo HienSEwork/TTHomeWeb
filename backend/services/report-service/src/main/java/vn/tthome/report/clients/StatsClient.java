@@ -23,4 +23,7 @@ public interface StatsClient {
 
 	Optional<SubmissionFigures> submissions(String authorization);
 
+	/** The busiest projects with their occupancy; at most size (50). */
+	Optional<java.util.List<vn.tthome.report.models.dtos.ProjectFigures>> projects(String authorization, int size);
+
 }
