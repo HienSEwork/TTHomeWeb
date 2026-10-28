@@ -69,6 +69,9 @@ management:
       enabled: false               # the health probe is public: do not open an SMTP connection per probe
 
 tthome:
+  audit:
+    # Every admin change is reported to the activity log of report-service; leave empty to switch it off.
+    url: ${REPORT_SERVICE_URL:http://localhost:8091}
   auth:
     jwt-secret: ${JWT_SECRET}      # at least 32 bytes, no default
     otp-pepper: ${OTP_PEPPER}      # at least 16 bytes, no default

@@ -19,8 +19,12 @@ public final class TestTokens {
 	}
 
 	public static String bearer(String... roles) {
+		return bearerFor(UUID.randomUUID(), roles);
+	}
+
+	public static String bearerFor(UUID user, String... roles) {
 		Instant now = Instant.now();
-		return "Bearer " + Jwts.builder().subject(UUID.randomUUID().toString()).id(UUID.randomUUID().toString())
+		return "Bearer " + Jwts.builder().subject(user.toString()).id(UUID.randomUUID().toString())
 				.claim("roles", List.of(roles)).issuedAt(Date.from(now)).expiration(Date.from(now.plus(Duration.ofMinutes(5))))
 				.signWith(Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8)), Jwts.SIG.HS256).compact();
 	}

@@ -19,16 +19,16 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import vn.tthome.common.error.ApiException;
 
-class AccessTokenParserTest {
+public class AccessTokenParserTest {
 
-	static final String SECRET = "test-only-jwt-secret-0123456789-abcdefghij";
-	static final Instant NOW = Instant.parse("2026-05-01T10:00:00Z");
+	public static final String SECRET = "test-only-jwt-secret-0123456789-abcdefghij";
+	public static final Instant NOW = Instant.parse("2026-05-01T10:00:00Z");
 
 	private final Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
 	private final AccessTokenParser parser = new AccessTokenParser(SECRET, clock);
 
 	/** Signs a token the way identity-service does. */
-	static String token(String secret, UUID user, UUID session, List<String> roles, Instant expires) {
+	public static String token(String secret, UUID user, UUID session, List<String> roles, Instant expires) {
 		var builder = Jwts.builder().subject(user.toString()).id(session.toString())
 				.issuedAt(Date.from(expires.minus(Duration.ofHours(1)))).expiration(Date.from(expires));
 		if (roles != null) {

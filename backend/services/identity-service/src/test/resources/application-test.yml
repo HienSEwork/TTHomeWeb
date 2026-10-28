@@ -11,6 +11,8 @@ spring:
     password: unused
 
 tthome:
+  audit:
+    url:
   auth:
     jwt-secret: test-only-jwt-secret-0123456789-abcdefghij
     otp-pepper: test-only-otp-pepper-0123456789

@@ -1,1 +1,2 @@
 vn.tthome.common.security.ResourceServerAutoConfiguration
+vn.tthome.common.audit.AuditAutoConfiguration

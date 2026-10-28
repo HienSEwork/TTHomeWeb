@@ -11,6 +11,8 @@ spring:
     password: unused
 
 tthome:
+  audit:
+    url:
   security:
     jwt-secret: test-only-jwt-secret-0123456789-abcdefghij
   cloudinary:
