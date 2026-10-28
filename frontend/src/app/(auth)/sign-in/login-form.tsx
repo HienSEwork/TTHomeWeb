@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Button, Field, Notice, OtpField, Tabs, TextButton } from "@/components/ui";
 import { form, useSubmit } from "@/components/use-submit";
-import { api } from "@/lib/api";
+import { STAFF_ROLES } from "@/components/admin/nav";
+import { api, Me } from "@/lib/api";
 
 const rise = (i: number) => ({ "--i": i }) as React.CSSProperties;
 
@@ -17,7 +18,11 @@ export function LoginForm() {
   const [phone, setPhone] = useState<string>();
   const { busy, error, run } = useSubmit();
 
-  const done = () => router.replace(next?.startsWith("/") && !next.startsWith("//") ? next : "/tai-khoan/ho-so");
+  const done = async () => {
+    if (next?.startsWith("/") && !next.startsWith("//")) return router.replace(next);
+    const me = await api<Me>("me").catch(() => undefined);
+    router.replace(me?.roles?.some((r) => STAFF_ROLES.includes(r)) ? "/admin/dashboard" : "/tai-khoan/ho-so");
+  };
 
   return (
     <div>
@@ -41,7 +46,7 @@ export function LoginForm() {
             const v = form(e);
             run(async () => {
               await api("login", { identifier: v.identifier, password: v.password, rememberMe: v.remember === "on" });
-              done();
+              await done();
             });
           }}
         >
@@ -80,7 +85,7 @@ export function LoginForm() {
             const v = form(e);
             run(async () => {
               await api("login/otp/verify", { phone, code: v.code, rememberMe: v.remember === "on" });
-              done();
+              await done();
             });
           }}
         >

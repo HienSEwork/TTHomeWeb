@@ -4,19 +4,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LoginForm } from "./login-form";
 
 const replace = vi.fn();
+let search = "next=/tai-khoan/ho-so";
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace }),
-  useSearchParams: () => new URLSearchParams("next=/tai-khoan/ho-so"),
+  useSearchParams: () => new URLSearchParams(search),
 }));
 
 beforeEach(() => {
   replace.mockClear();
+  search = "next=/tai-khoan/ho-so";
   vi.restoreAllMocks();
 });
 
 describe("LoginForm", () => {
   it("signs in with a password and follows ?next", async () => {
-    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response('{"ok":true}'));
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response('{"ok":true}'));
     render(<LoginForm />);
     await userEvent.type(screen.getByLabelText("Số điện thoại hoặc email"), "an@x.vn");
     await userEvent.type(screen.getByLabelText("Mật khẩu"), "secret-123");
@@ -25,6 +27,17 @@ describe("LoginForm", () => {
     expect(JSON.parse(fetchMock.mock.calls[0][1]?.body as string)).toEqual({
       identifier: "an@x.vn", password: "secret-123", rememberMe: false,
     });
+  });
+
+  it("sends staff to the admin area", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (url) =>
+      new Response(String(url).endsWith("/me") ? '{"roles":["ADMIN"]}' : '{"ok":true}'));
+    search = "";
+    render(<LoginForm />);
+    await userEvent.type(screen.getByLabelText("Số điện thoại hoặc email"), "an@x.vn");
+    await userEvent.type(screen.getByLabelText("Mật khẩu"), "secret-123");
+    await userEvent.click(screen.getByRole("button", { name: "Đăng nhập" }));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/admin/dashboard"));
   });
 
   it("shows a readable message for wrong credentials", async () => {
