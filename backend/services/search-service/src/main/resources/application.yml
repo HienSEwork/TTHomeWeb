@@ -20,6 +20,8 @@ spring:
       maximum-pool-size: ${DB_POOL_MAX:3}   # 11 service x pool: giữ tổng dưới giới hạn kết nối của gói Supabase
       minimum-idle: 1
       # KHÔNG đặt hikari.schema: Hikari chạy SET search_path theo phiên, không an toàn qua pooler
+  jackson:
+    property-naming-strategy: SNAKE_CASE      # JSON contract uses snake_case (price_min, room_id, ...)
   jpa:
     open-in-view: false
     hibernate:
