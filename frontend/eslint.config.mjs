@@ -1,4 +1,18 @@
-import next from "eslint-config-next";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
 
-const config = [...next, { ignores: [".next/**", "next-env.d.ts"] }];
+const config = [
+  ...nextVitals,
+  ...nextTs,
+  {
+    settings: { next: { rootDir: ["apps/web/", "apps/admin/"] } },
+    rules: {
+      "no-console": "error",
+    },
+  },
+  {
+    ignores: ["**/.next/**", "**/node_modules/**", "**/coverage/**", "**/next-env.d.ts"],
+  },
+];
+
 export default config;
