@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LayoutDashboard, Menu, Phone, X } from "lucide-react";
 import { SITE } from "@tthome/data";
 import { buttonStyles, cn } from "@tthome/ui";
@@ -14,12 +14,24 @@ const ADMIN_URL = process.env.NEXT_PUBLIC_ADMIN_URL ?? "/admin";
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  // The menu belongs to the page it was opened on, so any navigation closes it.
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const open = openOn === pathname;
+  const setOpen = (next: boolean) => setOpenOn(next ? pathname : null);
+  const toggle = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
+    if (!open) return;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setOpenOn(null);
+      toggle.current?.focus();
+    };
+    document.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = "";
+      document.removeEventListener("keydown", onKey);
     };
   }, [open]);
 
@@ -64,11 +76,12 @@ export function SiteHeader() {
             Ký gửi phòng
           </Link>
           <button
+            ref={toggle}
             type="button"
             className={buttonStyles({ variant: "ghost", size: "md", className: "px-2.5 lg:hidden" })}
             aria-expanded={open}
             aria-controls="menu-di-dong"
-            onClick={() => setOpen((v) => !v)}
+            onClick={() => setOpen(!open)}
           >
             {open ? <X aria-hidden /> : <Menu aria-hidden />}
             <span className="sr-only">{open ? "Đóng menu" : "Mở menu"}</span>

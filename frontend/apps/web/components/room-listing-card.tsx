@@ -86,7 +86,7 @@ export function RoomListingCard({ listing, priority, className }: { listing: Roo
           {roomHighlights(listing).map((h) => {
             const Icon = HIGHLIGHT_ICON[h];
             return (
-              <li key={h} className="inline-flex items-center gap-1 rounded-md bg-ivory px-1.5 py-1 text-[0.6875rem] font-medium text-ink-soft">
+              <li key={h} className="inline-flex items-center gap-1 rounded-md bg-ivory px-1.5 py-1 text-xs font-medium text-ink-soft">
                 <Icon aria-hidden className="size-3.5 text-gold-deep" />
                 {HIGHLIGHT_LABEL[h]}
               </li>

@@ -48,7 +48,7 @@ const REASONS: { icon: LucideIcon; title: string; text: string }[] = [
 
 const AREA_SLUGS = ["binh-thanh", "quan-7", "thu-duc", "phu-nhuan", "quan-3"];
 
-function RoomRow({ rooms, label }: { rooms: RoomRef[]; label: string }) {
+function RoomRow({ rooms, label, eager }: { rooms: RoomRef[]; label: string; eager?: boolean }) {
   return (
     <ul
       aria-label={label}
@@ -56,7 +56,7 @@ function RoomRow({ rooms, label }: { rooms: RoomRef[]; label: string }) {
     >
       {rooms.map((r, i) => (
         <li key={r.room.id} className="flex w-[78vw] shrink-0 snap-start sm:w-[300px] xl:w-auto">
-          <RoomListingCard listing={r} priority={i < 3} className="w-full" />
+          <RoomListingCard listing={r} priority={eager && i < 3} className="w-full" />
         </li>
       ))}
     </ul>
@@ -90,7 +90,7 @@ export default function HomePage() {
       <section className="relative isolate">
         <HeroBackdrop />
         <div className="mx-auto flex max-w-[1120px] flex-col items-center px-4 pt-14 pb-12 text-center sm:px-6 sm:pt-20 lg:pt-24">
-          <p className="inline-flex animate-rise items-center gap-2 rounded-full border border-gold/50 bg-white/80 px-4 py-1.5 text-xs font-semibold tracking-[0.14em] text-gold-ink uppercase">
+          <p className="inline-flex animate-rise items-center gap-2 rounded-full border border-gold/50 bg-white/80 px-4 py-1.5 text-sm font-semibold text-gold-ink">
             <span aria-hidden className="size-1.5 rounded-full bg-gold" />
             TTHOME · Phòng trọ Gen Z
           </p>
@@ -136,7 +136,7 @@ export default function HomePage() {
           href="/tim-kiem?sort=popular"
           linkLabel="Xem tất cả phòng"
         />
-        <RoomRow rooms={featured} label="Phòng nổi bật" />
+        <RoomRow rooms={featured} label="Phòng nổi bật" eager />
       </section>
 
       <section aria-labelledby="khu-vuc" className="bg-ivory py-16">
@@ -149,7 +149,7 @@ export default function HomePage() {
                   href={`/phong-tro/${PROVINCE.slug}/${district.slug}`}
                   className={`group relative block overflow-hidden rounded-card ${i === 0 ? "aspect-[4/3] lg:aspect-auto lg:h-full" : "aspect-[4/3] lg:aspect-[16/11]"}`}
                 >
-                  <Image src={photo} alt={`Khu vực ${district.name}`} fill sizes={i === 0 ? "(min-width: 1024px) 620px, 100vw" : "(min-width: 1024px) 300px, 50vw"} className="object-cover transition-transform duration-700 group-hover:scale-[1.04] motion-reduce:group-hover:scale-100" />
+                  <Image src={photo} alt={`Khu vực ${district.name}`} fill sizes={i === 0 ? "(min-width: 1024px) 620px, 100vw" : "(min-width: 1024px) 300px, (min-width: 640px) 50vw, 100vw"} className="object-cover transition-transform duration-700 group-hover:scale-[1.04] motion-reduce:group-hover:scale-100" />
                   <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#1d1a15]/75 via-[#1d1a15]/10 to-transparent" />
                   <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5 text-white">
                     <span>

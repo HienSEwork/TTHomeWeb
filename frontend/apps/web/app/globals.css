@@ -10,7 +10,8 @@
 @theme {
   --color-ink: #242424;
   --color-ink-soft: #4d4a45;
-  --color-muted: #77746f;
+  /* Passes 4.5:1 on white, ivory and gold-soft. */
+  --color-muted: #6f6c67;
   --color-line: #eae6df;
   --color-line-strong: #d9d2c5;
   --color-wash: #faf8f3;

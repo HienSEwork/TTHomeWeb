@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { ExternalLink, X } from "lucide-react";
 import { Plate, cn, formatFromPrice, formatPriceShort } from "@tthome/ui";
 import { CITY_BOUNDS, fitBounds, googleMapsUrl, project, SAIGON_RIVER, type Bounds } from "@/lib/map-projection";
@@ -42,6 +42,7 @@ function riverPath(b: Bounds): string {
  */
 export function MapView({ pins, landmarks = [], fit, className }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const gridId = useId();
   const bounds = useMemo(() => (fit ? fitBounds([...pins, ...landmarks]) : CITY_BOUNDS), [fit, pins, landmarks]);
   const selected = pins.find((p) => p.id === selectedId) ?? null;
 
@@ -49,11 +50,11 @@ export function MapView({ pins, landmarks = [], fit, className }: Props) {
     <div className={cn("relative isolate overflow-hidden bg-[#e9eeec]", className)} role="region" aria-label="Bản đồ các tòa nhà còn phòng">
       <svg aria-hidden viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full">
         <defs>
-          <pattern id="map-grid" width="6" height="6" patternUnits="userSpaceOnUse">
+          <pattern id={gridId} width="6" height="6" patternUnits="userSpaceOnUse">
             <path d="M6 0H0V6" fill="none" stroke="#dbe3df" strokeWidth="0.25" vectorEffect="non-scaling-stroke" />
           </pattern>
         </defs>
-        <rect width="100" height="100" fill="url(#map-grid)" />
+        <rect width="100" height="100" fill={`url(#${gridId})`} />
         <path d={riverPath(bounds)} fill="none" stroke="#c6d8ee" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
         <path d={riverPath(bounds)} fill="none" stroke="#b3cbe8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
       </svg>

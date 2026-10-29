@@ -11,7 +11,7 @@ const TYPES: RoomType[] = ["studio", "room", "1pn", "duplex", "2pn", "shared", "
 
 function Field({ icon, label, htmlFor, children, select }: { icon: ReactNode; label: string; htmlFor: string; children: ReactNode; select?: boolean }) {
   return (
-    <div className="relative flex min-w-0 flex-1 items-center gap-3 px-4 py-3 md:py-2">
+    <div className="relative flex min-w-0 flex-1 items-center gap-3 rounded-[12px] px-4 py-3 transition-colors focus-within:bg-gold-soft/60 focus-within:ring-2 focus-within:ring-focus md:py-2">
       <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-full bg-gold-soft text-gold-deep [&_svg]:size-[18px]">
         {icon}
       </span>
