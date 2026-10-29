@@ -3,3 +3,8 @@
 
 # VS Code
 .vscode/
+
+# Local secrets
+.env
+.env.*
+!.env.example
