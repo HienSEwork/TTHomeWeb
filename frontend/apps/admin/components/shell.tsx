@@ -5,7 +5,10 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { Bell, Globe, LogOut, Menu, Search, X } from "lucide-react";
 import { Logo, cn } from "@tthome/ui";
+import { signOut } from "@/app/dang-nhap/actions";
 import { NAV, isActive } from "@/lib/nav";
+
+export type ShellUser = { name: string; email: string | null };
 
 /** The public site. Same domain in production; set NEXT_PUBLIC_SITE_URL when it runs on another port locally. */
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "/";
@@ -49,24 +52,31 @@ function SidebarNav({ pathname, onNavigate }: { pathname: string; onNavigate?: (
   );
 }
 
-function SidebarFooter() {
+function initials(name: string): string {
+  const words = name.trim().split(/s+/);
+  return ((words.length > 1 ? words[0]![0]! + words.at(-1)![0]! : name.slice(0, 2)) || "?").toUpperCase();
+}
+
+function SidebarFooter({ user }: { user: ShellUser }) {
   return (
     <div className="flex items-center gap-3 border-t border-white/10 px-5 py-4">
       <span aria-hidden className="grid size-9 place-items-center rounded-full bg-shutter text-sm font-bold text-white">
-        QT
+        {initials(user.name)}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-white">Quản trị TTHome</p>
-        <p className="truncate text-xs text-white/50">admin@tthome.vn</p>
+        <p className="truncate text-sm font-semibold text-white">{user.name}</p>
+        {user.email ? <p className="truncate text-xs text-white/50">{user.email}</p> : null}
       </div>
-      <Link href="/dang-nhap" className="rounded-lg p-2 text-white/60 hover:bg-white/10 hover:text-white" aria-label="Đăng xuất">
-        <LogOut aria-hidden className="size-4" />
-      </Link>
+      <form action={signOut}>
+        <button type="submit" className="rounded-lg p-2 text-white/60 hover:bg-white/10 hover:text-white" aria-label="Đăng xuất">
+          <LogOut aria-hidden className="size-4" />
+        </button>
+      </form>
     </div>
   );
 }
 
-export function Shell({ children }: { children: ReactNode }) {
+export function Shell({ children, user }: { children: ReactNode; user: ShellUser }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -86,7 +96,7 @@ export function Shell({ children }: { children: ReactNode }) {
           </Link>
         </div>
         <SidebarNav pathname={pathname} />
-        <SidebarFooter />
+        <SidebarFooter user={user} />
       </aside>
 
       {open ? (
@@ -100,7 +110,7 @@ export function Shell({ children }: { children: ReactNode }) {
               </button>
             </div>
             <SidebarNav pathname={pathname} onNavigate={() => setOpen(false)} />
-            <SidebarFooter />
+            <SidebarFooter user={user} />
           </aside>
         </div>
       ) : null}
@@ -134,7 +144,7 @@ export function Shell({ children }: { children: ReactNode }) {
             <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-danger ring-2 ring-surface" />
           </button>
           <span aria-hidden className="ml-1 hidden size-9 place-items-center rounded-full bg-shutter text-sm font-bold text-white sm:grid">
-            QT
+            {initials(user.name)}
           </span>
         </div>
       </header>

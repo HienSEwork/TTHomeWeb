@@ -1,38 +1,47 @@
 import type { Metadata } from "next";
-import { CUSTOMER_SOURCE, PROJECTS, SOURCE_BREAKDOWN, TRAFFIC } from "@tthome/data";
-import { formatCount, formatPercent } from "@tthome/ui";
+import { Download } from "lucide-react";
+import { CUSTOMER_SOURCE } from "@tthome/data";
+import { buttonStyles, formatCount, formatPercent } from "@tthome/ui";
 import { BarList } from "@/components/bars";
-import { PageHeader, Panel } from "@/components/page-parts";
+import { PageHeader, Panel, ServiceNotice } from "@/components/page-parts";
 import { TrafficPanel } from "@/components/traffic-panel";
+import { api, optional } from "@/lib/api";
 import { SERIES } from "@/lib/chart";
-import { ExportButton } from "./export-button";
+import { fmt } from "@/lib/format";
+import { breakdown, dailySeries, unavailableLabels, vnDay, type ReportOverview } from "@/lib/report";
 
 export const metadata: Metadata = { title: "Báo cáo" };
+export const dynamic = "force-dynamic";
 
-export default function ReportsPage() {
-  const visitors = TRAFFIC.reduce((n, d) => n + d.visitors, 0);
-  const bookings = TRAFFIC.reduce((n, d) => n + d.bookings, 0);
-  const consults = TRAFFIC.reduce((n, d) => n + d.consults, 0);
-  const occupancy = PROJECTS.map((p) => {
-    const taken = p.rooms.filter((r) => r.status === "rented" || r.status === "reserved").length;
-    return { label: p.name, value: taken / p.rooms.length, hint: `${taken}/${p.rooms.length}` };
-  }).sort((a, b) => b.value - a.value);
-
-  const rows: (string | number)[][] = [
-    ["Ngày", "Lượt khách", "Lượt xem", "Lịch hẹn", "Yêu cầu tư vấn"],
-    ...TRAFFIC.map((d) => [d.day, d.visitors, d.views, d.bookings, d.consults]),
-  ];
+export default async function ReportsPage() {
+  const now = new Date();
+  const from = new Date(now.getTime() - 30 * 86_400_000).toISOString();
+  const to = now.toISOString();
+  const r = await optional(api<ReportOverview>("/admin/reports/overview", { query: { from, to } }));
+  const occupancy = [...(r?.projects ?? [])]
+    .map((p) => ({ label: p.name, value: p.occupancy, hint: `${p.totalRooms - p.vacantCount}/${p.totalRooms}` }))
+    .sort((a, b) => b.value - a.value);
 
   return (
     <>
-      <PageHeader title="Báo cáo" description="30 ngày gần nhất, đến hết ngày 29/10/2026." actions={<ExportButton rows={rows} filename="tthome-bao-cao-30-ngay.csv" />} />
+      <PageHeader
+        title="Báo cáo"
+        description={`30 ngày gần nhất, đến hết ngày ${fmt.date(vnDay(now))}.`}
+        actions={
+          <a href={`/admin/bao-cao/xuat?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`} className={buttonStyles({ variant: "secondary", size: "sm" })}>
+            <Download aria-hidden />
+            Xuất Excel
+          </a>
+        }
+      />
+      <ServiceNotice parts={unavailableLabels([...(r?.unavailable ?? []), ...(r ? [] : ["report"])])} />
 
       <dl className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: "Lượt khách", value: formatCount(visitors), note: "người truy cập khác nhau mỗi ngày" },
-          { label: "Lịch hẹn đã đặt", value: formatCount(bookings), note: "từ web và hotline" },
-          { label: "Tỷ lệ đặt lịch", value: formatPercent(bookings / visitors), note: "lịch hẹn trên lượt khách" },
-          { label: "Yêu cầu tư vấn", value: formatCount(consults), note: "qua form Tư vấn thuê phòng" },
+          { label: "Lượt khách", value: r?.traffic ? formatCount(r.traffic.visitors) : "–", note: "phiên truy cập khác nhau" },
+          { label: "Lịch hẹn đã đặt", value: r?.appointments ? formatCount(r.appointments.created) : "–", note: "từ web và hotline" },
+          { label: "Tỷ lệ đặt lịch", value: r?.bookingRate == null ? "–" : formatPercent(r.bookingRate), note: "lịch hẹn trên lượt khách" },
+          { label: "Yêu cầu tư vấn", value: r?.customers ? formatCount(r.customers.newConsultRequests) : "–", note: "qua form Tư vấn thuê phòng" },
         ].map((k) => (
           <div key={k.label} className="rounded-card border border-line bg-surface p-5">
             <dt className="text-sm font-medium text-ink-soft">{k.label}</dt>
@@ -43,18 +52,32 @@ export default function ReportsPage() {
       </dl>
 
       <div className="mt-4">
-        <TrafficPanel />
+        <TrafficPanel
+          days={r?.traffic ? dailySeries(r.traffic.viewsByDay, now) : null}
+          totals={[
+            { label: "Lượt xem", value: r?.traffic?.views ?? null },
+            { label: "Khách mới", value: r?.customers?.newCustomers ?? null },
+          ]}
+        />
       </div>
 
       <div className="mt-4 grid items-start gap-4 xl:grid-cols-2">
         <Panel title="Khách mới theo nguồn">
           <div className="px-5 py-5">
-            <BarList items={SOURCE_BREAKDOWN.map((s) => ({ label: CUSTOMER_SOURCE[s.source], value: s.customers }))} color={SERIES.blue} />
+            {r?.customers ? (
+              <BarList items={breakdown(r.customers.bySource, CUSTOMER_SOURCE)} color={SERIES.blue} />
+            ) : (
+              <p className="text-sm text-muted">Chưa lấy được số liệu khách hàng.</p>
+            )}
           </div>
         </Panel>
         <Panel title="Tỷ lệ lấp đầy theo dự án">
           <div className="px-5 py-5">
-            <BarList items={occupancy} max={1} unit="percent" color={SERIES.green} />
+            {occupancy.length ? (
+              <BarList items={occupancy} max={1} unit="percent" color={SERIES.green} />
+            ) : (
+              <p className="text-sm text-muted">{r?.projects ? "Chưa có dự án nào." : "Chưa lấy được số liệu phòng."}</p>
+            )}
           </div>
         </Panel>
       </div>

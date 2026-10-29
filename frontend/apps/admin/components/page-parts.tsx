@@ -44,3 +44,18 @@ export function Panel({ title, action, children, className }: { title: string; a
     </section>
   );
 }
+
+/** Says which parts are missing because their service did not answer, so a blank never reads as zero. */
+export function ServiceNotice({ parts }: { parts: string[] }) {
+  if (parts.length === 0) return null;
+  return (
+    <p role="status" className="mb-4 rounded-card bg-warn-tint px-4 py-3 text-sm text-warn">
+      Chưa lấy được số liệu {parts.join(", ")}. Các ô đó để trống; tải lại trang sau ít phút.
+    </p>
+  );
+}
+
+/** Placeholder for a list that is empty or could not be loaded. */
+export function EmptyRow({ children }: { children: ReactNode }) {
+  return <li className="px-5 py-6 text-center text-sm text-muted">{children}</li>;
+}
