@@ -1,0 +1,18 @@
+{
+  "name": "tthome",
+  "private": true,
+  "type": "module",
+  "description": "Lệnh chạy chung cho cả repo. Frontend ở frontend/, backend ở backend/.",
+  "scripts": {
+    "frontend": "node scripts/frontend.mjs",
+    "frontend:check": "npm --prefix frontend ci && npm --prefix frontend run lint && npm --prefix frontend run typecheck && npm --prefix frontend test && npm --prefix frontend run build",
+    "backend": "node scripts/backend.mjs all",
+    "backend:migrate": "node scripts/backend.mjs migrate",
+    "backend:run": "node scripts/backend.mjs run",
+    "backend:check": "node scripts/backend.mjs check",
+    "test:scripts": "node --test \"scripts/**/*.test.mjs\""
+  },
+  "engines": {
+    "node": ">=20.9"
+  }
+}
