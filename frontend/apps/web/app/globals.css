@@ -1,0 +1,83 @@
+@import "tailwindcss";
+@import "@tthome/ui/styles/theme.css";
+
+@source "../../../packages/ui/src";
+
+/*
+ * TTHOME public brand: white first (75–85% of the surface), champagne gold from the logo,
+ * warm ivory for rhythm. Redefines the shared roles so every shared component follows.
+ */
+@theme {
+  --color-ink: #242424;
+  --color-ink-soft: #4d4a45;
+  --color-muted: #77746f;
+  --color-line: #eae6df;
+  --color-line-strong: #d9d2c5;
+  --color-wash: #faf8f3;
+  --color-surface: #ffffff;
+
+  --color-gold: #e8c17a;
+  --color-gold-deep: #b8893e;
+  --color-gold-soft: #f8f0e2;
+  /* Deep gold dark enough for small text on white (contrast ≈ 6:1). */
+  --color-gold-ink: #7d5b22;
+  --color-ivory: #faf8f3;
+
+  --color-primary: #e8c17a;
+  --color-primary-hover: #efce8f;
+  --color-on-primary: #2e2618;
+  --color-focus: #b8893e;
+  --color-selected: #f8f0e2;
+  --color-selected-line: #b8893e;
+  --color-on-selected: #242424;
+  --color-success: #4f7556;
+  --color-success-tint: #ecf2ec;
+
+  /* Earlier accent names, remapped to the gold family so older markup stays on-brand. */
+  --color-shutter: #7d5b22;
+  --color-shutter-dark: #5f4418;
+  --color-shutter-tint: #f8f0e2;
+  --color-plate: #7d5b22;
+  --color-plate-dark: #5f4418;
+  --color-plate-tint: #faf3e6;
+  --color-plate-field: #f8f0e2;
+  --color-plate-fg: #7d5b22;
+  --color-plate-rule: #e8c17a;
+  --color-wall: #e8c17a;
+  --color-wall-dark: #7d5b22;
+  --color-wall-tint: #f8f0e2;
+
+  --radius-card: 16px;
+  --shadow-lift: 0 10px 30px rgb(39 32 21 / 0.07);
+  --shadow-soft: 0 2px 10px rgb(39 32 21 / 0.05);
+
+  --text-display: clamp(2.5rem, 1.6rem + 3.6vw, 4.5rem);
+  --text-display--line-height: 1.06;
+  --text-display--letter-spacing: -0.035em;
+
+  --animate-rise: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+@layer base {
+  body {
+    background: var(--color-surface);
+  }
+}
+
+/* Champagne-gold gradient taken from the logo wordmark; used once, on the hero's second line. */
+@utility text-gold-gradient {
+  background: linear-gradient(100deg, #a87632 0%, #d7a95c 35%, #e8c17a 60%, #b8893e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
