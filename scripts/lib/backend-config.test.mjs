@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { discoverServices, mergeEnv, missingKeys, parseEnv, parseServiceYaml, selectServices, serviceDbEnv } from "./backend-config.mjs";
+import { discoverServices, mergeEnv, migrateDbEnv, missingKeys, parseEnv, parseServiceYaml, selectServices, serviceDbEnv, withoutMigrateDb } from "./backend-config.mjs";
 
 const backendDir = join(dirname(fileURLToPath(import.meta.url)), "../../backend");
 
@@ -60,4 +60,19 @@ test("mergeEnv lets a later file win only with a filled-in value", () => {
 
 test("missingKeys lists what is required", () => {
   assert.deepEqual(missingKeys({ SUPABASE_DB_URL: "x" }), ["SUPABASE_PROJECT_REF", "JWT_SECRET"]);
+});
+
+test("migrateDbEnv uses the migration account only when both its keys are set", () => {
+  const service = { short: "crm", role: "crm_svc" };
+  const base = { SUPABASE_PROJECT_REF: "abc", DB_PASSWORD: "shared" };
+  assert.deepEqual(migrateDbEnv(service, { ...base, MIGRATE_DB_USER: "postgres.abc", MIGRATE_DB_PASSWORD: "admin" }), {
+    user: "postgres.abc",
+    password: "admin",
+    passwordKey: "MIGRATE_DB_PASSWORD",
+  });
+  assert.deepEqual(migrateDbEnv(service, { ...base, MIGRATE_DB_USER: "postgres.abc" }), serviceDbEnv(service, base));
+});
+
+test("withoutMigrateDb keeps the migration account away from running services", () => {
+  assert.deepEqual(withoutMigrateDb({ A: "1", MIGRATE_DB_USER: "u", MIGRATE_DB_PASSWORD: "p" }), { A: "1" });
 });

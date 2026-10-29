@@ -67,6 +67,18 @@ export function serviceDbEnv(service, env) {
   return { user, password, passwordKey: env[key] ? key : "DB_PASSWORD" };
 }
 
+/** Credentials for Flyway: MIGRATE_DB_USER/PASSWORD when both are set (one owner for every schema), else the service role. */
+export function migrateDbEnv(service, env) {
+  if (env.MIGRATE_DB_USER && env.MIGRATE_DB_PASSWORD) return { user: env.MIGRATE_DB_USER, password: env.MIGRATE_DB_PASSWORD, passwordKey: "MIGRATE_DB_PASSWORD" };
+  return serviceDbEnv(service, env);
+}
+
+/** The migration account can reach every schema, so running services never receive it. */
+export function withoutMigrateDb(env) {
+  const { MIGRATE_DB_USER: _u, MIGRATE_DB_PASSWORD: _p, ...rest } = env;
+  return rest;
+}
+
 /** Combine env files in order; a later file wins, but only with a filled-in value, so blank lines never erase one. */
 export function mergeEnv(envs) {
   const out = {};

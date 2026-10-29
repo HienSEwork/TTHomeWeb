@@ -13,7 +13,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { discoverServices, mergeEnv, missingKeys, parseEnv, selectServices, serviceDbEnv } from "./lib/backend-config.mjs";
+import { discoverServices, mergeEnv, migrateDbEnv, missingKeys, parseEnv, selectServices, serviceDbEnv, withoutMigrateDb } from "./lib/backend-config.mjs";
 import { run, runParallel } from "./lib/proc.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -80,7 +80,7 @@ async function flyway(goal) {
   const version = await flywayVersion();
   for (const s of services) {
     step(`${goal === "info" ? "Kiểm tra" : "Migration"} ${s.short} (schema ${s.schema}, ${s.migrationCount} file V2+)`);
-    const db = serviceDbEnv(s, env);
+    const db = migrateDbEnv(s, env);
     // Flyway reads FLYWAY_* variables; passing them as env keeps the password out of the process list.
     const flywayEnv = {
       FLYWAY_URL: env.FLYWAY_URL || env.SUPABASE_DB_URL,
@@ -122,7 +122,7 @@ async function start() {
       cmd: "java",
       args: [env.BACKEND_JAVA_OPTS ?? "-Xmx384m", "-jar", jarOf(s)],
       cwd: s.dir,
-      env: { ...fileEnv, DB_PASSWORD: db.password ?? "", ...(db.user ? { DB_USER: db.user } : {}) },
+      env: { ...withoutMigrateDb(fileEnv), DB_PASSWORD: db.password ?? "", ...(db.user ? { DB_USER: db.user } : {}) },
     };
   });
   process.exit(await runParallel(tasks, { dryRun }));
