@@ -67,6 +67,7 @@ export const vi = {
     admin: "Trang quản trị",
     profile: "Hồ sơ",
     saved: "Phòng đã lưu",
+    favorites: (n: number) => (n ? `Yêu thích, ${n} mục` : "Yêu thích"),
     appointments: "Lịch hẹn của tôi",
     landlord: "Phòng ký gửi",
   },
@@ -553,6 +554,15 @@ export const vi = {
       noRegister: "Bản demo không tạo tài khoản mới. Hãy đăng nhập bằng tài khoản demo ở bên dưới.",
       wrongPassword: "Email hoặc mật khẩu không đúng. Kiểm tra lại tài khoản demo ở bên dưới.",
     },
+  },
+  favorites: {
+    title: "Yêu thích",
+    lead: "Phòng và tòa nhà bạn đã thả tim, lưu ngay trên máy này, không cần đăng nhập.",
+    rooms: "Phòng",
+    projects: "Tòa nhà",
+    emptyTitle: "Chưa có phòng nào",
+    emptyText: "Bấm trái tim trên ảnh phòng để lưu lại và xem sau.",
+    clear: "Xóa tất cả",
   },
   account: {
     metaTitle: "Tài khoản",

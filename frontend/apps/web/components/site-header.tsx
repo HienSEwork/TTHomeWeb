@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { LayoutDashboard, Menu, Phone } from "lucide-react";
+import { Heart, LayoutDashboard, Menu, Phone } from "lucide-react";
 import { SITE } from "@tthome/data";
 import { buttonStyles, cn } from "@tthome/ui";
 import { hasDemoSession } from "@/lib/demo-session";
+import { useFavorites } from "@/lib/favorites";
 import { useI18n } from "@/lib/i18n/client";
 import { MAIN_NAV, isActive } from "@/lib/nav";
 import { BrandLockup } from "./brand-logo";
@@ -32,6 +33,7 @@ export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   // The demo session lives in a cookie: read on every render in the browser, never on the server.
   const signedIn = useSyncExternalStore(noSubscription, hasDemoSession, () => false);
+  const favorites = useFavorites().length;
   const [signInOpen, setSignInOpen] = useState(false);
   // Where focus returns when the sign-in drawer closes: the button that opened it, or the menu toggle.
   const signInReturn = useRef<HTMLElement | null>(null);
@@ -96,6 +98,24 @@ export function SiteHeader() {
           <a href={ADMIN_URL} className="rounded-lg p-2 text-muted transition-colors hover:bg-ivory hover:text-gold-ink max-sm:hidden" aria-label={t.nav.admin} title={t.nav.admin}>
             <LayoutDashboard aria-hidden className="size-5" />
           </a>
+          <Link
+            href="/yeu-thich"
+            aria-label={t.nav.favorites(favorites)}
+            title={t.nav.favorites(0)}
+            aria-current={pathname === "/yeu-thich" ? "page" : undefined}
+            className="relative rounded-lg p-2 text-ink-soft transition-colors hover:bg-ivory hover:text-[#c2543f] aria-[current=page]:text-[#c2543f]"
+          >
+            <Heart aria-hidden className={cn("size-5", favorites > 0 && "fill-[#c2543f] text-[#c2543f]")} />
+            {favorites > 0 ? (
+              <span
+                key={favorites}
+                aria-hidden
+                className="tabular absolute -top-0.5 -right-0.5 grid h-[18px] min-w-[18px] animate-pop place-items-center rounded-full bg-[#c2543f] px-1 text-[0.6875rem] leading-none font-bold text-white ring-2 ring-alabaster"
+              >
+                {favorites > 99 ? "99+" : favorites}
+              </span>
+            ) : null}
+          </Link>
           {signedIn ? (
             <Link href="/tai-khoan/ho-so" className="px-2 py-2 text-[0.9375rem] font-semibold text-ink-soft transition-colors hover:text-gold-ink max-sm:hidden">
               {t.nav.account}

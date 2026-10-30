@@ -5,6 +5,7 @@ import { projectAddress, projectRoomTypes, type ProjectMatch } from "@tthome/dat
 import { Badge, Plate, cn } from "@tthome/ui";
 import { getI18n, labelOf, type Lang } from "@/lib/i18n";
 import { projectCopy } from "@/lib/i18n/content";
+import { favoriteKey } from "@/lib/favorite-key";
 import { FavoriteButton } from "./favorite-button";
 
 type Props = {
@@ -42,7 +43,7 @@ export function ProjectCard({ match, compact, priority, className, lang }: Props
           ) : null}
         </div>
         <Plate value={rooms.length} unit={t.card.vacantUnit} size="sm" className="absolute bottom-3 left-3" />
-        <FavoriteButton label={project.name} className="absolute top-2.5 right-2.5 z-10" />
+        <FavoriteButton favKey={favoriteKey("project", project.id)} label={project.name} className="absolute top-2.5 right-2.5 z-10" />
       </div>
 
       <div className="flex flex-1 flex-col p-4">

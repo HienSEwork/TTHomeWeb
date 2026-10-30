@@ -3,14 +3,15 @@
 import { useState, type CSSProperties } from "react";
 import { Heart } from "lucide-react";
 import { cn } from "@tthome/ui";
+import { toggleFavorite, useIsFavorite } from "@/lib/favorites";
 import { useI18n } from "@/lib/i18n/client";
 
 const PARTICLES = [0, 60, 120, 180, 240, 300];
 
-/** Heart toggle on a card. Kept on this device until saved rooms are tied to the account. */
-export function FavoriteButton({ label, className }: { label: string; className?: string }) {
+/** Heart toggle on a card. Saved in this browser, so it works without signing in; the header heart lists them. */
+export function FavoriteButton({ favKey, label, className }: { favKey: string; label: string; className?: string }) {
   const { t } = useI18n();
-  const [saved, setSaved] = useState(false);
+  const saved = useIsFavorite(favKey);
   // Bumped on every save so the pop and the burst replay.
   const [burst, setBurst] = useState(0);
   return (
@@ -20,7 +21,7 @@ export function FavoriteButton({ label, className }: { label: string; className?
       aria-label={saved ? t.card.unsave(label) : t.card.save(label)}
       onClick={() => {
         if (!saved) setBurst((n) => n + 1);
-        setSaved((v) => !v);
+        toggleFavorite(favKey);
       }}
       className={cn(
         "grid size-9 place-items-center rounded-full border border-white/60 bg-white/80 shadow-[var(--shadow-soft)] backdrop-blur-md transition-[scale,color] active:scale-90",

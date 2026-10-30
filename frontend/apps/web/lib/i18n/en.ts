@@ -65,6 +65,7 @@ export const en: Dictionary = {
     admin: "Admin",
     profile: "Profile",
     saved: "Saved rooms",
+    favorites: (n) => (n ? `Favourites, ${n} saved` : "Favourites"),
     appointments: "My viewings",
     landlord: "My listings",
   },
@@ -551,6 +552,15 @@ export const en: Dictionary = {
       noRegister: "The demo does not create new accounts. Please sign in with the demo account below.",
       wrongPassword: "Wrong email or password. Check the demo account below.",
     },
+  },
+  favorites: {
+    title: "Favourites",
+    lead: "Rooms and buildings you hearted, kept on this device with no sign-in needed.",
+    rooms: "Rooms",
+    projects: "Buildings",
+    emptyTitle: "Nothing saved yet",
+    emptyText: "Tap the heart on a room photo to keep it for later.",
+    clear: "Clear all",
   },
   account: {
     metaTitle: "Account",

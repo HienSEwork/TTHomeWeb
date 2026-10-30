@@ -6,6 +6,7 @@ import { cn } from "@tthome/ui";
 import { getI18n, type Lang } from "@/lib/i18n";
 import { cardBadge, roomHighlights, type Highlight, type RoomRef } from "@/lib/listing";
 import { CardGallery } from "./card-gallery";
+import { favoriteKey } from "@/lib/favorite-key";
 import { FavoriteButton } from "./favorite-button";
 
 export const HIGHLIGHT_ICON: Record<Highlight, LucideIcon> = {
@@ -55,7 +56,7 @@ export function RoomListingCard({ listing, priority, className, lang }: { listin
         {badge ? (
           <span className={cn("absolute top-3 left-3 rounded-full border px-2.5 py-1 text-xs font-semibold backdrop-blur-md", BADGE_STYLE[badge.tone])}>{badge.label}</span>
         ) : null}
-        <FavoriteButton label={title} className="absolute top-2.5 right-2.5 z-10" />
+        <FavoriteButton favKey={favoriteKey("room", room.id)} label={title} className="absolute top-2.5 right-2.5 z-10" />
       </div>
 
       <div className="flex flex-1 flex-col p-4">
