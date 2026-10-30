@@ -1,31 +1,24 @@
-/** Session tokens issued by identity-service, kept in httpOnly cookies so page code never sees them. */
-export const ACCESS_COOKIE = "tthome_admin_at";
-export const REFRESH_COOKIE = "tthome_admin_rt";
+import { ADMIN_SESSION_COOKIE, DEMO_ACCOUNTS } from "@tthome/data";
 
-/** What POST /api/v1/auth/login and /refresh return. */
-export type TokenPair = { accessToken: string; accessExpiresAt: string; refreshToken: string; refreshExpiresAt: string };
+/**
+ * The demo has no identity-service: signing in checks the demo admin account
+ * locally and keeps its email in an httpOnly cookie scoped to /admin.
+ */
+export const SESSION_COOKIE = ADMIN_SESSION_COOKIE;
 
-export function apiBaseUrl(): string {
-  return (process.env.API_BASE_URL ?? "http://localhost:8080/api/v1").replace(/\/$/, "");
-}
+const MAX_AGE = 60 * 60 * 8;
 
-export function cookieOptions(expiresAt: string) {
+export function cookieOptions() {
   return {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax" as const,
     path: "/admin",
-    expires: new Date(expiresAt),
+    maxAge: MAX_AGE,
   };
 }
 
-/** Refresh a little before the access token expires so a page never renders with a token that dies mid-request. */
-export function accessTokenFresh(token: string | undefined, now = Date.now()): boolean {
-  if (!token) return false;
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]!.replace(/-/g, "+").replace(/_/g, "/"))) as { exp?: number };
-    return typeof payload.exp === "number" && payload.exp * 1000 - now > 30_000;
-  } catch {
-    return false;
-  }
+/** Whether a raw cookie value is the demo admin's session. */
+export function isAdminSession(value: string | undefined): boolean {
+  return value === DEMO_ACCOUNTS.admin.email;
 }
