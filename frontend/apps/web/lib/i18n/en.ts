@@ -157,6 +157,11 @@ export const en: Dictionary = {
     type: "Room type",
     typePlaceholder: "Studio, single room…",
     submit: "Search",
+    districtsTitle: "Districts of Can Tho City",
+    areaMatches: "Matching areas",
+    anyPrice: "Any price",
+    anyType: "Any room type",
+    vacant: (n) => (n > 0 ? `${n} ${n === 1 ? "room" : "rooms"} available` : "Rooms coming soon"),
   },
   searchBox: {
     label: "Search by street, ward, school or building name",

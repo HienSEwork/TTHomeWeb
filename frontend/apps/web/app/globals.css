@@ -70,6 +70,13 @@
   --animate-rise: rise 0.9s var(--ease-out-expo) both;
   --animate-float: float 7s ease-in-out infinite;
   --animate-pop: pop 0.55s var(--ease-out-expo);
+  --animate-menu-in: menu-in 0.18s var(--ease-out-expo);
+  @keyframes menu-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.98);
+    }
+  }
   @keyframes rise {
     from {
       opacity: 0;
@@ -176,7 +183,8 @@
   @media (prefers-reduced-motion: reduce) {
     .animate-rise,
     .animate-float,
-    .animate-pop {
+    .animate-pop,
+    .animate-menu-in {
       animation: none;
     }
   }

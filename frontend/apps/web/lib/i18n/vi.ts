@@ -159,6 +159,11 @@ export const vi = {
     type: "Loại phòng",
     typePlaceholder: "Studio, phòng đơn…",
     submit: "Tìm phòng",
+    districtsTitle: "Quận, huyện ở TP. Cần Thơ",
+    areaMatches: "Khu vực khớp",
+    anyPrice: "Mọi mức giá",
+    anyType: "Mọi loại phòng",
+    vacant: (n: number) => (n > 0 ? `${n} phòng trống` : "Sắp có phòng"),
   },
   searchBox: {
     label: "Tìm theo tên đường, phường, trường học hoặc tên tòa nhà",

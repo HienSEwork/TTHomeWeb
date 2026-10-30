@@ -85,6 +85,7 @@ export default async function HomePage() {
     const showcase = PROJECTS.filter((p) => p.districtSlug === slug).sort((a, b) => b.views - a.views)[0]!;
     return { district, stats: districtStats(slug), photo: showcase.images[i === 0 ? 0 : 1]! };
   });
+  const vacantByDistrict = Object.fromEntries(DISTRICTS.map((d) => [d.slug, districtStats(d.slug).vacant]));
   const posts = publishedPosts()
     .slice(0, 3)
     .map((p) => localPost(p, lang));
@@ -136,7 +137,7 @@ export default async function HomePage() {
             {t.home.lead}
           </p>
 
-          <HeroSearch className="mt-10 w-full max-w-[980px] animate-rise [animation-delay:60ms]" />
+          <HeroSearch className="mt-10 w-full max-w-[980px] animate-rise [animation-delay:60ms]" vacantByDistrict={vacantByDistrict} />
 
           <ul className="mt-6 flex animate-rise flex-wrap justify-center gap-2 [animation-delay:140ms]" aria-label={t.home.quickFilters}>
             {QUICK_FILTERS.map((f) => (
