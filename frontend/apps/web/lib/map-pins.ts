@@ -12,6 +12,7 @@ export function toMapPins(matches: ProjectMatch[]): MapPin[] {
     lat: project.lat,
     lng: project.lng,
     minPrice,
+    maxPrice: rooms.length ? Math.max(...rooms.map((r) => r.price)) : null,
     vacant: rooms.length,
   }));
 }

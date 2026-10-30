@@ -147,13 +147,13 @@ export const AMENITIES: Amenity[] = [
 export const AMENITY_NAME: Record<string, string> = Object.fromEntries(AMENITIES.map((a) => [a.code, a.name]));
 
 export const LANDMARKS: Landmark[] = [
-  { slug: "dh-can-tho", name: "Đại học Cần Thơ", shortName: "ĐH Cần Thơ", kind: "university", lat: 10.0299, lng: 105.7706 },
-  { slug: "y-duoc-can-tho", name: "Đại học Y Dược Cần Thơ", shortName: "Y Dược", kind: "university", lat: 10.034, lng: 105.7553 },
+  { slug: "dh-can-tho", name: "Đại học Cần Thơ", shortName: "ĐH Cần Thơ", kind: "university", lat: 10.0322, lng: 105.7683 },
+  { slug: "y-duoc-can-tho", name: "Đại học Y Dược Cần Thơ", shortName: "Y Dược", kind: "university", lat: 10.036, lng: 105.7522 },
   { slug: "fpt-can-tho", name: "Đại học FPT Cần Thơ", shortName: "FPT", kind: "university", lat: 10.0127, lng: 105.7324 },
-  { slug: "vincom-xuan-khanh", name: "Vincom Xuân Khánh", shortName: "Vincom", kind: "mall", lat: 10.0263, lng: 105.7774 },
-  { slug: "sense-city", name: "Sense City Cần Thơ", shortName: "Sense City", kind: "mall", lat: 10.0336, lng: 105.7836 },
+  { slug: "vincom-xuan-khanh", name: "Vincom Xuân Khánh", shortName: "Vincom", kind: "mall", lat: 10.0247, lng: 105.7748 },
+  { slug: "sense-city", name: "Sense City Cần Thơ", shortName: "Sense City", kind: "mall", lat: 10.0345, lng: 105.7857 },
   { slug: "ben-ninh-kieu", name: "Bến Ninh Kiều", shortName: "Bến Ninh Kiều", kind: "other", lat: 10.0339, lng: 105.7884 },
-  { slug: "bv-da-khoa-trung-uong", name: "Bệnh viện Đa khoa Trung ương Cần Thơ", shortName: "BV Trung ương", kind: "hospital", lat: 10.0236, lng: 105.7584 },
+  { slug: "bv-da-khoa-trung-uong", name: "Bệnh viện Đa khoa Trung ương Cần Thơ", shortName: "BV Trung ương", kind: "hospital", lat: 10.0287, lng: 105.7556 },
   { slug: "kcn-tra-noc", name: "Khu công nghiệp Trà Nóc", shortName: "KCN Trà Nóc", kind: "industrial", lat: 10.095, lng: 105.729 },
 ];
 

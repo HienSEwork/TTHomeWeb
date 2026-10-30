@@ -3,6 +3,7 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useRef, useState } from "react";
 import circle from "@turf/circle";
 import type { FeatureCollection, Point, Polygon } from "geojson";
@@ -44,22 +45,25 @@ const satellite = (credit: string): StyleSpecification => ({
 /** Each area is wide enough to always contain the real building, which sits at most 500 m from the centre. */
 const AREA_RADIUS_KM = 0.7;
 
+/** Below this zoom the circles crowd together, so each one shows only its lowest price. */
+const TAG_ZOOM = 13.5;
+
 const maskLayer: LayerProps = { id: "outside-fill", type: "fill", paint: { "fill-color": "#FBF9F5", "fill-opacity": 0.88 } };
 const borderLayer: LayerProps = { id: "city-border", type: "line", paint: { "line-color": "#C58635", "line-width": 1.5, "line-opacity": 0.6 } };
 
 /**
  * Every building's area as a circle that is never smaller than ~16 px on screen and matches the real
- * 700 m radius once zoomed in (at Cần Thơ's latitude one pixel is ~154 166 / 2^zoom metres).
+ * 700 m radius once zoomed in (MapLibre draws 512 px tiles, so at Cần Thơ's latitude one pixel is ~77 000 / 2^zoom metres).
  */
 const areaDots: LayerProps = {
   id: "areas-dot",
   type: "circle",
   paint: {
-    "circle-radius": ["interpolate", ["exponential", 2], ["zoom"], 10, 16, 12, 18.6, 18, 1190],
+    "circle-radius": ["interpolate", ["exponential", 2], ["zoom"], 10, 16, 11, 18.6, 18, 2380],
     "circle-color": AMBER,
-    "circle-opacity": ["match", ["get", "state"], "active", 0.32, "near", 0.24, "hover", 0.24, 0.14],
+    "circle-opacity": ["match", ["get", "state"], "active", 0.3, "near", 0.24, "hover", 0.24, 0.16],
     "circle-stroke-color": ["match", ["get", "state"], "active", "#A8702C", AMBER],
-    "circle-stroke-width": ["match", ["get", "state"], "active", 2, "near", 1.5, 1],
+    "circle-stroke-width": ["match", ["get", "state"], "active", 2.5, 2],
     "circle-stroke-opacity": 0.9,
     "circle-pitch-alignment": "map",
   },
@@ -126,6 +130,7 @@ function boundsOf(points: { lat: number; lng: number }[]): [[number, number], [n
  */
 export default function SearchMap({ pins, landmarks = [], className }: Props) {
   const map = useRef<MapRef>(null);
+  const router = useRouter();
   const { t, fmt } = useI18n();
   const satelliteStyle = useMemo(() => satellite(t.map.satelliteCredit), [t]);
   const [view, setView] = useState<"streets" | "satellite">("streets");
@@ -201,6 +206,8 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
     ),
   );
 
+  const priceRange = ({ minPrice, maxPrice }: MapPin) => (maxPrice && minPrice && maxPrice > minPrice ? `${fmt.mapPrice(minPrice)} - ${fmt.mapPrice(maxPrice)}` : fmt.mapPrice(minPrice));
+
   const onMapClick = (e: MapLayerMouseEvent) => {
     const id = e.features?.[0]?.properties?.id as string | undefined;
     select(id && id !== selectedId ? id : null);
@@ -260,9 +267,10 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
                 </span>
                 <span
                   className={cn(
-                    "max-w-[11rem] truncate rounded-md px-1.5 py-0.5 text-[0.6875rem] leading-tight font-semibold",
+                    // Two short lines at most (about five words each); a longer name ends in "…".
+                    "line-clamp-2 w-max max-w-[8.5rem] rounded-md px-1.5 py-0.5 text-[0.6875rem] leading-tight font-semibold break-words whitespace-normal",
                     onPhoto ? "bg-black/55 text-white" : "bg-white/85 text-ink shadow-[0_1px_3px_rgb(0_0_0/0.15)]",
-                    named ? "inline-block" : "hidden group-hover/place:inline-block",
+                    !named && "hidden group-hover/place:[display:-webkit-box]",
                   )}
                 >
                   {p.name}
@@ -283,24 +291,28 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
 
         {pins.map((pin) => {
           const active = pin.id === selectedId;
+          // Once an area is open, the buildings in it lead straight to their page.
+          const inRange = selectedId !== null && nearIds.includes(pin.id);
           return (
-            <Marker key={pin.id} longitude={pin.lng} latitude={pin.lat} anchor="bottom" offset={[0, -10]} style={{ zIndex: active ? 2 : 1 }}>
+            // The tag sits in the middle of the building's circle, like "3 phòng: 16tr - 22tr".
+            <Marker key={pin.id} longitude={pin.lng} latitude={pin.lat} anchor="center" style={{ zIndex: active ? 2 : 1 }}>
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  select(active ? null : pin.id);
+                  if (inRange) router.push(pin.href);
+                  else select(pin.id);
                 }}
                 onPointerEnter={() => setHoverId(pin.id)}
                 onPointerLeave={() => setHoverId(null)}
-                aria-pressed={active}
-                aria-label={t.map.pin(pin.name, fmt.fromPrice(pin.minPrice), pin.vacant)}
+                aria-pressed={inRange ? undefined : active}
+                aria-label={inRange ? t.map.openPin(pin.name) : t.map.pin(pin.name, fmt.fromPrice(pin.minPrice), pin.vacant)}
                 className={cn(
                   "rounded-full px-2.5 py-1 text-xs font-bold whitespace-nowrap shadow-[0_2px_8px_rgb(45_35_20/0.25)] transition-[scale,background-color,color] duration-200 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C58635]",
-                  active ? "scale-110 bg-[#1C1A17] text-white" : "bg-white text-ink ring-1 ring-black/10",
+                  active ? "scale-110 bg-[#1C1A17] text-white" : "bg-[#A8702C] text-white ring-2 ring-white/80",
                 )}
               >
-                {fmt.mapPrice(pin.minPrice)}
+                {zoom >= TAG_ZOOM ? t.map.areaTag(pin.vacant, priceRange(pin)) : fmt.mapPrice(pin.minPrice)}
               </button>
             </Marker>
           );

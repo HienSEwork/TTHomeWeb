@@ -36,3 +36,30 @@ describe("ResultsLayout on small screens", () => {
     expect(screen.getByText("the map")).toBeInTheDocument();
   });
 });
+
+describe("ResultsLayout on wide screens", () => {
+  beforeEach(() => {
+    window.scrollTo = () => {};
+    window.matchMedia = ((q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
+  });
+
+  it("resizes the map from the keyboard, hides it and widens it to the full page", async () => {
+    const user = userEvent.setup();
+    render(<ResultsLayout list={<p>the list</p>} map={<p>the map</p>} />);
+    const handle = screen.getByRole("separator", { name: "Kéo để đổi độ rộng bản đồ" });
+    expect(handle).toHaveAttribute("aria-valuenow", "40");
+    handle.focus();
+    await user.keyboard("{ArrowLeft}{ArrowLeft}");
+    expect(handle).toHaveAttribute("aria-valuenow", "50");
+
+    await user.click(screen.getByRole("button", { name: "Thu gọn bản đồ" }));
+    expect(screen.getByText("the map").closest("aside")).toHaveClass("lg:hidden");
+    await user.click(screen.getByRole("button", { name: "Hiện bản đồ" }));
+    expect(screen.getByText("the map").closest("aside")).not.toHaveClass("lg:hidden");
+
+    await user.click(screen.getByRole("button", { name: "Mở rộng bản đồ toàn màn hình" }));
+    expect(screen.getByText("the list").parentElement).toHaveClass("lg:hidden");
+    await user.click(screen.getByRole("button", { name: "Thu nhỏ bản đồ" }));
+    expect(screen.getByText("the list").parentElement).not.toHaveClass("lg:hidden");
+  });
+});

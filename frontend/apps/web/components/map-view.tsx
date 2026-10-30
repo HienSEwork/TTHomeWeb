@@ -17,6 +17,8 @@ export type MapPin = {
   lat: number;
   lng: number;
   minPrice: number | null;
+  /** The dearest vacant room, for the "3 phòng: 16tr - 22tr" tag on the search map. */
+  maxPrice?: number | null;
   vacant: number;
 };
 

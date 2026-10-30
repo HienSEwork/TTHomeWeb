@@ -9,7 +9,6 @@ import { labelOf } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n/client";
 import { toSearchQuery } from "@/lib/search-params";
 import { ListPanel, SelectMenu, useListKeys, useOutsidePress, type MenuOption } from "./hero-dropdown";
-import { Magnetic } from "./magnetic";
 
 const TYPES: RoomType[] = ["studio", "room", "1pn", "duplex", "2pn", "shared", "dorm"];
 
@@ -187,15 +186,13 @@ export function HeroSearch({ className, vacantByDistrict = {} }: { className?: s
       <Field icon={<LayoutGrid />} label={t.hero.type} labelId={`${id}-type-label`} htmlFor={`${id}-type`} select>
         <SelectMenu id={`${id}-type`} labelId={`${id}-type-label`} value={type} options={typeOptions} placeholder={t.hero.typePlaceholder} onChange={setType} className={control} />
       </Field>
-      <Magnetic className="m-1 shrink-0 max-md:w-full">
-        <button
-          type="submit"
-          className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary px-8 text-base font-semibold text-on-primary hover:bg-primary-hover md:h-[60px]"
-        >
-          <Search aria-hidden className="size-5" />
-          {t.hero.submit}
-        </button>
-      </Magnetic>
+      <button
+        type="submit"
+        className="group/submit m-1 inline-flex h-14 shrink-0 items-center justify-center gap-2 rounded-full bg-primary px-8 text-base font-semibold text-on-primary transition-[background-color,scale,box-shadow] duration-300 ease-out-expo hover:scale-[1.04] hover:bg-primary-hover hover:shadow-[0_14px_28px_-12px_rgb(217_155_75/0.75)] focus-visible:scale-[1.04] active:scale-[0.98] max-md:w-[calc(100%-0.5rem)] motion-reduce:hover:scale-100 md:h-[60px]"
+      >
+        <Search aria-hidden className="size-5 group-hover/submit:animate-seek group-focus-visible/submit:animate-seek" />
+        {t.hero.submit}
+      </button>
     </form>
   );
 }

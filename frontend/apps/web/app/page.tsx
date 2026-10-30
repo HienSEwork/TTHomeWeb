@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight, BadgePercent, CalendarCheck, Camera, Headset, PawPrint, PlugZap, ReceiptText, Sofa, Sparkles, SunMedium, Wallet } from "lucide-react";
-import { DISTRICTS, districtStats, PROJECTS, PROVINCE, publishedPosts, SITE } from "@tthome/data";
+import { DISTRICTS, districtStats, photo, PROJECTS, PROVINCE, publishedPosts, SITE } from "@tthome/data";
 import { buttonStyles, cn } from "@tthome/ui";
 import { BrandLogo } from "@/components/brand-logo";
 import { HeroBackdrop } from "@/components/hero-backdrop";
@@ -27,13 +27,14 @@ const QUICK_FILTERS = [
   { key: "ev", href: "/tim-kiem?group=ev" },
 ] as const;
 
-const TRUST: { icon: LucideIcon; key: "price" | "photos" | "booking" }[] = [
-  { icon: ReceiptText, key: "price" },
-  { icon: Camera, key: "photos" },
-  { icon: CalendarCheck, key: "booking" },
+/** Each promise floats as a room photo tagged with its icon; the words stay for screen readers. */
+const TRUST: { icon: LucideIcon; key: "price" | "photos" | "booking"; photo: string }[] = [
+  { icon: ReceiptText, key: "price", photo: photo(6, 240) },
+  { icon: Camera, key: "photos", photo: photo(1, 240) },
+  { icon: CalendarCheck, key: "booking", photo: photo(9, 240) },
 ];
 
-/** Where each trust badge floats around the hero on wide screens, and how strongly it follows the mouse. */
+/** Where each trust photo floats around the hero on wide screens, and how strongly it follows the mouse. */
 const BADGE_SPOTS = ["top-[22%] left-[4%] [--depth:18px]", "top-[48%] right-[3%] [--depth:-24px] [animation-delay:-2.5s]", "bottom-[7%] left-[3%] [--depth:12px] [animation-delay:-5s]"];
 
 const LIFESTYLES: { icon: LucideIcon; key: "studio" | "budget" | "furnished" | "balcony" | "pet" | "ev"; href: string }[] = [
@@ -106,7 +107,7 @@ export default async function HomePage() {
         <HeroBackdrop />
 
         <ul aria-hidden className="pointer-events-none absolute inset-0 hidden xl:block">
-          {trust.map(({ icon: Icon, label }, i) => (
+          {trust.map(({ icon: Icon, label, photo: src }, i) => (
             <li
               key={label}
               className={cn(
@@ -114,22 +115,20 @@ export default async function HomePage() {
                 BADGE_SPOTS[i],
               )}
             >
-              <span className="glass-line inline-flex animate-float items-center gap-2.5 rounded-full bg-white/80 py-2 pr-4 pl-2 text-sm font-semibold text-ink shadow-[0_1px_2px_rgb(45_35_20/0.04),0_24px_40px_-18px_rgb(45_35_20/0.28)] backdrop-blur-xl [animation-delay:inherit]">
-                <span className="grid size-8 place-items-center rounded-full bg-gold-soft text-gold-deep">
-                  <Icon className="size-4" />
+              <span className="relative block animate-float [animation-delay:inherit]">
+                <span className="relative block size-[104px] overflow-hidden rounded-[22px] border-4 border-white bg-sand shadow-[0_1px_2px_rgb(45_35_20/0.06),0_24px_40px_-18px_rgb(45_35_20/0.35)]">
+                  <Image src={src} alt="" fill sizes="104px" className="object-cover" />
                 </span>
-                {label}
+                <span className="absolute -right-3 -bottom-3 grid size-11 place-items-center rounded-full border-4 border-white bg-gold text-on-primary shadow-[0_8px_18px_-8px_rgb(45_35_20/0.45)]">
+                  <Icon className="size-[18px]" />
+                </span>
               </span>
             </li>
           ))}
         </ul>
 
         <div className="relative mx-auto flex max-w-[1120px] flex-col items-center px-4 pt-14 pb-16 text-center sm:px-6 sm:pt-20 lg:pt-24 lg:pb-20">
-          <p className="glass-line inline-flex animate-rise items-center gap-2 rounded-full bg-white/70 px-4 py-1.5 text-sm font-semibold text-gold-ink backdrop-blur">
-            <span aria-hidden className="size-1.5 rounded-full bg-gold" />
-            {t.home.eyebrow}
-          </p>
-          <h1 className="mt-6 text-display font-extrabold text-ink">
+          <h1 className="text-display font-extrabold text-ink">
             {t.home.titleA}
             <span className="text-gold-gradient block pb-1">{t.home.titleB}</span>
           </h1>
@@ -152,11 +151,11 @@ export default async function HomePage() {
             ))}
           </ul>
 
-          <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-ink-soft xl:hidden">
+          <ul className="mt-8 flex items-center justify-center gap-4 xl:hidden">
             {trust.map(({ icon: Icon, label }) => (
-              <li key={label} className="inline-flex items-center gap-2">
-                <Icon aria-hidden className="size-[18px] text-gold-deep" />
-                {label}
+              <li key={label} title={label} className="grid size-11 place-items-center rounded-full bg-gold-soft text-gold-deep">
+                <Icon aria-hidden className="size-5" />
+                <span className="sr-only">{label}</span>
               </li>
             ))}
           </ul>
