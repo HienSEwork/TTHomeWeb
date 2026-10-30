@@ -145,7 +145,7 @@ const PROJECT_EN: Record<string, { description: string; promo?: string }> = {
   D4B1C7: { description: "In the 91B residential area, near the Central General Hospital. Ground-floor garden, dogs and cats welcome, and EV chargers in the basement." },
   E9F0B3: { description: "Affordable rooms for students of the University of Medicine and Pharmacy and Can Tho University. Bus no. 1 stops right at the end of the alley.", promo: "One month's service fee free" },
   F1A6D5: { description: "A 4-minute walk to the gate of Can Tho University of Medicine and Pharmacy. Shared rooms have private bunk beds and personal lockers." },
-  G3C8E1: { description: "Dorm beds and rooms under 2.5M VND, opposite Campus II of Can Tho University. Electricity and water at the state rate." },
+  G3C8E1: { description: "Dorm beds and rooms from 2M VND, opposite Campus II of Can Tho University. Electricity and water at the state rate." },
   H5D2F9: { description: "In the heart of Ninh Kiều, a 5-minute walk to Ninh Kiều Wharf and the night market. The rooftop has a laundry area and shared desks.", promo: "Free parking for 3 months" },
   J8A4C2: { description: "Overlooking the Hậu River, 1.5 km from the Ninh Kiều pedestrian bridge. Every unit has a balcony and its own washer-dryer." },
   K2E7B4: { description: "Freshly repainted rooms near An Hòa market. No curfew, fingerprint lock on every room." },
@@ -157,7 +157,7 @@ const PROJECT_EN: Record<string, { description: string; promo?: string }> = {
   R9E1F3: { description: "High-ceilinged duplexes in South Can Tho New Urban Area, with a small rooftop pool. 10 minutes over Hưng Lợi Bridge to central Ninh Kiều." },
   S2B6D9: { description: "A private dormitory near Cái Răng floating market, with a study room and canteen. The bus to Can Tho University stops at the door.", promo: "First month free for new students" },
   T5C4A2: { description: "Opposite Sense City, a 7-minute walk to Ninh Kiều Wharf. Suits people working in the city centre." },
-  U8D3E6: { description: "New rooms near Ô Môn market and the Ô Môn power plants, under 2.5M VND." },
+  U8D3E6: { description: "New rooms near Ô Môn market and the Ô Môn power plants, from 2M VND." },
   V4E2A9: { description: "A quiet garden house on Lộ Vòng Cung, 3 km from FPT University Can Tho. Large yard and free parking." },
 };
 

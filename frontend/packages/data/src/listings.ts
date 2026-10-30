@@ -83,7 +83,7 @@ const SEEDS: ProjectSeed[] = [
   },
   {
     code: "C2D9A8", name: "Căn hộ dịch vụ Trần Văn Hoài", street: "88 Trần Văn Hoài", ward: "xuan-khanh", district: "ninh-kieu",
-    lat: 10.0242, lng: 105.7688, basePrice: 4_500_000, types: ["1pn", "duplex"], rooms: 5, exclusive: true, ev: true,
+    lat: 10.0259, lng: 105.7718, basePrice: 4_500_000, types: ["1pn", "duplex"], rooms: 5, exclusive: true, ev: true,
     promo: "Giảm 50% tháng đầu", amenities: ["elevator", "fingerprint", "parking", "security", "cleaning"], floors: 8, ageDays: 8, views: 5320,
     blurb: "Căn hộ dịch vụ cách khu II Đại học Cần Thơ 600 m. Có thang máy, hầm xe, lễ tân buổi tối và dọn phòng mỗi tuần.",
   },
@@ -95,7 +95,7 @@ const SEEDS: ProjectSeed[] = [
   },
   {
     code: "E9F0B3", name: "Nhà Lá An Khánh", street: "77/14 Nguyễn Văn Cừ", ward: "an-khanh", district: "ninh-kieu",
-    lat: 10.0318, lng: 105.7541, basePrice: 2_300_000, types: ["room", "studio"], rooms: 6, pet: "cat",
+    lat: 10.0318, lng: 105.7541, basePrice: 2_700_000, types: ["room", "studio"], rooms: 6, pet: "cat",
     promo: "Tặng 1 tháng phí dịch vụ", amenities: ["shared_washer", "free_hours", "fingerprint"], floors: 4, ageDays: 65, views: 1890,
     blurb: "Phòng giá mềm cho sinh viên Y Dược và Đại học Cần Thơ. Xe buýt số 1 dừng ngay đầu hẻm.",
   },
@@ -107,9 +107,9 @@ const SEEDS: ProjectSeed[] = [
   },
   {
     code: "G3C8E1", name: "Nhà Xanh Ba Tháng Hai", street: "460/7 Đường 3 Tháng 2", ward: "hung-loi", district: "ninh-kieu",
-    lat: 10.0225, lng: 105.7652, basePrice: 1_900_000, types: ["room", "dorm"], rooms: 6, pet: "none",
+    lat: 10.0225, lng: 105.7652, basePrice: 2_600_000, types: ["room", "dorm"], rooms: 6, pet: "none",
     amenities: ["shared_washer", "free_hours", "security"], floors: 5, ageDays: 90, views: 2210,
-    blurb: "Ký túc xá và phòng trọ giá dưới 2,5 triệu, đối diện khu II Đại học Cần Thơ. Điện nước tính theo giá nhà nước.",
+    blurb: "Ký túc xá và phòng trọ giá từ 2 triệu, đối diện khu II Đại học Cần Thơ. Điện nước tính theo giá nhà nước.",
   },
   {
     code: "H5D2F9", name: "The Nest Tân An", street: "33 Phan Đình Phùng", ward: "tan-an", district: "ninh-kieu",
@@ -125,7 +125,7 @@ const SEEDS: ProjectSeed[] = [
   },
   {
     code: "K2E7B4", name: "Hẻm Xanh An Hòa", street: "120/5 Cách Mạng Tháng 8", ward: "an-hoa", district: "ninh-kieu",
-    lat: 10.0458, lng: 105.7688, basePrice: 2_200_000, types: ["room", "studio"], rooms: 5,
+    lat: 10.0489, lng: 105.7748, basePrice: 2_600_000, types: ["room", "studio"], rooms: 5,
     amenities: ["fingerprint", "shared_washer", "free_hours"], floors: 4, ageDays: 50, views: 1640,
     blurb: "Phòng trọ mới sơn sửa, gần chợ An Hòa. Giờ giấc tự do, khóa vân tay từng phòng.",
   },
@@ -137,7 +137,7 @@ const SEEDS: ProjectSeed[] = [
   },
   {
     code: "M1C9A6", name: "Studio Nguyễn Văn Linh", street: "255/31 Nguyễn Văn Linh", ward: "an-binh", district: "ninh-kieu",
-    lat: 10.0128, lng: 105.7468, basePrice: 2_400_000, types: ["studio"], rooms: 5,
+    lat: 10.0262, lng: 105.759, basePrice: 2_400_000, types: ["studio"], rooms: 5,
     amenities: ["fingerprint", "shared_washer", "free_hours"], floors: 5, ageDays: 75, views: 1980,
     blurb: "Studio gác lửng cho một người, cách Đại học FPT Cần Thơ 10 phút đi xe máy.",
   },
@@ -149,7 +149,7 @@ const SEEDS: ProjectSeed[] = [
   },
   {
     code: "P7D5B1", name: "Nhà trọ Trà Nóc", street: "102/9 Lê Hồng Phong", ward: "tra-noc", district: "binh-thuy",
-    lat: 10.0872, lng: 105.7336, basePrice: 1_800_000, types: ["room", "shared"], rooms: 6, pet: "none",
+    lat: 10.1, lng: 105.705, basePrice: 2_500_000, types: ["room", "shared"], rooms: 6, pet: "none",
     amenities: ["shared_washer", "security"], floors: 4, ageDays: 110, views: 1420,
     blurb: "Phòng trọ giá tốt cho công nhân và kỹ sư Khu công nghiệp Trà Nóc, đi làm chưa tới 5 phút.",
   },
@@ -161,13 +161,13 @@ const SEEDS: ProjectSeed[] = [
   },
   {
     code: "R9E1F3", name: "Hưng Phú Loft", street: "14 Đường số 22, KDC Hưng Phú 1", ward: "hung-phu", district: "cai-rang",
-    lat: 10.0118, lng: 105.7818, basePrice: 4_800_000, types: ["duplex", "1pn", "2pn"], rooms: 5, exclusive: true, ev: true, pet: "allowed",
+    lat: 10.018, lng: 105.785, basePrice: 4_800_000, types: ["duplex", "1pn", "2pn"], rooms: 5, exclusive: true, ev: true, pet: "allowed",
     amenities: ["elevator", "parking", "security", "cleaning", "rooftop"], floors: 6, ageDays: 3, views: 4720,
     blurb: "Duplex trần cao trong khu đô thị Nam Cần Thơ, sân thượng có hồ bơi nhỏ. Qua cầu Hưng Lợi về trung tâm Ninh Kiều 10 phút.",
   },
   {
     code: "S2B6D9", name: "Ký túc xá Cái Răng", street: "8 Trần Chiên", ward: "le-binh", district: "cai-rang",
-    lat: 10.0038, lng: 105.7642, basePrice: 1_500_000, types: ["dorm", "room", "shared"], rooms: 8, pet: "none",
+    lat: 10.001, lng: 105.7625, basePrice: 2_700_000, types: ["dorm", "room", "shared"], rooms: 8, pet: "none",
     promo: "Miễn phí tháng đầu cho tân sinh viên", amenities: ["shared_washer", "security", "free_hours"], floors: 5, ageDays: 28, views: 3990,
     blurb: "Ký túc xá tư nhân gần chợ nổi Cái Răng, có phòng tự học và căng tin. Xe buýt về Đại học Cần Thơ dừng trước cửa.",
   },
@@ -179,13 +179,13 @@ const SEEDS: ProjectSeed[] = [
   },
   {
     code: "U8D3E6", name: "Ô Môn Home", street: "33 Đường 26 Tháng 3", ward: "chau-van-liem", district: "o-mon",
-    lat: 10.1112, lng: 105.6262, basePrice: 1_700_000, types: ["room", "studio"], rooms: 6, pet: "cat",
+    lat: 10.11, lng: 105.6215, basePrice: 2_400_000, types: ["room", "studio"], rooms: 6, pet: "cat",
     amenities: ["shared_washer", "free_hours", "parking"], floors: 4, ageDays: 60, views: 1270,
-    blurb: "Phòng trọ mới gần chợ Ô Môn và các nhà máy điện Ô Môn, giá dưới 2,5 triệu.",
+    blurb: "Phòng trọ mới gần chợ Ô Môn và các nhà máy điện Ô Môn, giá từ 2 triệu.",
   },
   {
     code: "V4E2A9", name: "Vườn Mỹ Khánh House", street: "12 Lộ Vòng Cung", ward: "my-khanh", district: "phong-dien",
-    lat: 10.0142, lng: 105.7188, basePrice: 2_000_000, types: ["room", "studio"], rooms: 5, pet: "allowed",
+    lat: 9.9985, lng: 105.72, basePrice: 2_600_000, types: ["room", "studio"], rooms: 5, pet: "allowed",
     amenities: ["parking", "free_hours", "shared_washer"], floors: 3, ageDays: 52, views: 1180,
     blurb: "Nhà vườn yên tĩnh trên Lộ Vòng Cung, cách Đại học FPT Cần Thơ 3 km. Có sân rộng và chỗ để xe miễn phí.",
   },
@@ -193,7 +193,7 @@ const SEEDS: ProjectSeed[] = [
 
 const ROOM_AMENITY_POOL = ["aircon", "private_wc", "water_heater", "fridge", "kitchen", "washer"];
 const TYPE_PRICE_FACTOR: Record<RoomType, number> = {
-  dorm: 0.45, shared: 0.6, room: 0.85, studio: 1, "1pn": 1.25, duplex: 1.4, "2pn": 1.75, "3pn": 2.3,
+  dorm: 0.8, shared: 0.85, room: 0.9, studio: 1, "1pn": 1.25, duplex: 1.4, "2pn": 1.75, "3pn": 2.3,
 };
 const TYPE_AREA: Record<RoomType, [number, number]> = {
   dorm: [12, 20], shared: [18, 26], room: [14, 22], studio: [22, 32], "1pn": [30, 42], duplex: [32, 45], "2pn": [48, 65], "3pn": [70, 90],
@@ -207,7 +207,8 @@ function buildRooms(seed: ProjectSeed, projectIndex: number, projectId: string):
     const floor = 1 + Math.floor(rand() * seed.floors);
     const [aMin, aMax] = TYPE_AREA[type];
     const area = Math.round(aMin + rand() * (aMax - aMin));
-    const price = Math.round((seed.basePrice * TYPE_PRICE_FACTOR[type] * (0.92 + rand() * 0.2)) / 100_000) * 100_000;
+    // Rooms in Cần Thơ rent for a few million đồng; nothing is listed below 2 triệu.
+    const price = Math.max(2_000_000, Math.round((seed.basePrice * TYPE_PRICE_FACTOR[type] * (0.92 + rand() * 0.2)) / 100_000) * 100_000);
     const roll = rand();
     const status: RoomStatus = roll < 0.62 ? "available" : roll < 0.74 ? "reserved" : roll < 0.95 ? "rented" : "hidden";
     const furniture: Furniture = type === "dorm" ? "basic" : rand() < 0.75 ? "full" : rand() < 0.6 ? "basic" : "none";

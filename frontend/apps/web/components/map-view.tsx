@@ -125,7 +125,6 @@ export function MapView({ pins, landmarks = [], fit, className }: Props) {
         </div>
       ) : null}
 
-      <p className="absolute top-3 right-3 z-30 rounded-md bg-surface/90 px-2 py-1 text-[0.6875rem] text-muted">{t.map.sketchNote}</p>
     </div>
   );
 }

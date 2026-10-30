@@ -260,7 +260,8 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
           const named = zoom >= LABEL_ZOOM[p.kind];
           const onPhoto = view === "satellite";
           return (
-            <Marker key={p.name} longitude={p.lng} latitude={p.lat} anchor="center" style={{ zIndex: 0 }}>
+            // The icon's centre sits on the place; the name hangs to its right.
+            <Marker key={p.name} longitude={p.lng} latitude={p.lat} anchor="left" offset={[-12, 0]} style={{ zIndex: 0 }}>
               <span className="group/place flex items-center gap-1" title={p.name}>
                 <span aria-hidden className="grid size-6 place-items-center rounded-full border-2 border-white text-white shadow-[0_1px_4px_rgb(0_0_0/0.35)]" style={{ backgroundColor: color }}>
                   <Icon className="size-3.5" />
@@ -338,7 +339,7 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
         ))}
       </div>
 
-      <div role="group" aria-label={t.map.places} className="scrollbar-none absolute top-[4.75rem] right-3 left-3 z-10 flex gap-1.5 overflow-x-auto pb-1 sm:top-14">
+      <div role="group" aria-label={t.map.places} className="scrollbar-none absolute top-14 right-3 left-3 z-10 flex gap-1.5 overflow-x-auto pb-1">
         {PLACE_KINDS.map((k) => {
           const { icon: Icon, color } = PLACE_STYLE[k];
           const on = kinds.has(k);
@@ -361,10 +362,6 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
           );
         })}
       </div>
-
-      <p className="pointer-events-none absolute top-3 right-3 z-10 max-w-[min(20rem,calc(100%-10rem))] rounded-2xl border border-white/60 bg-white/80 px-3 py-1.5 text-xs font-medium text-ink shadow-[0_8px_24px_-12px_rgb(45_35_20/0.35)] backdrop-blur-md">
-        {t.map.privacyNote(AREA_RADIUS_KM * 1000)}
-      </p>
 
       {selected ? (
         <div className="absolute inset-x-3 bottom-3 z-10 flex max-h-[45%] flex-col rounded-[18px] border border-white/60 bg-white/95 shadow-[0_24px_48px_-20px_rgb(45_35_20/0.4)] backdrop-blur-md sm:right-auto sm:w-[26rem]">
