@@ -35,8 +35,8 @@ import { toApproxMapPins } from "@/lib/map-pins";
 type Props = { params: Promise<{ slug: string }> };
 
 
-/** The building's page opens on about 10 km of city with its approximate area, 2 km round, shaded. */
-const AREA_FOCUS = { viewKm: 10, areaKm: 2 };
+/** The building's page opens on about 10 km of city with its approximate area, 1.5 km round, shaded. */
+const AREA_FOCUS = { viewKm: 10, areaKm: 1.5 };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const project = getProjectBySlug((await params).slug);
   if (!project) return {};
