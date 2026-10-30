@@ -11,7 +11,7 @@ export const revalidate = 600;
 
 export const metadata: Metadata = {
   title: "Phòng trọ theo khu vực",
-  description: "Số phòng trống và giá thuê từ thấp nhất ở từng quận, phường TP. Hồ Chí Minh. Chọn khu vực để xem phòng còn trống.",
+  description: "Số phòng trống và giá thuê từ thấp nhất ở từng quận, phường TP. Cần Thơ. Chọn khu vực để xem phòng còn trống.",
   alternates: { canonical: "/khu-vuc" },
 };
 

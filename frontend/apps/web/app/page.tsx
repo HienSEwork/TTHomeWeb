@@ -52,7 +52,7 @@ const REASONS: { icon: LucideIcon; title: string; text: string }[] = [
   { icon: Headset, title: "Hỗ trợ tư vấn", text: `Gọi ${SITE.hotline} hoặc nhắn Zalo, nhân viên gợi ý phòng theo nhu cầu.` },
 ];
 
-const AREA_SLUGS = ["binh-thanh", "quan-7", "thu-duc", "phu-nhuan", "quan-3"];
+const AREA_SLUGS = ["ninh-kieu", "cai-rang", "binh-thuy", "phong-dien", "o-mon"];
 
 /** Stagger index for the scroll entrance (see the reveal utility in globals.css). */
 const stagger = (i: number) => ({ "--i": i }) as CSSProperties;
@@ -121,7 +121,7 @@ export default function HomePage() {
         <div className="relative mx-auto flex max-w-[1120px] flex-col items-center px-4 pt-14 pb-16 text-center sm:px-6 sm:pt-20 lg:pt-24 lg:pb-20">
           <p className="glass-line inline-flex animate-rise items-center gap-2 rounded-full bg-white/70 px-4 py-1.5 text-sm font-semibold text-gold-ink backdrop-blur">
             <span aria-hidden className="size-1.5 rounded-full bg-gold" />
-            Phòng trọ, studio cho Gen Z ở TP.HCM
+            Phòng trọ, studio cho Gen Z ở Cần Thơ
           </p>
           <h1 className="mt-6 animate-rise text-display font-extrabold text-ink [animation-delay:90ms]">
             Tìm phòng đẹp.

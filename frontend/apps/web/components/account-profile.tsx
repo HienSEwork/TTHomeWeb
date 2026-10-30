@@ -52,10 +52,10 @@ export function ProfileForm() {
           ))}
         </SelectField>
         <SelectField label="Ngân sách" value={budget} onChange={(e) => { setBudget(e.target.value); setSaved(false); }}>
-          <option value="under-3.5">Dưới 3,5 triệu</option>
+          <option value="under-2.5">Dưới 2,5 triệu</option>
+          <option value="2.5-3.5">2,5 – 3,5 triệu</option>
           <option value="3.5-5">3,5 – 5 triệu</option>
-          <option value="5-7">5 – 7 triệu</option>
-          <option value="over-7">Trên 7 triệu</option>
+          <option value="over-5">Trên 5 triệu</option>
         </SelectField>
         <div className="flex items-center gap-4 sm:col-span-2">
           <Button type="submit">Lưu thay đổi</Button>

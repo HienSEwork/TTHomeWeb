@@ -9,7 +9,7 @@ import { JsonLd } from "@/components/json-ld";
 
 export const metadata: Metadata = {
   title: "Về chúng tôi",
-  description: "TTHOME quản lý và cho thuê phòng trọ, căn hộ dịch vụ ở TP. Hồ Chí Minh. Giá minh bạch, xem phòng tận nơi cùng nhân viên.",
+  description: "TTHOME quản lý và cho thuê phòng trọ, căn hộ dịch vụ ở TP. Cần Thơ. Giá minh bạch, xem phòng tận nơi cùng nhân viên.",
   alternates: { canonical: "/ve-chung-toi" },
 };
 
@@ -33,14 +33,14 @@ export default function AboutPage() {
           telephone: SITE.hotline,
           email: SITE.email,
           taxID: SITE.taxCode,
-          address: { "@type": "PostalAddress", streetAddress: SITE.address, addressLocality: "TP. Hồ Chí Minh", addressCountry: "VN" },
+          address: { "@type": "PostalAddress", streetAddress: SITE.address, addressLocality: "TP. Cần Thơ", addressCountry: "VN" },
         }}
       />
       <Container className="py-8 sm:py-12">
         <Breadcrumbs items={[{ label: "Về chúng tôi" }]} />
         <div className="mt-6 grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:items-center">
           <div>
-            <h1 className="text-display font-extrabold text-balance text-ink">Chúng tôi dẫn người thuê đi xem từng căn phòng ở Sài Gòn.</h1>
+            <h1 className="text-display font-extrabold text-balance text-ink">Chúng tôi dẫn người thuê đi xem từng căn phòng ở Cần Thơ.</h1>
             <p className="mt-5 max-w-xl text-lg text-ink-soft">
               TTHOME bắt đầu từ một nhóm nhỏ làm môi giới phòng trọ quanh các trường đại học. Hôm nay chúng tôi quản lý {inv.projects} tòa nhà và {inv.rooms} phòng, với cùng một cách làm: nói rõ giá, dẫn đi xem tận nơi.
             </p>

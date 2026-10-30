@@ -63,7 +63,7 @@ export function ConsignForm() {
   return (
     <form noValidate onSubmit={submit} className="flex flex-col gap-8 rounded-card border border-line bg-surface p-5 sm:p-8">
       <FormSection title="Địa chỉ tòa nhà">
-        <TextField label="Số nhà, tên đường" placeholder="62/4 Nguyễn Trãi, Phường Bến Thành" value={input.address} onChange={(e) => set("address", e.target.value)} error={errors.address} wrapperClassName="sm:col-span-2" />
+        <TextField label="Số nhà, tên đường" placeholder="62/4 Nguyễn Trãi, Phường Tân An" value={input.address} onChange={(e) => set("address", e.target.value)} error={errors.address} wrapperClassName="sm:col-span-2" />
         <SelectField label="Quận hoặc thành phố" value={input.district} onChange={(e) => set("district", e.target.value)} error={errors.district}>
           <option value="">Chọn</option>
           {DISTRICTS.map((d) => (

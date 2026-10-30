@@ -9,10 +9,10 @@ import { bookingDays, TIME_SLOTS, validateBooking, type BookingField, type Booki
 import { ChoiceGroup, ConsentCheck, FormErrorSummary, FormSection, FormSuccess } from "./form-parts";
 
 const BUDGETS = [
-  { value: "under-3.5", label: "Dưới 3,5 triệu" },
+  { value: "under-2.5", label: "Dưới 2,5 triệu" },
+  { value: "2.5-3.5", label: "2,5 – 3,5 triệu" },
   { value: "3.5-5", label: "3,5 – 5 triệu" },
-  { value: "5-7", label: "5 – 7 triệu" },
-  { value: "over-7", label: "Trên 7 triệu" },
+  { value: "over-5", label: "Trên 5 triệu" },
 ];
 
 const MOVE_IN = [

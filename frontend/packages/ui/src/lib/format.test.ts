@@ -39,10 +39,10 @@ describe("text helpers", () => {
   });
 
   it("strips diacritics including đ", () => {
-    expect(normalizeVi("Đại học Bách Khoa")).toBe("dai hoc bach khoa");
+    expect(normalizeVi("Đại học Cần Thơ")).toBe("dai hoc can tho");
   });
 
   it("builds URL slugs", () => {
-    expect(slugify("Phường Bến Thành, Quận 1")).toBe("phuong-ben-thanh-quan-1");
+    expect(slugify("Phường Tân An, Quận Ninh Kiều")).toBe("phuong-tan-an-quan-ninh-kieu");
   });
 });

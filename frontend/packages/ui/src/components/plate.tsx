@@ -17,7 +17,7 @@ const sizes = {
 } as const;
 
 /**
- * A Saigon house-number plate. TTHome paints its vacancy counts on these so a
+ * A Vietnamese house-number plate. TTHome paints its vacancy counts on these so a
  * figure reads like an address you can walk to.
  */
 export function Plate({ value, unit, size = "sm", className }: PlateProps) {

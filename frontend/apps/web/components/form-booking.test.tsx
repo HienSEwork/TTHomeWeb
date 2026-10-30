@@ -14,9 +14,9 @@ describe("BookingForm", () => {
 
   it("prefills the area from the room being booked and confirms after a valid submit", async () => {
     const user = userEvent.setup();
-    render(<BookingForm target={{ projectName: "Nhà Mây Trần Quang Khải", roomName: "Phòng 302", districtSlug: "quan-1" }} />);
-    expect(screen.getByText(/Phòng 302, Nhà Mây Trần Quang Khải/)).toBeInTheDocument();
-    expect(screen.getByLabelText("Khu vực")).toHaveValue("quan-1");
+    render(<BookingForm target={{ projectName: "Nhà Mây Mậu Thân", roomName: "Phòng 302", districtSlug: "ninh-kieu" }} />);
+    expect(screen.getByText(/Phòng 302, Nhà Mây Mậu Thân/)).toBeInTheDocument();
+    expect(screen.getByLabelText("Khu vực")).toHaveValue("ninh-kieu");
 
     await user.click(screen.getAllByRole("radio")[0]!);
     await user.click(screen.getByRole("radio", { name: "10:00" }));

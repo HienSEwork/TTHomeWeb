@@ -16,8 +16,8 @@ describe("project", () => {
 describe("fitBounds", () => {
   it("contains every point with padding", () => {
     const pts = [
-      { lat: 10.77, lng: 106.69 },
-      { lat: 10.8, lng: 106.72 },
+      { lat: 10.03, lng: 105.77 },
+      { lat: 10.05, lng: 105.79 },
     ];
     const b = fitBounds(pts);
     for (const p of pts) {
@@ -30,7 +30,7 @@ describe("fitBounds", () => {
   });
 
   it("keeps a minimum span around a single point", () => {
-    const b = fitBounds([{ lat: 10.8, lng: 106.7 }]);
+    const b = fitBounds([{ lat: 10.03, lng: 105.77 }]);
     expect(b.north - b.south).toBeGreaterThanOrEqual(0.03);
     expect(b.east - b.west).toBeGreaterThanOrEqual(0.03);
   });
@@ -41,5 +41,5 @@ describe("fitBounds", () => {
 });
 
 it("builds a Google Maps search link", () => {
-  expect(googleMapsUrl({ lat: 10.8, lng: 106.7 })).toBe("https://www.google.com/maps/search/?api=1&query=10.8,106.7");
+  expect(googleMapsUrl({ lat: 10.03, lng: 105.77 })).toBe("https://www.google.com/maps/search/?api=1&query=10.03,105.77");
 });

@@ -10,7 +10,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 
 describe("ProjectCard", () => {
   it("shows vacancy on a plate, the starting price and links to the project", () => {
-    const match = searchProjects({ q: "Võ Văn Tần" })[0]!;
+    const match = searchProjects({ q: "Trần Văn Hoài" })[0]!;
     render(<ProjectCard match={match} />);
     expect(screen.getByText(String(match.rooms.length))).toBeInTheDocument();
     expect(screen.getByText(/^Từ /)).toBeInTheDocument();
@@ -34,11 +34,11 @@ describe("SearchBox", () => {
     const user = userEvent.setup();
     render(<SearchBox />);
     const input = screen.getByRole("combobox");
-    await user.type(input, "bach khoa");
+    await user.type(input, "y duoc");
     const options = await screen.findAllByRole("option");
-    expect(options[0]).toHaveTextContent("Gần Bách Khoa");
+    expect(options[0]).toHaveTextContent("Gần Y Dược");
     await user.keyboard("{ArrowDown}{Enter}");
-    expect(push).toHaveBeenCalledWith("/tim-kiem?landmark=bach-khoa");
+    expect(push).toHaveBeenCalledWith("/tim-kiem?landmark=y-duoc-can-tho");
   });
 
   it("searches the free text when no suggestion is chosen", async () => {

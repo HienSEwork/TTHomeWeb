@@ -17,7 +17,7 @@ describe("searchProjects", () => {
   });
 
   it("matches keywords without diacritics", () => {
-    const results = searchProjects({ q: "vo van tan" });
+    const results = searchProjects({ q: "tran van hoai" });
     expect(results.map((r) => r.project.code)).toContain("C2D9A8");
   });
 
@@ -30,7 +30,7 @@ describe("searchProjects", () => {
   });
 
   it("limits results to the radius around a landmark and sorts nearest first", () => {
-    const results = searchProjects({ landmark: "rmit", radius: 3 });
+    const results = searchProjects({ landmark: "dh-can-tho", radius: 3 });
     expect(results.length).toBeGreaterThan(0);
     const distances = results.map((r) => r.distanceKm ?? Infinity);
     expect(distances.every((d) => d <= 3)).toBe(true);
@@ -81,9 +81,9 @@ describe("similarRooms", () => {
 });
 
 describe("distanceKm", () => {
-  it("measures RMIT to Bách Khoa at roughly 6 km", () => {
-    const [rmit, bk] = [LANDMARKS.find((l) => l.slug === "rmit")!, LANDMARKS.find((l) => l.slug === "bach-khoa")!];
-    expect(distanceKm(rmit, bk)).toBeGreaterThan(5);
-    expect(distanceKm(rmit, bk)).toBeLessThan(7);
+  it("measures Đại học Cần Thơ to Bến Ninh Kiều at roughly 2 km", () => {
+    const [ctu, wharf] = [LANDMARKS.find((l) => l.slug === "dh-can-tho")!, LANDMARKS.find((l) => l.slug === "ben-ninh-kieu")!];
+    expect(distanceKm(ctu, wharf)).toBeGreaterThan(1.5);
+    expect(distanceKm(ctu, wharf)).toBeLessThan(2.5);
   });
 });

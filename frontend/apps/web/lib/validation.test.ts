@@ -33,7 +33,7 @@ describe("small checks", () => {
 
 describe("validateBooking", () => {
   const valid: BookingInput = {
-    area: "quan-7", budget: "4-5", moveIn: "this-month", date: "2026-10-30", slot: "10:00", mode: "in_person",
+    area: "ninh-kieu", budget: "2.5-3.5", moveIn: "this-month", date: "2026-10-30", slot: "10:00", mode: "in_person",
     name: "Nguyễn Thảo Vy", phone: "0903456512", consent: true,
   };
 
@@ -53,7 +53,7 @@ describe("validateBooking", () => {
 
 describe("validateConsign", () => {
   it("checks numbers and room types", () => {
-    const errors = validateConsign({ address: "12 Lê Lợi", district: "quan-1", roomCount: "0", priceFrom: "abc", roomTypes: [], photos: 0, name: "An", phone: "0903456512", consent: true });
+    const errors = validateConsign({ address: "12 Lê Lợi", district: "ninh-kieu", roomCount: "0", priceFrom: "abc", roomTypes: [], photos: 0, name: "An", phone: "0903456512", consent: true });
     expect(Object.keys(errors).sort()).toEqual(["priceFrom", "roomCount", "roomTypes"]);
   });
 });

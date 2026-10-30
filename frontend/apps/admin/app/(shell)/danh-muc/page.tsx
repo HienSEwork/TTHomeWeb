@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AMENITIES, DISTRICTS, LANDMARKS, PROJECTS, ROOM_TYPE_LABEL } from "@tthome/data";
+import { AMENITIES, DISTRICTS, LANDMARKS, PROJECTS, PROVINCE, ROOM_TYPE_LABEL } from "@tthome/data";
 import { Badge } from "@tthome/ui";
 import { PageHeader, Panel } from "@/components/page-parts";
 
@@ -25,7 +25,7 @@ export default function CatalogPage() {
                   <p className="font-semibold text-ink">{d.name}</p>
                   <p className="text-sm text-muted tabular">{projectsIn(d.slug)} dự án</p>
                 </div>
-                <p className="text-xs text-muted">/phong-tro/ho-chi-minh/{d.slug}</p>
+                <p className="text-xs text-muted">/phong-tro/{PROVINCE.slug}/{d.slug}</p>
                 <ul className="mt-2 flex flex-wrap gap-1.5">
                   {d.wards.map((w) => (
                     <li key={w.slug}>

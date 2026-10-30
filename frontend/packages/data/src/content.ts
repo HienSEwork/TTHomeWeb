@@ -3,7 +3,7 @@ import type { Faq, Policy, Post, PostCategory } from "./types";
 
 export const POST_CATEGORIES: PostCategory[] = [
   { slug: "kinh-nghiem-thue-phong", name: "Kinh nghiệm thuê phòng" },
-  { slug: "khu-vuc-song", name: "Sống ở Sài Gòn" },
+  { slug: "khu-vuc-song", name: "Sống ở Cần Thơ" },
   { slug: "chu-nha", name: "Dành cho chủ nhà" },
   { slug: "thi-truong", name: "Thị trường cho thuê" },
 ];
@@ -34,8 +34,8 @@ export const POSTS: Post[] = [
       {
         heading: "Hỏi rõ cách tính điện nước",
         paragraphs: [
-          "Giá điện phổ biến ở Sài Gòn hiện từ 3.500 đến 4.000 đ mỗi kWh. Phòng có đồng hồ riêng và chụp số đầu kỳ cùng chủ nhà sẽ tránh tranh cãi khi trả phòng.",
-          "Nước thường tính theo đầu người, khoảng 100.000 đ mỗi tháng. Trên TTHOME, giá niêm yết của mỗi phòng đã ghi rõ các khoản này.",
+          "Giá điện phổ biến ở Cần Thơ hiện từ 3.500 đến 3.800 đ mỗi kWh. Phòng có đồng hồ riêng và chụp số đầu kỳ cùng chủ nhà sẽ tránh tranh cãi khi trả phòng.",
+          "Nước thường tính theo đầu người, khoảng 80.000 đ mỗi tháng. Trên TTHOME, giá niêm yết của mỗi phòng đã ghi rõ các khoản này.",
         ],
       },
       {
@@ -48,11 +48,11 @@ export const POSTS: Post[] = [
     ],
   },
   {
-    slug: "song-gan-lang-dai-hoc-thu-duc",
-    title: "Sống gần Làng Đại học Thủ Đức: chọn khu nào để đi học dưới 15 phút",
-    excerpt: "So sánh Linh Trung, Đông Hòa và khu ký túc xá tư nhân về giá, đường đi và chỗ ăn uống.",
+    slug: "song-gan-dai-hoc-can-tho",
+    title: "Sống gần Đại học Cần Thơ: chọn khu nào để đi học dưới 15 phút",
+    excerpt: "So sánh Xuân Khánh, Hưng Lợi và An Khánh về giá, đường đi và chỗ ăn uống.",
     category: cat("khu-vuc-song"),
-    tags: ["Thủ Đức", "sinh viên"],
+    tags: ["Ninh Kiều", "sinh viên"],
     author: "Minh Khoa",
     publishedAt: "2026-10-18",
     readMinutes: 6,
@@ -60,8 +60,8 @@ export const POSTS: Post[] = [
     status: "published",
     views: 5110,
     sections: [
-      { heading: "Linh Trung", paragraphs: ["Gần cổng Đại học Quốc gia, giá phòng từ 2,2 triệu. Nhiều quán ăn sinh viên dọc đường Tô Vĩnh Diện."] },
-      { heading: "Đông Hòa", paragraphs: ["Thuộc Dĩ An, giá thấp hơn khoảng 15% nhưng đường về buổi tối vắng hơn."] },
+      { heading: "Xuân Khánh", paragraphs: ["Sát cổng chính Đại học Cần Thơ, giá phòng từ 2 triệu. Nhiều quán ăn sinh viên dọc đường 30 Tháng 4 và Mậu Thân."] },
+      { heading: "Hưng Lợi", paragraphs: ["Đối diện khu II, giá thấp hơn khoảng 10% nhưng một số hẻm hay ngập khi triều cường."] },
     ],
   },
   {
@@ -83,8 +83,8 @@ export const POSTS: Post[] = [
   },
   {
     slug: "gia-thue-phong-tro-quy-4-2026",
-    title: "Giá thuê phòng trọ quý 4/2026: Quận 7 và Bình Thạnh tăng nhẹ",
-    excerpt: "Số liệu từ hơn 1.200 phòng TTHOME đang quản lý cho thấy studio quanh trường đại học tăng 4–6%.",
+    title: "Giá thuê phòng trọ quý 4/2026: Ninh Kiều và Cái Răng tăng nhẹ",
+    excerpt: "Số liệu từ hơn 400 phòng TTHOME đang quản lý ở Cần Thơ cho thấy studio quanh trường đại học tăng 3–5%.",
     category: cat("thi-truong"),
     tags: ["giá thuê", "thị trường"],
     author: "Ban biên tập TTHOME",
@@ -93,7 +93,7 @@ export const POSTS: Post[] = [
     cover: photo(14, 1400),
     status: "published",
     views: 3760,
-    sections: [{ heading: "Studio quanh trường tăng giá", paragraphs: ["Nhu cầu đầu năm học đẩy giá studio quanh RMIT, Văn Lang và UEH lên 4–6% so với quý trước."] }],
+    sections: [{ heading: "Studio quanh trường tăng giá", paragraphs: ["Nhu cầu đầu năm học đẩy giá studio quanh Đại học Cần Thơ, Y Dược và FPT lên 3–5% so với quý trước."] }],
   },
   {
     slug: "nuoi-meo-trong-phong-tro",
@@ -110,18 +110,18 @@ export const POSTS: Post[] = [
     sections: [{ heading: "Ghi vào hợp đồng", paragraphs: ["Thỏa thuận số lượng thú cưng, phí vệ sinh khi trả phòng và trách nhiệm khi có hư hỏng."] }],
   },
   {
-    slug: "di-chuyen-bang-metro-so-1",
-    title: "Thuê phòng dọc tuyến metro số 1: ga nào đáng ở nhất",
-    excerpt: "Thảo Điền, An Phú hay Bình Thái? So sánh giá phòng và thời gian vào trung tâm.",
+    slug: "thue-phong-gan-khu-do-thi-nam-can-tho",
+    title: "Thuê phòng ở khu đô thị Nam Cần Thơ: Hưng Phú hay Hưng Thạnh",
+    excerpt: "So sánh giá phòng và thời gian qua cầu Hưng Lợi vào trung tâm Ninh Kiều.",
     category: cat("khu-vuc-song"),
-    tags: ["metro", "Thủ Đức"],
+    tags: ["Cái Răng", "khu đô thị"],
     author: "Minh Khoa",
     publishedAt: "2026-09-15",
     readMinutes: 6,
     cover: photo(5, 1400),
     status: "draft",
     views: 0,
-    sections: [{ heading: "Ga Thảo Điền", paragraphs: ["Giá cao nhất tuyến nhưng nhiều tiện ích và quán ăn."] }],
+    sections: [{ heading: "Hưng Phú", paragraphs: ["Giá cao hơn nhưng đường rộng, ít ngập và nhiều tiện ích mới."] }],
   },
 ];
 
@@ -170,7 +170,7 @@ export const POLICIES: Policy[] = [
     title: "Chính sách ký gửi",
     updatedAt: "2026-09-20",
     sections: [
-      { heading: "Điều kiện nhận ký gửi", paragraphs: ["Phòng tại TP. Hồ Chí Minh và vùng lân cận, có giấy tờ nhà hợp lệ và đáp ứng an toàn phòng cháy."] },
+      { heading: "Điều kiện nhận ký gửi", paragraphs: ["Phòng tại TP. Cần Thơ, có giấy tờ nhà hợp lệ và đáp ứng an toàn phòng cháy."] },
       { heading: "Phí dịch vụ", paragraphs: ["Phí môi giới bằng 50% một tháng tiền phòng, chỉ thu khi khách ký hợp đồng thuê."] },
     ],
   },

@@ -21,7 +21,7 @@ function headline(f: ReturnType<typeof parseSearchParams>): string {
   if (ward && district) return `Phòng trọ ${ward.name}, ${district.name}`;
   if (district) return `Phòng trọ ${district.name}`;
   if (f.q) return `Kết quả cho “${f.q}”`;
-  return "Phòng trống ở TP. Hồ Chí Minh";
+  return "Phòng trống ở TP. Cần Thơ";
 }
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {

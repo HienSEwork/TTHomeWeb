@@ -93,11 +93,11 @@ export const SYNC_STATUS: Record<SyncStatus, Meta> = {
 export type Staff = { id: string; name: string; team: string; phone: string };
 
 export const STAFF: Staff[] = [
-  { id: "s1", name: "Trần Minh Khoa", team: "Quận 1, 3, Phú Nhuận", phone: "0903 112 451" },
-  { id: "s2", name: "Lê Ngọc Hân", team: "Quận 7, Quận 10", phone: "0938 220 174" },
-  { id: "s3", name: "Phạm Gia Huy", team: "Bình Thạnh, Gò Vấp", phone: "0909 441 238" },
-  { id: "s4", name: "Võ Thu Trang", team: "Thủ Đức, Quận 12", phone: "0918 760 093" },
-  { id: "s5", name: "Nguyễn Đức Anh", team: "Tân Bình", phone: "0977 301 822" },
+  { id: "s1", name: "Trần Minh Khoa", team: "Tân An, An Cư, Cái Khế", phone: "0903 112 451" },
+  { id: "s2", name: "Lê Ngọc Hân", team: "Xuân Khánh, Hưng Lợi", phone: "0938 220 174" },
+  { id: "s3", name: "Phạm Gia Huy", team: "Bình Thủy, Ô Môn", phone: "0909 441 238" },
+  { id: "s4", name: "Võ Thu Trang", team: "Cái Răng, Phong Điền", phone: "0918 760 093" },
+  { id: "s5", name: "Nguyễn Đức Anh", team: "An Khánh, An Hòa", phone: "0977 301 822" },
 ];
 
 const NAMES = [
@@ -112,7 +112,7 @@ function phone(i: number): string {
   return `${prefixes[i % prefixes.length]}${n.slice(0, 1)} ${n.slice(1, 4)} ${n.slice(4)}`;
 }
 
-/** A moment `dayOffset` days from TODAY at hour:minute Ho Chi Minh City time, as an ISO string in UTC. */
+/** A moment `dayOffset` days from TODAY at hour:minute Vietnam time, as an ISO string in UTC. */
 function at(dayOffset: number, hour: number, minute = 0): string {
   const day = new Date(Date.parse(`${TODAY}T00:00:00Z`) + dayOffset * 86_400_000).toISOString().slice(0, 10);
   const hh = String(hour).padStart(2, "0");
@@ -185,7 +185,7 @@ export type Customer = {
 
 const SOURCES: CustomerSource[] = ["web", "web", "zalo", "facebook", "hotline", "ctv", "web", "tiktok", "meey"];
 const STAGES: CustomerStage[] = ["new", "contacted", "viewing", "viewing", "deposited", "rented", "lost", "new", "contacted"];
-const AREAS = ["Quận 7, gần RMIT", "Bình Thạnh", "Quận 3 hoặc Quận 1", "Thủ Đức", "Phú Nhuận", "Quận 10, gần Bách Khoa", "Gò Vấp", "Tân Bình"];
+const AREAS = ["Xuân Khánh, gần ĐH Cần Thơ", "Cái Răng", "Tân An hoặc An Cư", "Bình Thủy", "An Khánh, gần Y Dược", "Hưng Lợi", "Cái Khế", "An Bình, gần FPT"];
 
 export const CUSTOMERS: Customer[] = NAMES.map((name, i) => ({
   id: `kh-${1000 + i}`,
@@ -221,11 +221,11 @@ export type ConsultRequest = {
 };
 
 export const CONSULTS: ConsultRequest[] = [
-  { id: "tv1", name: "Phan Bảo Trâm", phone: phone(71), area: "Quận 7", budget: "4 – 5 triệu", moveIn: "Đầu tháng 11", note: "Cần phòng cho 2 người, có ban công.", status: "new", staffId: null, createdAt: at(0, 8, 42) },
-  { id: "tv2", name: "Kiều Văn Thịnh", phone: phone(72), area: "Bình Thạnh", budget: "Dưới 4 triệu", moveIn: "Ngay", note: "", status: "new", staffId: null, createdAt: at(0, 7, 15) },
-  { id: "tv3", name: "Ông Thị Mai", phone: phone(73), area: "Thủ Đức", budget: "3 – 3,5 triệu", moveIn: "15/11", note: "Sinh viên năm nhất ĐH Quốc gia.", status: "assigned", staffId: "s4", createdAt: at(-1, 20, 5) },
-  { id: "tv4", name: "Lưu Đức Mạnh", phone: phone(74), area: "Quận 1", budget: "7 – 9 triệu", moveIn: "Tháng 12", note: "Làm việc ở Bitexco, muốn đi bộ được.", status: "contacted", staffId: "s1", createdAt: at(-1, 14, 30) },
-  { id: "tv5", name: "Hà My", phone: phone(75), area: "Phú Nhuận", budget: "5 triệu", moveIn: "Đầu tháng 11", note: "Có nuôi một con mèo.", status: "done", staffId: "s1", createdAt: at(-2, 9, 10) },
+  { id: "tv1", name: "Phan Bảo Trâm", phone: phone(71), area: "Xuân Khánh", budget: "3 – 4 triệu", moveIn: "Đầu tháng 11", note: "Cần phòng cho 2 người, có ban công.", status: "new", staffId: null, createdAt: at(0, 8, 42) },
+  { id: "tv2", name: "Kiều Văn Thịnh", phone: phone(72), area: "Cái Răng", budget: "Dưới 2,5 triệu", moveIn: "Ngay", note: "", status: "new", staffId: null, createdAt: at(0, 7, 15) },
+  { id: "tv3", name: "Ông Thị Mai", phone: phone(73), area: "Hưng Lợi", budget: "2 – 2,5 triệu", moveIn: "15/11", note: "Sinh viên năm nhất Đại học Cần Thơ.", status: "assigned", staffId: "s4", createdAt: at(-1, 20, 5) },
+  { id: "tv4", name: "Lưu Đức Mạnh", phone: phone(74), area: "Tân An", budget: "4,5 – 6 triệu", moveIn: "Tháng 12", note: "Làm việc gần Bến Ninh Kiều, muốn đi bộ được.", status: "contacted", staffId: "s1", createdAt: at(-1, 14, 30) },
+  { id: "tv5", name: "Hà My", phone: phone(75), area: "An Cư", budget: "3,5 triệu", moveIn: "Đầu tháng 11", note: "Có nuôi một con mèo.", status: "done", staffId: "s1", createdAt: at(-2, 9, 10) },
   { id: "tv6", name: "test test", phone: "0000 000 000", area: "", budget: "", moveIn: "", note: "asdf", status: "spam", staffId: null, createdAt: at(-2, 3, 2) },
 ];
 
@@ -247,17 +247,17 @@ export type Submission = {
 
 export const SUBMISSIONS: Submission[] = [
   {
-    code: "KG01284", landlord: "Nguyễn Văn Phước", phone: phone(81), address: "62/4 Nguyễn Trãi, Phường Bến Thành", district: "Quận 1",
+    code: "KG01284", landlord: "Nguyễn Văn Phước", phone: phone(81), address: "62/4 Nguyễn Trãi, Phường Tân An", district: "Quận Ninh Kiều",
     roomCount: 6, priceFrom: 6_500_000, roomTypes: "Studio, 1 phòng ngủ", photos: 14, status: "submitted", submittedAt: at(0, 9, 12),
     note: "Tòa mới xây xong, có thang máy.", log: [{ at: at(0, 9, 12), by: "Chủ nhà", text: "Gửi ký gửi qua website." }],
   },
   {
-    code: "KG01283", landlord: "Trần Thị Bích", phone: phone(82), address: "15 Đường số 3, Phường Tân Hưng", district: "Quận 7",
+    code: "KG01283", landlord: "Trần Thị Bích", phone: phone(82), address: "15 Đường số 3, KDC Hồng Loan, Phường Hưng Thạnh", district: "Quận Cái Răng",
     roomCount: 4, priceFrom: 4_200_000, roomTypes: "Phòng trọ", photos: 6, status: "submitted", submittedAt: at(-1, 16, 40),
     note: "", log: [{ at: at(-1, 16, 40), by: "Chủ nhà", text: "Gửi ký gửi qua website." }],
   },
   {
-    code: "KG01281", landlord: "Lê Quang Vinh", phone: phone(83), address: "88 Phan Văn Trị, Phường 5", district: "Quận Gò Vấp",
+    code: "KG01281", landlord: "Lê Quang Vinh", phone: phone(83), address: "88 Lê Hồng Phong, Phường Bình Thủy", district: "Quận Bình Thủy",
     roomCount: 10, priceFrom: 3_600_000, roomTypes: "Studio, phòng trọ", photos: 3, status: "need_info", submittedAt: at(-2, 11, 5),
     note: "Thiếu ảnh WC và giấy phép PCCC.",
     log: [
@@ -266,17 +266,17 @@ export const SUBMISSIONS: Submission[] = [
     ],
   },
   {
-    code: "KG01277", landlord: "Đỗ Thanh Hải", phone: phone(84), address: "21 Tô Vĩnh Diện, Phường Linh Trung", district: "TP. Thủ Đức",
+    code: "KG01277", landlord: "Đỗ Thanh Hải", phone: phone(84), address: "21 Đường 3 Tháng 2, Phường Hưng Lợi", district: "Quận Ninh Kiều",
     roomCount: 12, priceFrom: 2_300_000, roomTypes: "Ký túc xá", photos: 18, status: "approved", submittedAt: at(-4, 13, 0),
     note: "Hẹn chụp ảnh 31/10.", log: [{ at: at(-3, 9, 0), by: "Võ Thu Trang", text: "Duyệt, hẹn đội chụp ảnh." }],
   },
   {
-    code: "KG01270", landlord: "Phạm Hồng Nhung", phone: phone(85), address: "5 Hoa Lan, Phường 2", district: "Quận Phú Nhuận",
+    code: "KG01270", landlord: "Phạm Hồng Nhung", phone: phone(85), address: "5 Lý Tự Trọng, Phường An Cư", district: "Quận Ninh Kiều",
     roomCount: 5, priceFrom: 5_800_000, roomTypes: "Studio", photos: 22, status: "published", submittedAt: at(-9, 10, 0),
     note: "", log: [{ at: at(-6, 15, 0), by: "Trần Minh Khoa", text: "Đã đăng 5 phòng." }],
   },
   {
-    code: "KG01266", landlord: "Vũ Minh Tuấn", phone: phone(86), address: "Hẻm 120 Lê Đức Thọ", district: "Quận Gò Vấp",
+    code: "KG01266", landlord: "Vũ Minh Tuấn", phone: phone(86), address: "Hẻm 120 Nguyễn Văn Linh, Phường An Khánh", district: "Quận Ninh Kiều",
     roomCount: 3, priceFrom: 2_000_000, roomTypes: "Phòng trọ", photos: 2, status: "rejected", submittedAt: at(-11, 8, 0),
     note: "Phòng không có cửa sổ, không đạt tiêu chuẩn.", log: [{ at: at(-10, 9, 0), by: "Phạm Gia Huy", text: "Từ chối: phòng không có cửa sổ và lối thoát hiểm." }],
   },
@@ -324,7 +324,7 @@ export const AUDIT_LOG: AuditEntry[] = [
   { id: "a2", actor: "Quản trị TTHome", action: "Khóa tài khoản", entity: "Người dùng Hồ Mỹ Duyên", at: at(0, 8, 12), ip: "113.161.72.10" },
   { id: "a3", actor: "Trần Minh Khoa", action: "Sửa ảnh bìa dự án", entity: "Dự án PRJ-A1C3F2", at: at(-1, 17, 45), ip: "171.244.9.33" },
   { id: "a4", actor: "Lê Ngọc Hân", action: "Yêu cầu bổ sung ký gửi", entity: "Ký gửi KG01281", at: at(-1, 10, 20), ip: "113.161.72.14" },
-  { id: "a5", actor: "Võ Thu Trang", action: "Đăng bài viết", entity: "Bài viết: Sống gần Làng Đại học Thủ Đức", at: at(-2, 9, 2), ip: "27.72.101.8" },
+  { id: "a5", actor: "Võ Thu Trang", action: "Đăng bài viết", entity: "Bài viết: Sống gần Đại học Cần Thơ", at: at(-2, 9, 2), ip: "27.72.101.8" },
   { id: "a6", actor: "Phạm Gia Huy", action: "Đổi trạng thái khách", entity: "Khách Trần Quốc Bảo, từ Đang xem phòng sang Đã cọc", at: at(-2, 15, 11), ip: "42.118.6.200" },
   { id: "a7", actor: "Quản trị TTHome", action: "Gán vai trò", entity: "Trần Minh Khoa: Biên tập nội dung", at: at(-3, 11, 0), ip: "113.161.72.10" },
   { id: "a8", actor: "Nguyễn Đức Anh", action: "Phân công lịch hẹn", entity: "Lịch hẹn LH02409", at: at(-3, 14, 26), ip: "14.161.30.5" },
@@ -377,8 +377,8 @@ export type PartnerApplication = { id: string; kind: "ctv" | "job"; name: string
 
 export const PARTNER_APPLICATIONS: PartnerApplication[] = [
   { id: "pa1", kind: "ctv", name: "Đoàn Minh Trí", phone: phone(91), detail: "Sinh viên năm 3, có nhóm Zalo tìm phòng 2.000 thành viên.", status: "new", createdAt: at(0, 10, 4) },
-  { id: "pa2", kind: "ctv", name: "Quách Ngọc Yến", phone: phone(92), detail: "Môi giới tự do khu Quận 7.", status: "contacted", createdAt: at(-1, 15, 20) },
-  { id: "pa3", kind: "job", name: "Lại Thành Công", phone: phone(93), detail: "Ứng tuyển Nhân viên tư vấn khu Thủ Đức.", status: "new", createdAt: at(-1, 9, 0) },
+  { id: "pa2", kind: "ctv", name: "Quách Ngọc Yến", phone: phone(92), detail: "Môi giới tự do khu Ninh Kiều.", status: "contacted", createdAt: at(-1, 15, 20) },
+  { id: "pa3", kind: "job", name: "Lại Thành Công", phone: phone(93), detail: "Ứng tuyển Nhân viên tư vấn khu Cái Răng.", status: "new", createdAt: at(-1, 9, 0) },
   { id: "pa4", kind: "ctv", name: "Hứa Anh Khoa", phone: phone(94), detail: "Nhân viên văn phòng, giới thiệu khách là đồng nghiệp.", status: "approved", createdAt: at(-5, 19, 40) },
 ];
 

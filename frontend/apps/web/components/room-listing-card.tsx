@@ -63,7 +63,7 @@ export function RoomListingCard({ listing, priority, className }: { listing: Roo
       <div className="flex flex-1 flex-col p-4">
         <p className="flex items-center gap-1 text-xs text-muted">
           <MapPin aria-hidden className="size-3.5 shrink-0 text-gold-deep" />
-          <span className="truncate">{district?.name}, TP.HCM</span>
+          <span className="truncate">{district?.name}, Cần Thơ</span>
         </p>
         <h3 className="mt-1.5 truncate text-[0.9375rem] leading-[1.3] font-semibold text-ink">
           <Link href={href} className="after:absolute after:inset-0 after:z-0 focus-visible:outline-none after:focus-visible:rounded-card after:focus-visible:outline-2 after:focus-visible:outline-focus">

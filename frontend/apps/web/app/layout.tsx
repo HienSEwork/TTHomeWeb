@@ -23,9 +23,9 @@ const jakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://tthome.vn"),
-  title: { default: "TTHOME: Thuê phòng trọ, căn hộ dịch vụ ở TP.HCM", template: "%s | TTHOME" },
+  title: { default: "TTHOME: Thuê phòng trọ, căn hộ dịch vụ ở Cần Thơ", template: "%s | TTHOME" },
   description:
-    "Tìm phòng trọ, studio và căn hộ dịch vụ còn trống ở TP. Hồ Chí Minh. Giá đã ghi rõ điện nước, xem phòng miễn phí cùng nhân viên TTHOME.",
+    "Tìm phòng trọ, studio và căn hộ dịch vụ còn trống ở TP. Cần Thơ. Giá đã ghi rõ điện nước, xem phòng miễn phí cùng nhân viên TTHOME.",
   openGraph: { siteName: SITE.name, locale: "vi_VN", type: "website" },
 };
 

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useId, useMemo, useState } from "react";
 import { ExternalLink, X } from "lucide-react";
 import { Plate, cn, formatFromPrice, formatPriceShort } from "@tthome/ui";
-import { CITY_BOUNDS, fitBounds, googleMapsUrl, project, SAIGON_RIVER, type Bounds } from "@/lib/map-projection";
+import { CITY_BOUNDS, fitBounds, googleMapsUrl, project, RIVERS, type LatLng, type Bounds } from "@/lib/map-projection";
 
 export type MapPin = {
   id: string;
@@ -29,8 +29,8 @@ type Props = {
   className?: string;
 };
 
-function riverPath(b: Bounds): string {
-  return SAIGON_RIVER.map((p, i) => {
+function riverPath(river: LatLng[], b: Bounds): string {
+  return river.map((p, i) => {
     const { x, y } = project(p, b);
     return `${i === 0 ? "M" : "L"}${x.toFixed(2)} ${y.toFixed(2)}`;
   }).join(" ");
@@ -55,8 +55,12 @@ export function MapView({ pins, landmarks = [], fit, className }: Props) {
           </pattern>
         </defs>
         <rect width="100" height="100" fill={`url(#${gridId})`} />
-        <path d={riverPath(bounds)} fill="none" stroke="#c6d8ee" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-        <path d={riverPath(bounds)} fill="none" stroke="#b3cbe8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+        {RIVERS.map((river, i) => (
+          <g key={i}>
+            <path d={riverPath(river, bounds)} fill="none" stroke="#c6d8ee" strokeWidth={i === 0 ? 14 : 7} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+            <path d={riverPath(river, bounds)} fill="none" stroke="#b3cbe8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+          </g>
+        ))}
       </svg>
 
       {landmarks.map((l) => {

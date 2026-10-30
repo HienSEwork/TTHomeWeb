@@ -10,8 +10,8 @@ export const SITE = {
   zalo: "https://zalo.me/19006868",
   messenger: "https://m.me/tthome.vn",
   email: "hotro@tthome.vn",
-  address: "135 Hai Bà Trưng, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh",
-  taxCode: "0318 456 721",
+  address: "52 Đường 30 Tháng 4, Phường Xuân Khánh, Quận Ninh Kiều, TP. Cần Thơ",
+  taxCode: "1801 456 721",
   company: "Công ty TNHH TTHOME Việt Nam",
   hours: "8:00 – 21:00, kể cả thứ Bảy và Chủ nhật",
 };
@@ -21,52 +21,38 @@ function district(slug: string, name: string, wards: [string, string][]): Distri
 }
 
 export const DISTRICTS: District[] = [
-  district("quan-1", "Quận 1", [
-    ["ben-nghe", "Phường Bến Nghé"],
-    ["ben-thanh", "Phường Bến Thành"],
-    ["da-kao", "Phường Đa Kao"],
+  district("ninh-kieu", "Quận Ninh Kiều", [
+    ["tan-an", "Phường Tân An"],
+    ["an-hoa", "Phường An Hòa"],
+    ["xuan-khanh", "Phường Xuân Khánh"],
+    ["hung-loi", "Phường Hưng Lợi"],
+    ["an-khanh", "Phường An Khánh"],
+    ["an-cu", "Phường An Cư"],
+    ["cai-khe", "Phường Cái Khế"],
+    ["an-binh", "Phường An Bình"],
   ]),
-  district("quan-3", "Quận 3", [
-    ["vo-thi-sau", "Phường Võ Thị Sáu"],
-    ["phuong-9", "Phường 9"],
+  district("cai-rang", "Quận Cái Răng", [
+    ["hung-phu", "Phường Hưng Phú"],
+    ["le-binh", "Phường Lê Bình"],
+    ["hung-thanh", "Phường Hưng Thạnh"],
   ]),
-  district("quan-7", "Quận 7", [
-    ["tan-phong", "Phường Tân Phong"],
-    ["tan-hung", "Phường Tân Hưng"],
+  district("binh-thuy", "Quận Bình Thủy", [
+    ["binh-thuy", "Phường Bình Thủy"],
+    ["an-thoi", "Phường An Thới"],
+    ["tra-noc", "Phường Trà Nóc"],
+    ["long-hoa", "Phường Long Hòa"],
   ]),
-  district("quan-10", "Quận 10", [
-    ["phuong-12", "Phường 12"],
-    ["phuong-14", "Phường 14"],
+  district("o-mon", "Quận Ô Môn", [
+    ["chau-van-liem", "Phường Châu Văn Liêm"],
+    ["phuoc-thoi", "Phường Phước Thới"],
   ]),
-  district("binh-thanh", "Quận Bình Thạnh", [
-    ["phuong-25", "Phường 25"],
-    ["phuong-22", "Phường 22"],
-    ["phuong-13", "Phường 13"],
-  ]),
-  district("phu-nhuan", "Quận Phú Nhuận", [
-    ["phuong-7", "Phường 7"],
-    ["phuong-15", "Phường 15"],
-  ]),
-  district("tan-binh", "Quận Tân Bình", [
-    ["phuong-2", "Phường 2"],
-    ["phuong-4", "Phường 4"],
-  ]),
-  district("go-vap", "Quận Gò Vấp", [
-    ["phuong-5", "Phường 5"],
-    ["phuong-10", "Phường 10"],
-  ]),
-  district("thu-duc", "TP. Thủ Đức", [
-    ["thao-dien", "Phường Thảo Điền"],
-    ["linh-trung", "Phường Linh Trung"],
-    ["hiep-phu", "Phường Hiệp Phú"],
-  ]),
-  district("quan-12", "Quận 12", [
-    ["an-phu-dong", "Phường An Phú Đông"],
-    ["tan-chanh-hiep", "Phường Tân Chánh Hiệp"],
+  district("phong-dien", "Huyện Phong Điền", [
+    ["my-khanh", "Xã Mỹ Khánh"],
+    ["phong-dien", "Thị trấn Phong Điền"],
   ]),
 ];
 
-export const PROVINCE = { slug: "ho-chi-minh", name: "TP. Hồ Chí Minh" };
+export const PROVINCE = { slug: "can-tho", name: "TP. Cần Thơ" };
 
 export const AMENITIES: Amenity[] = [
   { code: "aircon", name: "Máy lạnh", scope: "room" },
@@ -88,14 +74,14 @@ export const AMENITIES: Amenity[] = [
 export const AMENITY_NAME: Record<string, string> = Object.fromEntries(AMENITIES.map((a) => [a.code, a.name]));
 
 export const LANDMARKS: Landmark[] = [
-  { slug: "rmit", name: "Đại học RMIT Nam Sài Gòn", shortName: "RMIT", kind: "university", lat: 10.7294, lng: 106.6955 },
-  { slug: "bach-khoa", name: "Đại học Bách Khoa", shortName: "Bách Khoa", kind: "university", lat: 10.7725, lng: 106.6578 },
-  { slug: "ueh", name: "Đại học Kinh tế UEH", shortName: "UEH", kind: "university", lat: 10.7831, lng: 106.6947 },
-  { slug: "y-duoc", name: "Đại học Y Dược", shortName: "Y Dược", kind: "university", lat: 10.7556, lng: 106.663 },
-  { slug: "van-lang", name: "Đại học Văn Lang", shortName: "Văn Lang", kind: "university", lat: 10.8124, lng: 106.695 },
-  { slug: "lang-dai-hoc", name: "Làng Đại học Thủ Đức", shortName: "Làng Đại học", kind: "university", lat: 10.87, lng: 106.803 },
-  { slug: "landmark-81", name: "Landmark 81", shortName: "Landmark 81", kind: "mall", lat: 10.795, lng: 106.7218 },
-  { slug: "gigamall", name: "Gigamall Thủ Đức", shortName: "Gigamall", kind: "mall", lat: 10.8276, lng: 106.7213 },
+  { slug: "dh-can-tho", name: "Đại học Cần Thơ", shortName: "ĐH Cần Thơ", kind: "university", lat: 10.0299, lng: 105.7706 },
+  { slug: "y-duoc-can-tho", name: "Đại học Y Dược Cần Thơ", shortName: "Y Dược", kind: "university", lat: 10.034, lng: 105.7553 },
+  { slug: "fpt-can-tho", name: "Đại học FPT Cần Thơ", shortName: "FPT", kind: "university", lat: 10.0127, lng: 105.7324 },
+  { slug: "vincom-xuan-khanh", name: "Vincom Xuân Khánh", shortName: "Vincom", kind: "mall", lat: 10.0263, lng: 105.7774 },
+  { slug: "sense-city", name: "Sense City Cần Thơ", shortName: "Sense City", kind: "mall", lat: 10.0336, lng: 105.7836 },
+  { slug: "ben-ninh-kieu", name: "Bến Ninh Kiều", shortName: "Bến Ninh Kiều", kind: "other", lat: 10.0339, lng: 105.7884 },
+  { slug: "bv-da-khoa-trung-uong", name: "Bệnh viện Đa khoa Trung ương Cần Thơ", shortName: "BV Trung ương", kind: "hospital", lat: 10.0236, lng: 105.7584 },
+  { slug: "kcn-tra-noc", name: "Khu công nghiệp Trà Nóc", shortName: "KCN Trà Nóc", kind: "industrial", lat: 10.095, lng: 105.729 },
 ];
 
 export const ROOM_TYPE_LABEL: Record<RoomType, string> = {
@@ -124,10 +110,10 @@ export const PET_LABEL: Record<PetPolicy, string> = {
 };
 
 export const PRICE_BANDS = [
-  { slug: "duoi-3-5-trieu", label: "Dưới 3,5 triệu", min: 0, max: 3_500_000 },
+  { slug: "duoi-2-5-trieu", label: "Dưới 2,5 triệu", min: 0, max: 2_500_000 },
+  { slug: "2-5-3-5-trieu", label: "2,5 – 3,5 triệu", min: 2_500_000, max: 3_500_000 },
   { slug: "3-5-5-trieu", label: "3,5 – 5 triệu", min: 3_500_000, max: 5_000_000 },
-  { slug: "5-7-trieu", label: "5 – 7 triệu", min: 5_000_000, max: 7_000_000 },
-  { slug: "tren-7-trieu", label: "Trên 7 triệu", min: 7_000_000, max: Number.MAX_SAFE_INTEGER },
+  { slug: "tren-5-trieu", label: "Trên 5 triệu", min: 5_000_000, max: Number.MAX_SAFE_INTEGER },
 ] as const;
 
 export function findDistrict(slug: string) {

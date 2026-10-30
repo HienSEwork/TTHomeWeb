@@ -3,8 +3,8 @@ import { activeFilterCount, parseSearchParams, toSearchQuery } from "./search-pa
 
 describe("parseSearchParams", () => {
   it("reads the public URL format", () => {
-    const f = parseSearchParams({ q: "Võ Văn Tần", price: "3000000-5000000", type: "studio,1pn,bogus", group: "pet,ev", exclusive: "1", sort: "price_asc" });
-    expect(f).toMatchObject({ q: "Võ Văn Tần", priceMin: 3_000_000, priceMax: 5_000_000, types: ["studio", "1pn"], pet: true, ev: true, exclusive: true, sort: "price_asc" });
+    const f = parseSearchParams({ q: "Trần Văn Hoài", price: "3000000-5000000", type: "studio,1pn,bogus", group: "pet,ev", exclusive: "1", sort: "price_asc" });
+    expect(f).toMatchObject({ q: "Trần Văn Hoài", priceMin: 3_000_000, priceMax: 5_000_000, types: ["studio", "1pn"], pet: true, ev: true, exclusive: true, sort: "price_asc" });
     expect(f.promo).toBeUndefined();
   });
 
@@ -17,7 +17,7 @@ describe("parseSearchParams", () => {
   });
 
   it("caps the landmark radius at 10 km", () => {
-    expect(parseSearchParams({ landmark: "rmit", radius: "50" }).radius).toBe(10);
+    expect(parseSearchParams({ landmark: "dh-can-tho", radius: "50" }).radius).toBe(10);
   });
 });
 

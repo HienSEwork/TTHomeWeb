@@ -11,9 +11,9 @@ export const metadata: Metadata = {
 };
 
 const COMMISSION = [
-  { band: "Phòng dưới 3,5 triệu", rate: "30% tháng đầu", example: 3_000_000 * 0.3 },
-  { band: "Phòng 3,5 – 7 triệu", rate: "40% tháng đầu", example: 5_000_000 * 0.4 },
-  { band: "Phòng trên 7 triệu", rate: "50% tháng đầu", example: 9_000_000 * 0.5 },
+  { band: "Phòng dưới 2,5 triệu", rate: "30% tháng đầu", example: 2_000_000 * 0.3 },
+  { band: "Phòng 2,5 – 5 triệu", rate: "40% tháng đầu", example: 3_500_000 * 0.4 },
+  { band: "Phòng trên 5 triệu", rate: "50% tháng đầu", example: 6_000_000 * 0.5 },
   { band: "Giới thiệu chủ nhà ký gửi", rate: "500.000 đ mỗi tòa", example: 500_000 },
 ];
 
