@@ -59,6 +59,7 @@ export const en: Dictionary = {
     about: "About TTHOME",
     openMenu: "Open menu",
     closeMenu: "Close menu",
+    menuTitle: "Menu",
     account: "Account",
     signIn: "Sign in",
     admin: "Admin",

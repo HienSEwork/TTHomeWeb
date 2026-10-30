@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { checkDemoCredentials, checkDemoPhone } from "@tthome/data";
 import { Button, TextField, cn } from "@tthome/ui";
 import { safeNext, startDemoSession } from "@/lib/demo-session";
@@ -14,17 +14,30 @@ type EmailMode = "signin" | "register" | "forgot";
 
 const RESEND_SECONDS = 60;
 
-/** Opens the page the visitor wanted before signing in, or the profile. */
+/** Set when the form sits in the sign-in drawer: the visitor stays on the current page. */
+const SignedInHere = createContext<(() => void) | null>(null);
+
+/** Opens the page the visitor wanted before signing in, or the profile; in the drawer, stays on the page. */
 function useSignedIn() {
   const router = useRouter();
+  const stayHere = useContext(SignedInHere);
   return (email: string) => {
     startDemoSession(email);
-    router.replace(safeNext(new URLSearchParams(window.location.search).get("next")));
+    if (stayHere) stayHere();
+    else router.replace(safeNext(new URLSearchParams(window.location.search).get("next")));
     router.refresh();
   };
 }
 
-export function SignInForm() {
+export function SignInForm({ onSignedIn }: { onSignedIn?: () => void } = {}) {
+  return (
+    <SignedInHere.Provider value={onSignedIn ?? null}>
+      <SignInTabs />
+    </SignedInHere.Provider>
+  );
+}
+
+function SignInTabs() {
   const { t } = useI18n();
   const [tab, setTab] = useState<Tab>("email");
   return (

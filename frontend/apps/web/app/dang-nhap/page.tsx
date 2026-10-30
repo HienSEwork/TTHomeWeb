@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { DEMO_ACCOUNTS, DEMO_OTP } from "@tthome/data";
 import { Container } from "@tthome/ui";
 import { BrandLogo } from "@/components/brand-logo";
 import { SignInForm } from "@/components/form-signin";
+import { SignInDemoHint } from "@/components/signin-demo-hint";
 import { getServerI18n } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -32,16 +32,7 @@ export default async function SignInPage() {
           <BrandLogo variant="mark" height={56} />
           <h1 className="mt-5 text-2xl font-bold tracking-tight text-ink">{t.signIn.title}</h1>
           <p className="mt-2 text-muted">{t.signIn.lead}</p>
-          <aside aria-label={t.signIn.demo} className="mt-6 rounded-xl border border-dashed border-line-strong bg-ivory px-4 py-3 text-sm text-ink-soft">
-            <p className="font-semibold text-ink">{t.signIn.demoTitle}</p>
-            <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">
-              <dt className="text-muted">{t.common.email}</dt>
-              <dd className="font-mono text-ink">{DEMO_ACCOUNTS.user.email}</dd>
-              <dt className="text-muted">{t.signIn.password}</dt>
-              <dd className="font-mono text-ink">{DEMO_ACCOUNTS.user.password}</dd>
-            </dl>
-            <p className="mt-1.5 text-xs text-muted">{t.signIn.demoPhone(DEMO_ACCOUNTS.user.phone, DEMO_OTP)}</p>
-          </aside>
+          <SignInDemoHint className="mt-6" />
           <div className="mt-6">
             <SignInForm />
           </div>

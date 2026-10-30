@@ -61,6 +61,7 @@ export const vi = {
     about: "Về TTHOME",
     openMenu: "Mở menu",
     closeMenu: "Đóng menu",
+    menuTitle: "Menu",
     account: "Tài khoản",
     signIn: "Đăng nhập",
     admin: "Trang quản trị",

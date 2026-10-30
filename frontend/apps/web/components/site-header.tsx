@@ -2,16 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { LayoutDashboard, Menu, Phone, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { LayoutDashboard, Menu, Phone } from "lucide-react";
 import { SITE } from "@tthome/data";
 import { buttonStyles, cn } from "@tthome/ui";
 import { hasDemoSession } from "@/lib/demo-session";
 import { useI18n } from "@/lib/i18n/client";
 import { MAIN_NAV, isActive } from "@/lib/nav";
 import { BrandLockup } from "./brand-logo";
+import { Drawer } from "./drawer";
+import { SignInForm } from "./form-signin";
 import { LangSwitch } from "./lang-switch";
 import { Magnetic } from "./magnetic";
+import { SignInDemoHint } from "./signin-demo-hint";
 
 /** The admin app. Served under /admin in production; set NEXT_PUBLIC_ADMIN_URL when it runs on another port locally. */
 const ADMIN_URL = process.env.NEXT_PUBLIC_ADMIN_URL ?? "/admin";
@@ -29,7 +32,16 @@ export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   // The demo session lives in a cookie: read on every render in the browser, never on the server.
   const signedIn = useSyncExternalStore(noSubscription, hasDemoSession, () => false);
-  const account = signedIn ? { href: "/tai-khoan/ho-so", label: t.nav.account } : { href: "/dang-nhap", label: t.nav.signIn };
+  const [signInOpen, setSignInOpen] = useState(false);
+  // Where focus returns when the sign-in drawer closes: the button that opened it, or the menu toggle.
+  const signInReturn = useRef<HTMLElement | null>(null);
+  const closeMenu = useCallback(() => setOpenOn(null), []);
+  const closeSignIn = useCallback(() => setSignInOpen(false), []);
+  const openSignIn = () => {
+    signInReturn.current = open ? toggle.current : (document.activeElement as HTMLElement | null);
+    setOpenOn(null);
+    setSignInOpen(true);
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -37,21 +49,6 @@ export function SiteHeader() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  useEffect(() => {
-    if (!open) return;
-    document.body.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      setOpenOn(null);
-      toggle.current?.focus();
-    };
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = "";
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
 
   return (
     <header
@@ -96,9 +93,15 @@ export function SiteHeader() {
           <a href={ADMIN_URL} className="rounded-lg p-2 text-muted transition-colors hover:bg-ivory hover:text-gold-ink max-sm:hidden" aria-label={t.nav.admin} title={t.nav.admin}>
             <LayoutDashboard aria-hidden className="size-5" />
           </a>
-          <Link href={account.href} className="px-2 py-2 text-[0.9375rem] font-semibold text-ink-soft transition-colors hover:text-gold-ink max-sm:hidden">
-            {account.label}
-          </Link>
+          {signedIn ? (
+            <Link href="/tai-khoan/ho-so" className="px-2 py-2 text-[0.9375rem] font-semibold text-ink-soft transition-colors hover:text-gold-ink max-sm:hidden">
+              {t.nav.account}
+            </Link>
+          ) : (
+            <button type="button" onClick={openSignIn} aria-haspopup="dialog" className="px-2 py-2 text-[0.9375rem] font-semibold text-ink-soft transition-colors hover:text-gold-ink max-sm:hidden">
+              {t.nav.signIn}
+            </button>
+          )}
           <Magnetic strength={0.2} className="max-sm:hidden">
             <Link href="/ky-gui" className={buttonStyles({ size: "md", className: "rounded-full px-5 shadow-[var(--shadow-soft)]" })}>
               {t.nav.consign}
@@ -109,23 +112,23 @@ export function SiteHeader() {
             type="button"
             className={buttonStyles({ variant: "ghost", size: "md", className: "px-2.5 lg:hidden" })}
             aria-expanded={open}
-            aria-controls="menu-di-dong"
+            aria-haspopup="dialog"
             onClick={() => setOpen(!open)}
           >
-            {open ? <X aria-hidden /> : <Menu aria-hidden />}
-            <span className="sr-only">{open ? t.nav.closeMenu : t.nav.openMenu}</span>
+            <Menu aria-hidden />
+            <span className="sr-only">{t.nav.openMenu}</span>
           </button>
         </div>
       </div>
 
-      {open ? (
-        <nav id="menu-di-dong" aria-label={t.nav.main} className={cn("fixed inset-x-0 bottom-0 overflow-y-auto border-t border-line bg-alabaster px-4 pt-2 pb-10 lg:hidden", scrolled ? "top-16" : "top-20")}>
+      <Drawer open={open} onClose={closeMenu} title={t.nav.menuTitle} closeLabel={t.nav.closeMenu} returnFocus={toggle} className="lg:hidden">
+        <nav id="menu-di-dong" aria-label={t.nav.main}>
           <ul className="flex flex-col">
             {MAIN_NAV.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  onClick={() => setOpen(false)}
+                  onClick={closeMenu}
                   aria-current={isActive(pathname, item.href) ? "page" : undefined}
                   className="flex items-center border-b border-line py-4 text-lg font-semibold text-ink aria-[current=page]:text-gold-ink"
                 >
@@ -139,12 +142,18 @@ export function SiteHeader() {
             <LangSwitch size="lg" />
           </div>
           <div className="mt-6 grid gap-2">
-            <Link href="/ky-gui" onClick={() => setOpen(false)} className={buttonStyles({ size: "lg", className: "w-full" })}>
+            <Link href="/ky-gui" onClick={closeMenu} className={buttonStyles({ size: "lg", className: "w-full rounded-full" })}>
               {t.nav.consign}
             </Link>
-            <Link href={account.href} onClick={() => setOpen(false)} className={buttonStyles({ variant: "secondary", size: "lg", className: "w-full" })}>
-              {account.label}
-            </Link>
+            {signedIn ? (
+              <Link href="/tai-khoan/ho-so" onClick={closeMenu} className={buttonStyles({ variant: "secondary", size: "lg", className: "w-full rounded-full" })}>
+                {t.nav.account}
+              </Link>
+            ) : (
+              <button type="button" onClick={openSignIn} aria-haspopup="dialog" className={buttonStyles({ variant: "secondary", size: "lg", className: "w-full rounded-full" })}>
+                {t.nav.signIn}
+              </button>
+            )}
             <a href={SITE.hotlineHref} className={buttonStyles({ variant: "ghost", size: "lg", className: "w-full" })}>
               <Phone aria-hidden />
               {t.common.call(SITE.hotline)}
@@ -155,7 +164,15 @@ export function SiteHeader() {
             </a>
           </div>
         </nav>
-      ) : null}
+      </Drawer>
+
+      <Drawer open={signInOpen} onClose={closeSignIn} title={t.signIn.title} closeLabel={t.common.close} returnFocus={signInReturn}>
+        <p className="text-sm text-muted">{t.signIn.lead}</p>
+        <SignInDemoHint className="mt-4" />
+        <div className="mt-5 [&>div]:border-0 [&>div]:p-0 [&>div]:sm:p-0">
+          <SignInForm onSignedIn={closeSignIn} />
+        </div>
+      </Drawer>
     </header>
   );
 }
