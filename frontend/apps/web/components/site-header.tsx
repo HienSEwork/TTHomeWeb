@@ -8,6 +8,7 @@ import { SITE } from "@tthome/data";
 import { buttonStyles, cn } from "@tthome/ui";
 import { MAIN_NAV, isActive } from "@/lib/nav";
 import { BrandLockup } from "./brand-logo";
+import { Magnetic } from "./magnetic";
 
 /** The admin app. Served under /admin in production; set NEXT_PUBLIC_ADMIN_URL when it runs on another port locally. */
 const ADMIN_URL = process.env.NEXT_PUBLIC_ADMIN_URL ?? "/admin";
@@ -19,6 +20,14 @@ export function SiteHeader() {
   const open = openOn === pathname;
   const setOpen = (next: boolean) => setOpenOn(next ? pathname : null);
   const toggle = useRef<HTMLButtonElement>(null);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 50);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -36,8 +45,16 @@ export function SiteHeader() {
   }, [open]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line/90 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
-      <div className="mx-auto flex h-[72px] max-w-[1280px] items-center gap-6 px-4 sm:px-6">
+    <header
+      data-scrolled={scrolled || undefined}
+      className={cn(
+        "sticky top-0 z-40 border-b transition-[background-color,border-color,box-shadow] duration-500 ease-out-expo",
+        scrolled || open
+          ? "border-line/80 bg-alabaster/95 shadow-[0_8px_30px_-12px_rgb(45_35_20/0.12)] backdrop-blur-md supports-[backdrop-filter]:bg-alabaster/75"
+          : "border-transparent bg-alabaster",
+      )}
+    >
+      <div className={cn("mx-auto flex max-w-[1280px] items-center gap-6 px-4 transition-[height] duration-500 ease-out-expo sm:px-6", scrolled ? "h-16" : "h-20")}>
         <Link href="/" aria-label="TTHOME, về trang chủ" className="shrink-0">
           <BrandLockup />
         </Link>
@@ -72,9 +89,11 @@ export function SiteHeader() {
           <Link href="/dang-nhap" className="px-2 py-2 text-[0.9375rem] font-semibold text-ink-soft transition-colors hover:text-gold-ink max-sm:hidden">
             Đăng nhập
           </Link>
-          <Link href="/ky-gui" className={buttonStyles({ size: "md", className: "rounded-[10px] px-5 shadow-[var(--shadow-soft)] max-sm:hidden" })}>
-            Ký gửi phòng
-          </Link>
+          <Magnetic strength={0.2} className="max-sm:hidden">
+            <Link href="/ky-gui" className={buttonStyles({ size: "md", className: "rounded-full px-5 shadow-[var(--shadow-soft)]" })}>
+              Ký gửi phòng
+            </Link>
+          </Magnetic>
           <button
             ref={toggle}
             type="button"
@@ -90,7 +109,7 @@ export function SiteHeader() {
       </div>
 
       {open ? (
-        <nav id="menu-di-dong" aria-label="Menu chính" className="fixed inset-x-0 top-[72px] bottom-0 overflow-y-auto border-t border-line bg-white px-4 pt-2 pb-10 lg:hidden">
+        <nav id="menu-di-dong" aria-label="Menu chính" className={cn("fixed inset-x-0 bottom-0 overflow-y-auto border-t border-line bg-alabaster px-4 pt-2 pb-10 lg:hidden", scrolled ? "top-16" : "top-20")}>
           <ul className="flex flex-col">
             {MAIN_NAV.map((item) => (
               <li key={item.href}>

@@ -60,7 +60,7 @@ export default async function SearchPage({ searchParams }: Props) {
           </Link>
         </div>
 
-        <div className="sticky top-[72px] z-20 -mx-4 mt-4 border-b border-line bg-wash/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+        <div className="sticky top-16 z-20 -mx-4 mt-4 border-b border-line bg-wash/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
           <SearchToolbar filters={filters} />
         </div>
 
@@ -92,7 +92,7 @@ export default async function SearchPage({ searchParams }: Props) {
       </div>
 
       <aside aria-label="Bản đồ" className="hidden lg:block">
-        <div className="sticky top-[72px] h-[calc(100dvh-72px)] border-l border-line">
+        <div className="sticky top-16 h-[calc(100dvh-4rem)] border-l border-line">
           <MapView pins={pins} landmarks={landmarks} fit className="size-full" />
         </div>
       </aside>
