@@ -28,9 +28,12 @@ export function TableFrame({ children, caption }: { children: ReactNode; caption
 export const th = "border-b border-line bg-wash/60 px-4 py-2.5 text-xs font-semibold text-muted whitespace-nowrap";
 export const td = "border-b border-line px-4 py-3 align-middle";
 
+/** The shared danger button hard-codes white text and a dark-red hover; in the dark theme the red fill is light, so its text follows the theme. */
+export const dangerButton = "text-on-danger! hover:bg-danger-hover!";
+
 /** Compact control for toolbars. */
 export const toolbarControl =
-  "h-9 rounded-lg border border-line-strong bg-surface px-3 text-sm text-ink focus:border-plate focus:outline-none focus:ring-2 focus:ring-plate/20";
+  "h-9 rounded-lg border border-line-strong bg-surface px-3 text-sm text-ink focus:border-focus focus:outline-none focus:ring-2 focus:ring-focus/20";
 
 /** A white panel with a title row, used for dashboard blocks and side panels. */
 export function Panel({ title, action, children, className }: { title: string; action?: ReactNode; children: ReactNode; className?: string }) {

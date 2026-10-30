@@ -1,9 +1,12 @@
-/** Validated categorical slots (dataviz validator: all checks pass; the yellow needs visible labels, which every use has). */
+/**
+ * Categorical slots in the gold palette. Values are CSS variables (app/globals.css) so charts follow the light and
+ * dark theme; each slot also differs in lightness, and every use carries visible labels.
+ */
 export const SERIES = {
-  green: "#0f8a68",
-  yellow: "#c99412",
-  blue: "#2c63ad",
-  red: "#c93c2b",
+  gold: "var(--chart-gold)",
+  sage: "var(--chart-sage)",
+  umber: "var(--chart-umber)",
+  clay: "var(--chart-clay)",
 } as const;
 
 /** Linear scale from a data domain to a pixel range. */

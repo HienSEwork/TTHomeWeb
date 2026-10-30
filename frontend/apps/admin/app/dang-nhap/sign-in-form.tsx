@@ -26,7 +26,7 @@ export function SignInForm() {
         error={error?.startsWith("Mật khẩu") ? error : undefined}
       />
       <label className="flex items-center gap-2 text-sm text-ink-soft">
-        <input type="checkbox" name="remember" className="size-4 accent-ink" />
+        <input type="checkbox" name="remember" className="size-4 accent-primary" />
         Ghi nhớ đăng nhập trên máy này
       </label>
       {error && !error.startsWith("Nhập email") && !error.startsWith("Mật khẩu") ? (

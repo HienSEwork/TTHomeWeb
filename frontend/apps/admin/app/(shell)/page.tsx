@@ -79,10 +79,10 @@ export default function DashboardPage() {
             <StackedBar
               label="Tình trạng phòng"
               items={[
-                { label: "Còn trống", value: inv.vacant, color: SERIES.green },
-                { label: "Đang giữ chỗ", value: inv.reserved, color: SERIES.yellow },
-                { label: "Đã thuê", value: inv.rented, color: SERIES.blue },
-                { label: "Đang ẩn", value: inv.hidden, color: SERIES.red },
+                { label: "Còn trống", value: inv.vacant, color: SERIES.sage },
+                { label: "Đang giữ chỗ", value: inv.reserved, color: SERIES.gold },
+                { label: "Đã thuê", value: inv.rented, color: SERIES.umber },
+                { label: "Đang ẩn", value: inv.hidden, color: SERIES.clay },
               ]}
             />
             <p className="mt-5 border-t border-line pt-4 text-sm text-muted">
@@ -97,7 +97,7 @@ export default function DashboardPage() {
         <Panel
           title={`Lịch hẹn hôm nay (${today.length})`}
           action={
-            <Link href="/lich-hen" className="text-sm font-semibold text-shutter hover:underline">
+            <Link href="/lich-hen" className="text-sm font-semibold text-link hover:underline">
               Tất cả lịch hẹn
             </Link>
           }
@@ -130,7 +130,7 @@ export default function DashboardPage() {
           <Panel
             title="Ký gửi chờ duyệt"
             action={
-              <Link href="/ky-gui" className="text-sm font-semibold text-shutter hover:underline">
+              <Link href="/ky-gui" className="text-sm font-semibold text-link hover:underline">
                 Duyệt
               </Link>
             }
@@ -152,7 +152,7 @@ export default function DashboardPage() {
           <Panel
             title="Yêu cầu tư vấn mới"
             action={
-              <Link href="/khach-hang?tab=tu-van" className="text-sm font-semibold text-shutter hover:underline">
+              <Link href="/khach-hang?tab=tu-van" className="text-sm font-semibold text-link hover:underline">
                 Phân công
               </Link>
             }
@@ -175,7 +175,7 @@ export default function DashboardPage() {
         <Panel
           title="Đồng bộ Meey CRM"
           action={
-            <Link href="/dong-bo" className="text-sm font-semibold text-shutter hover:underline">
+            <Link href="/dong-bo" className="text-sm font-semibold text-link hover:underline">
               Chi tiết
             </Link>
           }

@@ -29,12 +29,12 @@ export function Tabs<T extends string>({
             onClick={() => onChange(t.value)}
             className={cn(
               "-mb-px flex shrink-0 items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-semibold transition-colors",
-              active ? "border-shutter text-ink" : "border-transparent text-muted hover:text-ink",
+              active ? "border-primary text-ink" : "border-transparent text-muted hover:text-ink",
             )}
           >
             {t.label}
             {t.count != null ? (
-              <span className={cn("tabular rounded-md px-1.5 text-xs", active ? "bg-shutter-tint text-shutter-dark" : "bg-ink/[0.06] text-muted")}>{t.count}</span>
+              <span className={cn("tabular rounded-md px-1.5 text-xs", active ? "bg-wall-tint text-wall-dark" : "bg-ink/[0.06] text-muted")}>{t.count}</span>
             ) : null}
           </button>
         );
@@ -58,7 +58,7 @@ export function Dialog({ open, onClose, title, children, footer }: { open: boole
       ref={ref}
       aria-labelledby={titleId}
       onClose={onClose}
-      className="m-auto w-[min(520px,calc(100vw-2rem))] rounded-card border border-line bg-surface p-0 text-ink shadow-[var(--shadow-lift)] backdrop:bg-ink/40"
+      className="m-auto w-[min(520px,calc(100vw-2rem))] rounded-card border border-line bg-surface p-0 text-ink shadow-[var(--shadow-lift)] backdrop:bg-black/50"
     >
       <div className="flex items-center justify-between border-b border-line px-5 py-4">
         <h2 id={titleId} className="text-lg font-bold">
@@ -87,7 +87,7 @@ export function Toast({ message, onDone }: { message: string | null; onDone: () 
   }, [message]);
   return (
     <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
-      {message ? <p className="rounded-xl bg-ink px-4 py-2.5 text-sm font-medium text-white shadow-[var(--shadow-lift)]">{message}</p> : null}
+      {message ? <p className="rounded-xl bg-ink px-4 py-2.5 text-sm font-medium text-surface shadow-[var(--shadow-lift)]">{message}</p> : null}
     </div>
   );
 }

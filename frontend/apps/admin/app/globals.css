@@ -2,3 +2,136 @@
 @import "@tthome/ui/styles/theme.css";
 
 @source "../../../packages/ui/src";
+
+/* `dark:` utilities follow the theme chosen on <html data-theme>, not only the OS setting. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/*
+ * Admin brand, light theme: the public site's gold on white. Cream page ground, white panels, honey-amber
+ * accent with espresso text on it, deep amber for small accent text. Status tones stay apart so a badge still
+ * reads at a glance: wall = new (gold), plate = in progress (umber), shutter = done (sage).
+ * Text pairs pass WCAG AA (4.5:1); focus rings and chart marks pass 3:1.
+ */
+@theme {
+  --color-ink: #1c1a17;
+  --color-ink-soft: #45403a;
+  --color-muted: #6e6961;
+  --color-line: #ece5da;
+  --color-line-strong: #dcd2c3;
+  --color-wash: #fcf8f0;
+  --color-surface: #ffffff;
+
+  /* Dark espresso rail in both themes; its text is white. */
+  --color-sidebar: #1c1a17;
+  /* Small accent text and links (deep amber, 6.7:1 on white). */
+  --color-link: #7a5520;
+
+  --color-primary: #d99b4b;
+  --color-primary-hover: #c58635;
+  --color-on-primary: #1c1a17;
+  --color-focus: #c58635;
+  --color-selected: #f7eddf;
+  --color-selected-line: #c58635;
+  --color-on-selected: #1c1a17;
+
+  --color-shutter: #4f7556;
+  --color-shutter-dark: #3b5a41;
+  --color-shutter-tint: #ecf2ec;
+  --color-success: #4f7556;
+  --color-success-tint: #ecf2ec;
+
+  --color-plate: #6b5a45;
+  --color-plate-dark: #4a3f33;
+  --color-plate-tint: #f1ece4;
+  /* The logo plate: honey field, espresso numerals and rule. */
+  --color-plate-field: #d99b4b;
+  --color-plate-fg: #1c1a17;
+  --color-plate-rule: rgb(28 26 23 / 0.85);
+
+  --color-wall: #d99b4b;
+  --color-wall-dark: #7a5520;
+  --color-wall-tint: #fbf0da;
+
+  --color-danger: #b42318;
+  --color-danger-hover: #912018;
+  --color-on-danger: #ffffff;
+  --color-danger-tint: #fdecea;
+  --color-warn: #a15c07;
+  --color-warn-tint: #fef0c7;
+
+  --shadow-lift: 0 1px 2px rgb(45 35 20 / 0.06), 0 8px 24px -12px rgb(45 35 20 / 0.2);
+}
+
+/* Chart series, read by SVG attributes and inline styles through var(). Lightness differs as well as hue. */
+:root {
+  color-scheme: light;
+  --chart-gold: #c58635;
+  --chart-sage: #4f7556;
+  --chart-umber: #4a4036;
+  --chart-clay: #b8452f;
+}
+
+/*
+ * Dark theme: warm near-black espresso, cream text, the same gold lifted for contrast. Text on gold, red or
+ * green fills turns espresso because those fills get lighter. Set on <html> before paint by the script in layout.tsx.
+ */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-ink: #f3ece0;
+  --color-ink-soft: #d9cfc0;
+  --color-muted: #a89e8f;
+  --color-line: #2a251e;
+  --color-line-strong: #4a4136;
+  --color-wash: #15130f;
+  --color-surface: #1d1a15;
+
+  --color-sidebar: #100e0b;
+  --color-link: #edbb74;
+
+  --color-primary: #e0a65a;
+  --color-primary-hover: #ebb873;
+  --color-on-primary: #15130f;
+  --color-focus: #e0a65a;
+  --color-selected: #3a2e1c;
+  --color-selected-line: #e0a65a;
+  --color-on-selected: #f3ece0;
+
+  --color-shutter: #8db896;
+  --color-shutter-dark: #a8cfaf;
+  --color-shutter-tint: #1f2b21;
+  --color-success: #8db896;
+  --color-success-tint: #1f2b21;
+
+  --color-plate: #bfaf98;
+  --color-plate-dark: #d9ccb8;
+  --color-plate-tint: #2c2620;
+  --color-plate-field: #e0a65a;
+  --color-plate-fg: #15130f;
+  --color-plate-rule: rgb(21 19 15 / 0.85);
+
+  --color-wall: #e0a65a;
+  --color-wall-dark: #f0c27f;
+  --color-wall-tint: #3a2c17;
+
+  --color-danger: #f28b7d;
+  --color-danger-hover: #f6a499;
+  --color-on-danger: #15130f;
+  --color-danger-tint: #3a1d19;
+  --color-warn: #f2a65e;
+  --color-warn-tint: #3a2614;
+
+  --shadow-lift: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.7);
+
+  --chart-gold: #e0a65a;
+  --chart-sage: #8db896;
+  --chart-umber: #e8dcc8;
+  --chart-clay: #e8806b;
+}
+
+@layer base {
+  ::selection {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+}

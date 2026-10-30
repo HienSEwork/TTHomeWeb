@@ -95,7 +95,7 @@ export function ProjectsTable() {
                 return (
                   <tr key={p.id} className="hover:bg-wash/60">
                     <td className={td}>
-                      <Link href={`/phong/${p.code}`} className="flex items-center gap-3 font-semibold text-ink hover:text-shutter">
+                      <Link href={`/phong/${p.code}`} className="flex items-center gap-3 font-semibold text-ink hover:text-link">
                         <span className="relative size-10 shrink-0 overflow-hidden rounded-lg bg-line">
                           <Image src={p.images[0]!} alt="" fill sizes="40px" className="object-cover" />
                         </span>
@@ -116,7 +116,7 @@ export function ProjectsTable() {
                     <td className={`${td} text-right tabular`}>{min ? formatPriceShort(min) : "Hết phòng"}</td>
                     <td className={td}>
                       <div className="flex flex-wrap gap-1">
-                        {p.exclusive ? <Badge tone="ink">Độc quyền</Badge> : null}
+                        {p.exclusive ? <Badge tone="ink" className="text-surface!">Độc quyền</Badge> : null}
                         {p.promo ? <Badge tone="wall">Ưu đãi</Badge> : null}
                         {!p.exclusive && !p.promo ? <span className="text-muted">Thường</span> : null}
                       </div>
@@ -152,7 +152,7 @@ export function ProjectsTable() {
                   <span className="block text-xs font-normal text-muted">{room.name}</span>
                 </td>
                 <td className={td}>
-                  <Link href={`/phong/${project.code}`} className="text-ink-soft hover:text-shutter hover:underline">
+                  <Link href={`/phong/${project.code}`} className="text-ink-soft hover:text-link hover:underline">
                     {project.name}
                   </Link>
                 </td>

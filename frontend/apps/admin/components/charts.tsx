@@ -49,12 +49,12 @@ export function DailyLineChart({ data, label, unit, height = 220 }: { data: { da
             </text>
           ) : null,
         )}
-        <path d={area} fill={SERIES.blue} opacity={0.08} />
-        <path d={linePath(points)} fill="none" stroke={SERIES.blue} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+        <path d={area} fill={SERIES.gold} opacity={0.08} />
+        <path d={linePath(points)} fill="none" stroke={SERIES.gold} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
         {activePoint ? (
           <g>
             <line x1={activePoint.x} x2={activePoint.x} y1={pad.top} y2={height - pad.bottom} stroke="var(--color-ink)" strokeOpacity={0.25} strokeWidth={1} />
-            <circle cx={activePoint.x} cy={activePoint.y} r={5} fill={SERIES.blue} stroke="var(--color-surface)" strokeWidth={2} />
+            <circle cx={activePoint.x} cy={activePoint.y} r={5} fill={SERIES.gold} stroke="var(--color-surface)" strokeWidth={2} />
           </g>
         ) : null}
         <rect

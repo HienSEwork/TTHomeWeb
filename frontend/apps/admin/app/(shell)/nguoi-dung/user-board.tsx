@@ -5,7 +5,7 @@ import { Check, Lock, LockOpen } from "lucide-react";
 import { ROLES, USER_STATUS, USER_TYPE, USERS, type UserAccount, type UserType } from "@tthome/data";
 import { Badge, Button, EmptyState } from "@tthome/ui";
 import { Dialog, Tabs, Toast } from "@/components/interactive";
-import { TableFrame, td, th, toolbarControl } from "@/components/page-parts";
+import { TableFrame, dangerButton, td, th, toolbarControl } from "@/components/page-parts";
 import { matchesQuery } from "@/lib/filters";
 import { fmt } from "@/lib/format";
 
@@ -167,12 +167,12 @@ export function UserBoard() {
         <fieldset className="space-y-2">
           <legend className="mb-2 text-sm text-muted">Mỗi tài khoản cần ít nhất một vai trò.</legend>
           {ROLES.map((r) => (
-            <label key={r.code} className="flex items-start gap-3 rounded-lg border border-line p-3 has-[:checked]:border-shutter has-[:checked]:bg-shutter-tint/40">
+            <label key={r.code} className="flex items-start gap-3 rounded-lg border border-line p-3 has-[:checked]:border-selected-line has-[:checked]:bg-selected/60">
               <input
                 type="checkbox"
                 checked={draftRoles.includes(r.code)}
                 onChange={(e) => setDraftRoles((d) => (e.target.checked ? [...d, r.code] : d.filter((x) => x !== r.code)))}
-                className="mt-0.5 size-4 accent-shutter"
+                className="mt-0.5 size-4 accent-primary"
               />
               <span>
                 <span className="block text-sm font-semibold text-ink">{r.name}</span>
@@ -192,7 +192,7 @@ export function UserBoard() {
             <Button variant="ghost" onClick={() => setConfirmLock(null)}>
               Hủy
             </Button>
-            <Button variant="danger" onClick={() => confirmLock && toggleLock(confirmLock)}>
+            <Button variant="danger" className={dangerButton} onClick={() => confirmLock && toggleLock(confirmLock)}>
               Khóa tài khoản
             </Button>
           </>

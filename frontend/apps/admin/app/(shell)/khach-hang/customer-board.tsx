@@ -104,7 +104,7 @@ export function CustomerBoard({ initialTab }: { initialTab: Tab }) {
               {customers.map((c) => (
                 <tr key={c.id} className="hover:bg-wash/60">
                   <td className={td}>
-                    <Link href={`/khach-hang/${c.id}`} className="font-semibold text-ink hover:text-shutter hover:underline">
+                    <Link href={`/khach-hang/${c.id}`} className="font-semibold text-ink hover:text-link hover:underline">
                       {c.name}
                     </Link>
                     <span className="block text-xs text-muted tabular">{c.phone}</span>
@@ -142,7 +142,7 @@ export function CustomerBoard({ initialTab }: { initialTab: Tab }) {
               <tr key={c.id} className={cn("hover:bg-wash/60", c.status === "spam" && "opacity-60")}>
                 <td className={td}>
                   <p className="font-semibold text-ink">{c.name}</p>
-                  <a href={`tel:${c.phone.replace(/\s/g, "")}`} className="text-xs text-shutter tabular hover:underline">
+                  <a href={`tel:${c.phone.replace(/\s/g, "")}`} className="text-xs text-link tabular hover:underline">
                     {c.phone}
                   </a>
                 </td>
@@ -185,11 +185,11 @@ function StageChip({ active, onClick, label, count }: { active: boolean; onClick
       aria-pressed={active}
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium transition-colors",
-        active ? "border-ink bg-ink text-white" : "border-line-strong bg-surface text-ink-soft hover:border-ink/40",
+        active ? "border-selected-line bg-selected text-on-selected" : "border-line-strong bg-surface text-ink-soft hover:border-ink/40",
       )}
     >
       {label}
-      <span className={cn("tabular text-xs", active ? "text-white/70" : "text-muted")}>{count}</span>
+      <span className={cn("tabular text-xs", active ? "text-ink-soft" : "text-muted")}>{count}</span>
     </button>
   );
 }

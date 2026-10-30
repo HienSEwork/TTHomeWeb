@@ -50,15 +50,15 @@ export function DisplayForm({ project }: { project: Project }) {
         <ol className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {gallery.map((src, i) => (
             <li key={src} className="group relative">
-              <div className={cn("relative aspect-[4/3] overflow-hidden rounded-lg bg-line", i === 0 && "ring-2 ring-shutter ring-offset-2")}>
+              <div className={cn("relative aspect-[4/3] overflow-hidden rounded-lg bg-line", i === 0 && "ring-2 ring-primary ring-offset-2 ring-offset-surface")}>
                 <Image src={src} alt={`Ảnh ${i + 1}`} fill sizes="160px" className="object-cover" />
-                {i === 0 ? <span className="absolute top-1.5 left-1.5 rounded-md bg-shutter px-1.5 py-0.5 text-[0.6875rem] font-bold text-white">Ảnh bìa</span> : null}
+                {i === 0 ? <span className="absolute top-1.5 left-1.5 rounded-md bg-primary px-1.5 py-0.5 text-[0.6875rem] font-bold text-on-primary">Ảnh bìa</span> : null}
               </div>
               <div className="mt-1.5 flex items-center justify-between gap-1">
                 <span className="text-xs text-muted tabular">{i + 1}</span>
                 <span className="flex gap-0.5">
                   {i > 0 ? (
-                    <button type="button" onClick={() => makeCover(i)} className="rounded p-1 text-muted hover:bg-wash hover:text-shutter" aria-label={`Đặt ảnh ${i + 1} làm ảnh bìa`}>
+                    <button type="button" onClick={() => makeCover(i)} className="rounded p-1 text-muted hover:bg-wash hover:text-link" aria-label={`Đặt ảnh ${i + 1} làm ảnh bìa`}>
                       <Star aria-hidden className="size-3.5" />
                     </button>
                   ) : null}
@@ -92,7 +92,7 @@ export function DisplayForm({ project }: { project: Project }) {
         />
         <TextField label="Nhãn ưu đãi" optional value={promo} onChange={(e) => setPromo(e.target.value)} placeholder="Ví dụ: Giảm 50% tháng đầu" hint="Hiện trên thẻ dự án và trang chi tiết." />
         <label className="flex items-start gap-3 rounded-lg border border-line p-3">
-          <input type="checkbox" checked={exclusive} onChange={(e) => setExclusive(e.target.checked)} className="mt-0.5 size-4 accent-shutter" />
+          <input type="checkbox" checked={exclusive} onChange={(e) => setExclusive(e.target.checked)} className="mt-0.5 size-4 accent-primary" />
           <span>
             <span className="block text-sm font-semibold text-ink">Gắn nhãn Độc quyền</span>
             <span className="block text-sm text-muted">Chỉ dùng cho tòa nhà TTHome quản lý trực tiếp.</span>

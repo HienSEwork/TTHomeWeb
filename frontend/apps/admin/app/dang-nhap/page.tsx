@@ -26,7 +26,7 @@ export default function SignInPage() {
           <SignInForm />
         </div>
       </div>
-      <div className="hidden flex-col justify-end bg-ink p-12 text-white lg:flex">
+      <div className="hidden flex-col justify-end bg-sidebar p-12 text-white lg:flex">
         <p className="max-w-md text-[1.75rem] leading-snug font-bold tracking-tight">Mỗi lịch hẹn được xác nhận trong 2 giờ là một khách thuê ít phải chờ.</p>
         <p className="mt-4 text-sm text-white/60">Bản demo: mọi số liệu là dữ liệu mẫu, thay đổi không được lưu lại.</p>
       </div>

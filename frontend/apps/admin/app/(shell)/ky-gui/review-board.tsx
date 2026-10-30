@@ -5,6 +5,7 @@ import { Camera, Phone } from "lucide-react";
 import { SUBMISSION_STATUS, SUBMISSIONS, TODAY, type SubmissionStatus } from "@tthome/data";
 import { Badge, Button, EmptyState, TextAreaField, cn, formatPriceShort } from "@tthome/ui";
 import { Dialog, Tabs, Toast } from "@/components/interactive";
+import { dangerButton } from "@/components/page-parts";
 import { countBy } from "@/lib/filters";
 import { fmt } from "@/lib/format";
 import { SUBMISSION_TRANSITIONS, reviewReducer } from "@/lib/workflow";
@@ -85,7 +86,7 @@ export function ReviewBoard() {
                     aria-pressed={active}
                     className={cn(
                       "w-full rounded-card border bg-surface p-4 text-left transition-colors",
-                      active ? "border-shutter ring-1 ring-shutter" : "border-line hover:border-ink/25",
+                      active ? "border-selected-line ring-1 ring-selected-line" : "border-line hover:border-ink/25",
                     )}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -123,7 +124,7 @@ export function ReviewBoard() {
               <Field
                 label="Điện thoại"
                 value={
-                  <a href={`tel:${current.phone.replace(/\s/g, "")}`} className="inline-flex items-center gap-1 font-semibold text-shutter hover:underline">
+                  <a href={`tel:${current.phone.replace(/\s/g, "")}`} className="inline-flex items-center gap-1 font-semibold text-link hover:underline">
                     <Phone aria-hidden className="size-3.5" />
                     <span className="tabular">{current.phone}</span>
                   </a>
@@ -192,7 +193,7 @@ export function ReviewBoard() {
             <Button variant="ghost" onClick={() => setPending(null)}>
               Hủy
             </Button>
-            <Button variant={pending === "rejected" ? "danger" : "primary"} disabled={!reason.trim()} onClick={() => pending && decide(pending)}>
+            <Button variant={pending === "rejected" ? "danger" : "primary"} className={pending === "rejected" ? dangerButton : undefined} disabled={!reason.trim()} onClick={() => pending && decide(pending)}>
               {pending === "rejected" ? "Từ chối hồ sơ" : "Gửi yêu cầu"}
             </Button>
           </>

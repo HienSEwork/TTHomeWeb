@@ -49,12 +49,12 @@ export default function ReportsPage() {
       <div className="mt-4 grid items-start gap-4 xl:grid-cols-2">
         <Panel title="Khách mới theo nguồn">
           <div className="px-5 py-5">
-            <BarList items={SOURCE_BREAKDOWN.map((s) => ({ label: CUSTOMER_SOURCE[s.source], value: s.customers }))} color={SERIES.blue} />
+            <BarList items={SOURCE_BREAKDOWN.map((s) => ({ label: CUSTOMER_SOURCE[s.source], value: s.customers }))} color={SERIES.gold} />
           </div>
         </Panel>
         <Panel title="Tỷ lệ lấp đầy theo dự án">
           <div className="px-5 py-5">
-            <BarList items={occupancy} max={1} unit="percent" color={SERIES.green} />
+            <BarList items={occupancy} max={1} unit="percent" color={SERIES.sage} />
           </div>
         </Panel>
       </div>

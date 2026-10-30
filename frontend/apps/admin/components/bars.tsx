@@ -31,7 +31,7 @@ export function StackedBar({ items, label }: { items: { label: string; value: nu
 }
 
 /** Ranked horizontal bars, one hue, value labels at the end. */
-export function BarList({ items, unit = "count", color = SERIES.blue, max }: { items: { label: string; value: number; hint?: string }[]; unit?: "count" | "percent"; color?: string; max?: number }) {
+export function BarList({ items, unit = "count", color = SERIES.gold, max }: { items: { label: string; value: number; hint?: string }[]; unit?: "count" | "percent"; color?: string; max?: number }) {
   const format = (v: number) => (unit === "percent" ? formatPercent(v, 0) : formatCount(v));
   const top = max ?? Math.max(...items.map((i) => i.value), 1);
   return (

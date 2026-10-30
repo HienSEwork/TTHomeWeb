@@ -27,7 +27,7 @@ export default function PartnersPage() {
             <tr key={a.id} className="hover:bg-wash/60">
               <td className={td}>
                 <p className="font-semibold text-ink">{a.name}</p>
-                <a href={`tel:${a.phone.replace(/\s/g, "")}`} className="text-xs text-shutter tabular hover:underline">
+                <a href={`tel:${a.phone.replace(/\s/g, "")}`} className="text-xs text-link tabular hover:underline">
                   {a.phone}
                 </a>
               </td>
