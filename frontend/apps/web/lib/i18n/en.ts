@@ -230,6 +230,8 @@ export const en: Dictionary = {
     areaFilter: (n: number) => `Showing ${n} ${n === 1 ? "building" : "buildings"} in the area chosen on the map`,
     clearArea: "Clear area",
     seeRooms: "See rooms",
+    places: "Places nearby",
+    placeKinds: { school: "Schools", hospital: "Hospitals", shopping: "Shopping", store: "Convenience stores", pharmacy: "Pharmacies", landmark: "Landmarks" },
   },
   pagination: {
     label: "Result pages",

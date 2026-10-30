@@ -51,7 +51,8 @@ export default async function SearchPage({ searchParams }: Props) {
   const shown = results.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   // The map shows the buildings on this page, so choosing an area filters exactly the cards in view.
   const pins = toApproxMapPins(shown);
-  const landmarks = toMapLandmarks(filters.landmark ? [filters.landmark] : undefined);
+  // Well-known places are drawn by the map itself; a landmark only shows when the search is near it.
+  const landmarks = filters.landmark ? toMapLandmarks([filters.landmark]) : [];
 
   const list = (
       <div className="min-w-0 px-4 pt-6 pb-28 sm:px-6 lg:pb-12 xl:pl-[max(1.5rem,calc((100vw-1240px)/2+1.5rem))]">

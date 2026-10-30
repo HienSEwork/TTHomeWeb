@@ -232,6 +232,8 @@ export const vi = {
     areaFilter: (n: number) => `Đang xem ${n} tòa nhà trong vùng đã chọn trên bản đồ`,
     clearArea: "Bỏ lọc vùng",
     seeRooms: "Xem phòng",
+    places: "Địa điểm xung quanh",
+    placeKinds: { school: "Trường học", hospital: "Bệnh viện", shopping: "Mua sắm", store: "Cửa hàng tiện lợi", pharmacy: "Nhà thuốc", landmark: "Địa danh" },
   },
   pagination: {
     label: "Phân trang kết quả",

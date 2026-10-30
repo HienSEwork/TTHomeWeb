@@ -26,5 +26,5 @@ export function toApproxMapPins(matches: ProjectMatch[]): MapPin[] {
 }
 
 export function toMapLandmarks(slugs?: string[]): MapLandmark[] {
-  return LANDMARKS.filter((l) => !slugs || slugs.includes(l.slug)).map((l) => ({ slug: l.slug, name: l.shortName, lat: l.lat, lng: l.lng }));
+  return LANDMARKS.filter((l) => !slugs || slugs.includes(l.slug)).map((l) => ({ slug: l.slug, name: l.name, lat: l.lat, lng: l.lng }));
 }

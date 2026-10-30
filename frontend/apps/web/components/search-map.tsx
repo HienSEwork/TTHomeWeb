@@ -7,12 +7,14 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import circle from "@turf/circle";
 import type { FeatureCollection, Point, Polygon } from "geojson";
 import type { StyleSpecification } from "maplibre-gl";
-import { X } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { GraduationCap, Hospital, Landmark, Pill, ShoppingBag, Store, X } from "lucide-react";
 import MapGL, { Layer, Marker, NavigationControl, Source, type LayerProps, type MapLayerMouseEvent, type MapRef } from "react-map-gl/maplibre";
 import { Plate, cn } from "@tthome/ui";
 import { CAN_THO_MAX_BOUNDS, CAN_THO_OUTLINE, OUTSIDE_CAN_THO } from "@/lib/can-tho-area";
 import { useI18n } from "@/lib/i18n/client";
 import { distanceMeters } from "@/lib/location-privacy";
+import { LABEL_ZOOM, MAP_PLACES, PLACE_KINDS, type PlaceKind } from "@/lib/map-places";
 import { emitMapArea, overlappingIds, useMapArea, useMapFocus, type MapAreaEvent, type MapFocusEvent } from "@/lib/map-focus";
 import type { MapLandmark, MapPin } from "./map-view";
 
@@ -81,12 +83,32 @@ const areaLine: LayerProps = {
   },
 };
 
+const PLACE_STYLE: Record<PlaceKind, { icon: LucideIcon; color: string }> = {
+  school: { icon: GraduationCap, color: "#3B6FB6" },
+  hospital: { icon: Hospital, color: "#C2543F" },
+  shopping: { icon: ShoppingBag, color: "#A1477A" },
+  store: { icon: Store, color: "#2F7D4F" },
+  pharmacy: { icon: Pill, color: "#0E7C70" },
+  landmark: { icon: Landmark, color: "#8A5A1E" },
+};
+
 type Props = {
   /** Pins already moved off the real address (see toApproxMapPins). */
   pins: MapPin[];
   landmarks?: MapLandmark[];
   className?: string;
 };
+
+/**
+ * The buildings within 5 km of the median one, so a single far-off building does not zoom the first view out
+ * to the whole city (where place names are hidden). Falls back to every pin when the results are spread out.
+ */
+export function mainCluster<T extends { lat: number; lng: number }>(points: T[]): T[] {
+  const mid = (xs: number[]) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)]!;
+  const center = { lat: mid(points.map((p) => p.lat)), lng: mid(points.map((p) => p.lng)) };
+  const near = points.filter((p) => distanceMeters(center, p) <= 5000);
+  return near.length * 2 >= points.length ? near : points;
+}
 
 function boundsOf(points: { lat: number; lng: number }[]): [[number, number], [number, number]] {
   const lats = points.map((p) => p.lat);
@@ -109,8 +131,17 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
   const [view, setView] = useState<"streets" | "satellite">("streets");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoverId, setHoverId] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(12);
+  const [kinds, setKinds] = useState<Set<PlaceKind>>(() => new Set(PLACE_KINDS));
+  const toggleKind = (k: PlaceKind) =>
+    setKinds((prev) => {
+      const next = new Set(prev);
+      if (next.has(k)) next.delete(k);
+      else next.add(k);
+      return next;
+    });
   const selected = pins.find((p) => p.id === selectedId) ?? null;
-  const initialBounds = useMemo(() => boundsOf(pins.length ? pins : landmarks), [pins, landmarks]);
+  const initialBounds = useMemo(() => boundsOf(pins.length ? mainCluster(pins) : landmarks), [pins, landmarks]);
 
   const shapes = useMemo(() => new Map(pins.map((p) => [p.id, circle([p.lng, p.lat], AREA_RADIUS_KM, { steps: 64, units: "kilometers" })])), [pins]);
 
@@ -188,7 +219,11 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
         touchPitch={false}
         pitchWithRotate={false}
         maxPitch={0}
-        onLoad={(e) => e.target.touchZoomRotate.disableRotation()}
+        onLoad={(e) => {
+          e.target.touchZoomRotate.disableRotation();
+          setZoom(e.target.getZoom());
+        }}
+        onZoomEnd={(e) => setZoom(e.viewState.zoom)}
         interactiveLayerIds={["areas-dot", "areas-fill"]}
         onClick={onMapClick}
         onMouseMove={(e) => setHoverId((e.features?.[0]?.properties?.id as string | undefined) ?? null)}
@@ -212,6 +247,30 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
           <Layer {...areaFill} />
           <Layer {...areaLine} />
         </Source>
+
+        {MAP_PLACES.filter((p) => kinds.has(p.kind)).map((p) => {
+          const { icon: Icon, color } = PLACE_STYLE[p.kind];
+          const named = zoom >= LABEL_ZOOM[p.kind];
+          const onPhoto = view === "satellite";
+          return (
+            <Marker key={p.name} longitude={p.lng} latitude={p.lat} anchor="center" style={{ zIndex: 0 }}>
+              <span className="group/place flex items-center gap-1" title={p.name}>
+                <span aria-hidden className="grid size-6 place-items-center rounded-full border-2 border-white text-white shadow-[0_1px_4px_rgb(0_0_0/0.35)]" style={{ backgroundColor: color }}>
+                  <Icon className="size-3.5" />
+                </span>
+                <span
+                  className={cn(
+                    "max-w-[11rem] truncate rounded-md px-1.5 py-0.5 text-[0.6875rem] leading-tight font-semibold",
+                    onPhoto ? "bg-black/55 text-white" : "bg-white/85 text-ink shadow-[0_1px_3px_rgb(0_0_0/0.15)]",
+                    named ? "inline-block" : "hidden group-hover/place:inline-block",
+                  )}
+                >
+                  {p.name}
+                </span>
+              </span>
+            </Marker>
+          );
+        })}
 
         {landmarks.map((l) => (
           <Marker key={l.slug} longitude={l.lng} latitude={l.lat} anchor="top" style={{ pointerEvents: "none" }}>
@@ -265,6 +324,30 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
             {label}
           </button>
         ))}
+      </div>
+
+      <div role="group" aria-label={t.map.places} className="scrollbar-none absolute top-[4.75rem] right-3 left-3 z-10 flex gap-1.5 overflow-x-auto pb-1 sm:top-14">
+        {PLACE_KINDS.map((k) => {
+          const { icon: Icon, color } = PLACE_STYLE[k];
+          const on = kinds.has(k);
+          return (
+            <button
+              key={k}
+              type="button"
+              aria-pressed={on}
+              onClick={() => toggleKind(k)}
+              className={cn(
+                "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold shadow-[0_4px_12px_-6px_rgb(45_35_20/0.35)] backdrop-blur-md transition-colors",
+                on ? "border-white/70 bg-white/90 text-ink" : "border-white/40 bg-white/55 text-muted line-through decoration-1",
+              )}
+            >
+              <span aria-hidden className="grid size-4 place-items-center rounded-full text-white" style={{ backgroundColor: on ? color : "#9A938A" }}>
+                <Icon className="size-2.5" />
+              </span>
+              {t.map.placeKinds[k]}
+            </button>
+          );
+        })}
       </div>
 
       <p className="pointer-events-none absolute top-3 right-3 z-10 max-w-[min(20rem,calc(100%-10rem))] rounded-2xl border border-white/60 bg-white/80 px-3 py-1.5 text-xs font-medium text-ink shadow-[0_8px_24px_-12px_rgb(45_35_20/0.35)] backdrop-blur-md">
