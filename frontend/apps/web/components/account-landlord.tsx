@@ -3,10 +3,13 @@
 import Link from "next/link";
 import { useState } from "react";
 import { SUBMISSION_STATUS, type Submission } from "@tthome/data";
-import { Badge, Button, Card, buttonStyles, cn, formatDate, formatPriceShort } from "@tthome/ui";
+import { Badge, Button, Card, buttonStyles, cn } from "@tthome/ui";
 import type { LandlordRoom } from "@/lib/account";
+import { localRoomName } from "@/lib/i18n/content";
+import { useI18n } from "@/lib/i18n/client";
 
 export function LandlordSubmissions({ items }: { items: Submission[] }) {
+  const { t, fmt } = useI18n();
   return (
     <ul className="flex flex-col gap-3">
       {items.map((s) => {
@@ -19,10 +22,10 @@ export function LandlordSubmissions({ items }: { items: Submission[] }) {
                 <div>
                   <p className="font-bold text-ink">{s.address}</p>
                   <p className="text-sm text-muted">
-                    {s.district}, {s.roomCount} phòng, từ {formatPriceShort(s.priceFrom)}. Gửi ngày {formatDate(s.submittedAt)}, mã {s.code}.
+                    {t.account.submissionLine(s.district, s.roomCount, fmt.priceShort(s.priceFrom), fmt.date(s.submittedAt), s.code)}
                   </p>
                 </div>
-                <Badge tone={status.tone}>{status.label}</Badge>
+                <Badge tone={status.tone}>{t.labels.submissionStatus[s.status]}</Badge>
               </div>
               {s.status === "need_info" && lastNote ? (
                 <div className="mt-4 flex flex-col gap-3 rounded-lg bg-warn-tint p-3 sm:flex-row sm:items-center sm:justify-between">
@@ -30,7 +33,7 @@ export function LandlordSubmissions({ items }: { items: Submission[] }) {
                     <strong>{lastNote.by}:</strong> {lastNote.text}
                   </p>
                   <Link href="/ky-gui" className={buttonStyles({ variant: "secondary", size: "sm", className: "shrink-0" })}>
-                    Bổ sung thông tin
+                    {t.account.addInfo}
                   </Link>
                 </div>
               ) : null}
@@ -43,6 +46,8 @@ export function LandlordSubmissions({ items }: { items: Submission[] }) {
 }
 
 function RoomRow({ room, onChange }: { room: LandlordRoom; onChange: (r: LandlordRoom) => void }) {
+  const { lang, t, fmt } = useI18n();
+  const name = localRoomName(room.name, lang);
   const [editing, setEditing] = useState(false);
   const [price, setPrice] = useState(String(room.price));
   const parsed = Number(price.replace(/\D/g, ""));
@@ -51,7 +56,7 @@ function RoomRow({ room, onChange }: { room: LandlordRoom; onChange: (r: Landlor
   return (
     <tr className="align-middle">
       <th scope="row" className="px-4 py-3 text-left">
-        <span className="block font-semibold text-ink">{room.name}</span>
+        <span className="block font-semibold text-ink">{name}</span>
         <span className="block text-xs font-normal text-muted">{room.building}</span>
       </th>
       <td className="px-4 py-3">
@@ -66,7 +71,7 @@ function RoomRow({ room, onChange }: { room: LandlordRoom; onChange: (r: Landlor
             }}
           >
             <label className="sr-only" htmlFor={`gia-${room.code}`}>
-              Giá mới của {room.name}
+              {t.account.newPriceOf(name)}
             </label>
             <input
               id={`gia-${room.code}`}
@@ -77,12 +82,12 @@ function RoomRow({ room, onChange }: { room: LandlordRoom; onChange: (r: Landlor
               className="tabular h-9 w-32 rounded-lg border border-line-strong px-2 text-sm focus:border-plate focus:outline-none aria-[invalid=true]:border-danger"
             />
             <Button type="submit" size="sm" disabled={!valid}>
-              Lưu
+              {t.account.save}
             </Button>
           </form>
         ) : (
           <button type="button" onClick={() => setEditing(true)} className="tabular font-semibold text-ink underline decoration-line-strong underline-offset-4 hover:decoration-ink">
-            {formatPriceShort(room.price)}
+            {fmt.priceShort(room.price)}
           </button>
         )}
       </td>
@@ -98,7 +103,7 @@ function RoomRow({ room, onChange }: { room: LandlordRoom; onChange: (r: Landlor
           >
             <span className={cn("absolute top-0.5 size-5 rounded-full bg-white shadow transition-[left]", room.vacant ? "left-[18px]" : "left-0.5")} />
           </span>
-          <span className={room.vacant ? "font-semibold text-shutter" : "text-muted"}>{room.vacant ? "Còn trống" : "Đã thuê"}</span>
+          <span className={room.vacant ? "font-semibold text-shutter" : "text-muted"}>{room.vacant ? t.account.vacant : t.account.rented}</span>
         </label>
       </td>
       <td className="tabular px-4 py-3 text-right text-sm text-muted">{room.views}</td>
@@ -107,16 +112,17 @@ function RoomRow({ room, onChange }: { room: LandlordRoom; onChange: (r: Landlor
 }
 
 export function LandlordRooms({ initial }: { initial: LandlordRoom[] }) {
+  const { t } = useI18n();
   const [rooms, setRooms] = useState(initial);
   return (
     <div className="overflow-x-auto rounded-card border border-line bg-surface">
       <table className="w-full min-w-[560px] text-sm">
         <thead className="border-b border-line bg-wash text-left text-ink-soft">
           <tr>
-            <th scope="col" className="px-4 py-3 font-semibold">Phòng</th>
-            <th scope="col" className="px-4 py-3 font-semibold">Giá mỗi tháng</th>
-            <th scope="col" className="px-4 py-3 font-semibold">Tình trạng</th>
-            <th scope="col" className="px-4 py-3 text-right font-semibold">Lượt xem 30 ngày</th>
+            <th scope="col" className="px-4 py-3 font-semibold">{t.account.colRoom}</th>
+            <th scope="col" className="px-4 py-3 font-semibold">{t.account.colPrice}</th>
+            <th scope="col" className="px-4 py-3 font-semibold">{t.account.colStatus}</th>
+            <th scope="col" className="px-4 py-3 text-right font-semibold">{t.account.colViews}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-line">

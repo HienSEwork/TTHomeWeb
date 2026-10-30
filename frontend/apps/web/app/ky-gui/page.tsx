@@ -6,39 +6,30 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { ConsignForm } from "@/components/form-consign";
 import { FaqList } from "@/components/faq-list";
 import { StepsList } from "@/components/steps-list";
+import { localFaq } from "@/lib/i18n/content";
+import { getServerI18n } from "@/lib/i18n/server";
 
-export const metadata: Metadata = {
-  title: "Ký gửi phòng cho thuê",
-  description: "Gửi phòng trọ, căn hộ cho TTHOME: chụp ảnh miễn phí, đăng tin, dẫn khách xem phòng. Chỉ trả phí khi phòng được thuê.",
-  alternates: { canonical: "/ky-gui" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+  return { title: t.consign.metaTitle, description: t.consign.metaDescription, alternates: { canonical: "/ky-gui" } };
+}
 
-const STEPS = [
-  { title: "Gửi thông tin", text: "Điền địa chỉ, số phòng và giá thuê ở form bên dưới. Mất khoảng 3 phút." },
-  { title: "Đội TTHOME chụp ảnh", text: "Chúng tôi gọi lại trong 24 giờ, hẹn đến chụp ảnh và quay video phòng miễn phí." },
-  { title: "Đăng tin", text: "Phòng lên TTHOME trong 2–3 ngày làm việc, kèm giá điện nước rõ ràng." },
-  { title: "Dẫn khách xem phòng", text: "Nhân viên dẫn khách đến xem. Bạn chỉ ký hợp đồng và nhận cọc." },
-];
-
-const BENEFITS = [
-  { figure: "0 đ", text: "để đăng tin, chụp ảnh và dẫn khách" },
-  { figure: "50%", text: "một tháng tiền phòng, chỉ thu khi khách ký hợp đồng" },
-  { figure: "24 giờ", text: "để nhân viên gọi lại sau khi bạn gửi thông tin" },
-];
-
-export default function ConsignPage() {
+export default async function ConsignPage() {
+  const { lang, t } = await getServerI18n();
+  const steps = Object.values(t.consign.steps);
+  const benefits = Object.values(t.consign.benefits);
   return (
     <>
       <section className="border-b border-line bg-surface">
         <Container className="py-8 sm:py-12">
-          <Breadcrumbs items={[{ label: "Ký gửi phòng" }]} />
+          <Breadcrumbs items={[{ label: t.consign.crumb }]} lang={lang} />
           <div className="mt-6 grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-end">
             <div>
-              <h1 className="text-display font-extrabold text-balance text-ink">Có phòng trống, để TTHOME tìm người thuê.</h1>
-              <p className="mt-4 max-w-xl text-lg text-ink-soft">Bạn giữ quyền chọn khách và giá thuê. Chúng tôi lo ảnh, tin đăng và những buổi dẫn khách đi xem.</p>
+              <h1 className="text-display font-extrabold text-balance text-ink">{t.consign.title}</h1>
+              <p className="mt-4 max-w-xl text-lg text-ink-soft">{t.consign.lead}</p>
             </div>
             <dl className="grid grid-cols-3 gap-3">
-              {BENEFITS.map((b) => (
+              {benefits.map((b) => (
                 <div key={b.figure} className="rounded-card bg-wash p-4">
                   <dt className="tabular text-2xl font-extrabold text-shutter">{b.figure}</dt>
                   <dd className="mt-1 text-sm text-ink-soft">{b.text}</dd>
@@ -50,21 +41,21 @@ export default function ConsignPage() {
       </section>
 
       <Container className="py-12">
-        <SectionHeader title="Ký gửi diễn ra thế nào" />
+        <SectionHeader title={t.consign.howTitle} />
         <div className="mt-6">
-          <StepsList steps={STEPS} />
+          <StepsList steps={steps} />
         </div>
       </Container>
 
       <Container className="grid gap-10 pb-4 lg:grid-cols-[1fr_360px]">
         <section aria-labelledby="form-ky-gui" className="min-w-0">
           <h2 id="form-ky-gui" className="text-title font-extrabold text-ink">
-            Gửi thông tin phòng
+            {t.consign.formTitle}
           </h2>
           <p className="mt-2 text-ink-soft">
-            Đã gửi trước đó? Xem trạng thái ở{" "}
+            {t.consign.sentBefore}{" "}
             <Link href="/tai-khoan/phong-ky-gui" className="font-semibold text-plate underline">
-              Phòng ký gửi của tôi
+              {t.consign.myListings}
             </Link>
             .
           </p>
@@ -74,10 +65,10 @@ export default function ConsignPage() {
         </section>
         <aside aria-labelledby="hoi-ky-gui" className="lg:pt-24">
           <h2 id="hoi-ky-gui" className="text-lg font-bold text-ink">
-            Chủ nhà thường hỏi
+            {t.consign.faqTitle}
           </h2>
           <div className="mt-3">
-            <FaqList items={FAQS.filter((f) => f.audience === "landlord")} />
+            <FaqList items={FAQS.filter((f) => f.audience === "landlord").map((f) => localFaq(f, lang))} />
           </div>
         </aside>
       </Container>

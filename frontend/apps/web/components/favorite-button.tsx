@@ -3,11 +3,13 @@
 import { useState, type CSSProperties } from "react";
 import { Heart } from "lucide-react";
 import { cn } from "@tthome/ui";
+import { useI18n } from "@/lib/i18n/client";
 
 const PARTICLES = [0, 60, 120, 180, 240, 300];
 
 /** Heart toggle on a card. Kept on this device until saved rooms are tied to the account. */
 export function FavoriteButton({ label, className }: { label: string; className?: string }) {
+  const { t } = useI18n();
   const [saved, setSaved] = useState(false);
   // Bumped on every save so the pop and the burst replay.
   const [burst, setBurst] = useState(0);
@@ -15,7 +17,7 @@ export function FavoriteButton({ label, className }: { label: string; className?
     <button
       type="button"
       aria-pressed={saved}
-      aria-label={saved ? `Bỏ lưu ${label}` : `Lưu ${label}`}
+      aria-label={saved ? t.card.unsave(label) : t.card.save(label)}
       onClick={() => {
         if (!saved) setBurst((n) => n + 1);
         setSaved((v) => !v);

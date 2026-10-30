@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Be_Vietnam_Pro, Plus_Jakarta_Sans } from "next/font/google";
 import { SITE } from "@tthome/data";
+import { LangProvider } from "@/lib/i18n/client";
+import { OG_LOCALE } from "@/lib/i18n";
+import { getServerI18n } from "@/lib/i18n/server";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { QuickContact } from "@/components/quick-contact";
@@ -21,29 +24,34 @@ const jakarta = Plus_Jakarta_Sans({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://tthome.vn"),
-  title: { default: "TTHOME: Thuê phòng trọ, căn hộ dịch vụ ở Cần Thơ", template: "%s | TTHOME" },
-  description:
-    "Tìm phòng trọ, studio và căn hộ dịch vụ còn trống ở TP. Cần Thơ. Giá đã ghi rõ điện nước, xem phòng miễn phí cùng nhân viên TTHOME.",
-  openGraph: { siteName: SITE.name, locale: "vi_VN", type: "website" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { lang, t } = await getServerI18n();
+  return {
+    metadataBase: new URL("https://tthome.vn"),
+    title: { default: t.meta.title, template: "%s | TTHOME" },
+    description: t.meta.description,
+    openGraph: { siteName: SITE.name, locale: OG_LOCALE[lang], type: "website" },
+  };
+}
 
 export const viewport: Viewport = { themeColor: "#fbf9f5" };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { lang, t } = await getServerI18n();
   return (
-    <html lang="vi" className={`${beVietnam.variable} ${jakarta.variable}`}>
+    <html lang={lang} className={`${beVietnam.variable} ${jakarta.variable}`}>
       <body className="flex min-h-dvh flex-col antialiased">
         <a href="#noi-dung" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-ink focus:px-4 focus:py-2 focus:text-white">
-          Bỏ qua menu
+          {t.common.skipToContent}
         </a>
-        <SiteHeader />
-        <main id="noi-dung" className="flex-1">
-          {children}
-        </main>
-        <SiteFooter />
-        <QuickContact />
+        <LangProvider lang={lang}>
+          <SiteHeader />
+          <main id="noi-dung" className="flex-1">
+            {children}
+          </main>
+          <SiteFooter lang={lang} />
+          <QuickContact lang={lang} />
+        </LangProvider>
       </body>
     </html>
   );

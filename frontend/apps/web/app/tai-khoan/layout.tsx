@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import { Container } from "@tthome/ui";
 import { AccountNav } from "@/components/account-nav";
 import { CURRENT_USER } from "@/lib/account";
+import { getServerI18n } from "@/lib/i18n/server";
 
-export const metadata: Metadata = {
-  title: { default: "Tài khoản", template: "%s | Tài khoản TTHOME" },
-  robots: { index: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+  return { title: { default: t.account.metaTitle, template: t.account.metaTemplate }, robots: { index: false } };
+}
 
-export default function AccountLayout({ children }: { children: React.ReactNode }) {
+export default async function AccountLayout({ children }: { children: React.ReactNode }) {
+  const { t } = await getServerI18n();
   const initials = CURRENT_USER.name.split(" ").slice(-2).map((w) => w[0]).join("");
   return (
     <Container className="py-8 sm:py-12">
@@ -26,7 +28,7 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
           <AccountNav />
           {/* A plain link: the sign-out route clears the cookie, so it must never be prefetched. */}
           <a href="/dang-xuat" className="text-sm font-semibold text-muted hover:text-danger">
-            Đăng xuất
+            {t.account.signOut}
           </a>
         </aside>
         <div className="min-w-0">{children}</div>

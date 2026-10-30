@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { SiteHeader } from "./site-header";
 
 let pathname = "/";
-vi.mock("next/navigation", () => ({ usePathname: () => pathname }));
+vi.mock("next/navigation", () => ({ usePathname: () => pathname, useRouter: () => ({ refresh: vi.fn() }) }));
 
 describe("SiteHeader mobile menu", () => {
   it("closes on Escape and returns focus to the toggle", async () => {

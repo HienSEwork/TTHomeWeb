@@ -3,12 +3,12 @@ import { DEMO_ACCOUNTS, DEMO_OTP } from "@tthome/data";
 import { Container } from "@tthome/ui";
 import { BrandLogo } from "@/components/brand-logo";
 import { SignInForm } from "@/components/form-signin";
+import { getServerI18n } from "@/lib/i18n/server";
 
-export const metadata: Metadata = {
-  title: "Đăng nhập",
-  description: "Đăng nhập TTHOME để lưu phòng, xem lịch hẹn và quản lý phòng ký gửi.",
-  robots: { index: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+  return { title: t.signIn.metaTitle, description: t.signIn.metaDescription, robots: { index: false } };
+}
 
 function GoogleIcon() {
   return (
@@ -21,7 +21,8 @@ function GoogleIcon() {
   );
 }
 
-export default function SignInPage() {
+export default async function SignInPage() {
+  const { t } = await getServerI18n();
   // Google sign-in needs the OAuth client from identity-service; until it is configured the button stays off.
   const googleReady = Boolean(process.env.GOOGLE_CLIENT_ID);
   return (
@@ -29,19 +30,17 @@ export default function SignInPage() {
       <Container className="flex justify-center py-12 sm:py-20">
         <div className="w-full max-w-md rounded-[20px] border border-line bg-white p-6 shadow-[var(--shadow-lift)] sm:p-8">
           <BrandLogo variant="mark" height={56} />
-          <h1 className="mt-5 text-2xl font-bold tracking-tight text-ink">Đăng nhập hoặc tạo tài khoản</h1>
-          <p className="mt-2 text-muted">Lưu phòng bạn thích, nhận báo khi giá đổi và theo dõi lịch xem phòng.</p>
-          <aside aria-label="Tài khoản demo" className="mt-6 rounded-xl border border-dashed border-line-strong bg-ivory px-4 py-3 text-sm text-ink-soft">
-            <p className="font-semibold text-ink">Tài khoản demo (người thuê)</p>
+          <h1 className="mt-5 text-2xl font-bold tracking-tight text-ink">{t.signIn.title}</h1>
+          <p className="mt-2 text-muted">{t.signIn.lead}</p>
+          <aside aria-label={t.signIn.demo} className="mt-6 rounded-xl border border-dashed border-line-strong bg-ivory px-4 py-3 text-sm text-ink-soft">
+            <p className="font-semibold text-ink">{t.signIn.demoTitle}</p>
             <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">
-              <dt className="text-muted">Email</dt>
+              <dt className="text-muted">{t.common.email}</dt>
               <dd className="font-mono text-ink">{DEMO_ACCOUNTS.user.email}</dd>
-              <dt className="text-muted">Mật khẩu</dt>
+              <dt className="text-muted">{t.signIn.password}</dt>
               <dd className="font-mono text-ink">{DEMO_ACCOUNTS.user.password}</dd>
             </dl>
-            <p className="mt-1.5 text-xs text-muted">
-              Hoặc số {DEMO_ACCOUNTS.user.phone} với mã {DEMO_OTP}. Bản demo chạy bằng dữ liệu mẫu, không gửi tin nhắn thật.
-            </p>
+            <p className="mt-1.5 text-xs text-muted">{t.signIn.demoPhone(DEMO_ACCOUNTS.user.phone, DEMO_OTP)}</p>
           </aside>
           <div className="mt-6">
             <SignInForm />
@@ -49,7 +48,7 @@ export default function SignInPage() {
 
           <div className="my-6 flex items-center gap-3 text-xs text-muted">
             <span className="h-px flex-1 bg-line" />
-            hoặc
+            {t.signIn.or}
             <span className="h-px flex-1 bg-line" />
           </div>
           <button
@@ -59,11 +58,11 @@ export default function SignInPage() {
             className="flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-line-strong bg-white font-semibold text-ink transition-colors hover:bg-ivory disabled:cursor-not-allowed disabled:opacity-60"
           >
             <GoogleIcon />
-            Tiếp tục với Google
+            {t.signIn.google}
           </button>
           {googleReady ? null : (
             <p id="google-note" className="mt-2 text-center text-xs text-muted">
-              Đăng nhập bằng Google sẽ mở khi hệ thống bật tính năng này.
+              {t.signIn.googleOff}
             </p>
           )}
         </div>

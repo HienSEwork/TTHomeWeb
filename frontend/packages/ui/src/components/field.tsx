@@ -9,12 +9,14 @@ type FieldShellProps = {
   hint?: string;
   error?: string;
   optional?: boolean;
+  /** Text after an optional field's label; defaults to Vietnamese. */
+  optionalLabel?: string;
   className?: string;
   children: (ids: { id: string; describedBy: string | undefined; invalid: boolean }) => ReactNode;
 };
 
 /** Label, control, then hint or error, wired with ids for screen readers. */
-export function FieldShell({ label, hint, error, optional, className, children }: FieldShellProps) {
+export function FieldShell({ label, hint, error, optional, optionalLabel = "(không bắt buộc)", className, children }: FieldShellProps) {
   const id = useId();
   const noteId = `${id}-note`;
   const note = error ?? hint;
@@ -22,7 +24,7 @@ export function FieldShell({ label, hint, error, optional, className, children }
     <div className={cn("flex flex-col gap-1.5", className)}>
       <label htmlFor={id} className="text-sm font-semibold text-ink">
         {label}
-        {optional ? <span className="ml-1 font-normal text-muted">(không bắt buộc)</span> : null}
+        {optional ? <span className="ml-1 font-normal text-muted">{optionalLabel}</span> : null}
       </label>
       {children({ id, describedBy: note ? noteId : undefined, invalid: Boolean(error) })}
       {note ? (
@@ -34,11 +36,11 @@ export function FieldShell({ label, hint, error, optional, className, children }
   );
 }
 
-type Common = { label: string; hint?: string; error?: string; optional?: boolean; wrapperClassName?: string };
+type Common = { label: string; hint?: string; error?: string; optional?: boolean; optionalLabel?: string; wrapperClassName?: string };
 
-export function TextField({ label, hint, error, optional, wrapperClassName, className, ...props }: Common & InputHTMLAttributes<HTMLInputElement>) {
+export function TextField({ label, hint, error, optional, optionalLabel, wrapperClassName, className, ...props }: Common & InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <FieldShell label={label} hint={hint} error={error} optional={optional} className={wrapperClassName}>
+    <FieldShell label={label} hint={hint} error={error} optional={optional} optionalLabel={optionalLabel} className={wrapperClassName}>
       {({ id, describedBy, invalid }) => (
         <input id={id} aria-describedby={describedBy} aria-invalid={invalid} className={cn(control, "h-11", className)} {...props} />
       )}
@@ -51,13 +53,14 @@ export function SelectField({
   hint,
   error,
   optional,
+  optionalLabel,
   wrapperClassName,
   className,
   children,
   ...props
 }: Common & SelectHTMLAttributes<HTMLSelectElement>) {
   return (
-    <FieldShell label={label} hint={hint} error={error} optional={optional} className={wrapperClassName}>
+    <FieldShell label={label} hint={hint} error={error} optional={optional} optionalLabel={optionalLabel} className={wrapperClassName}>
       {({ id, describedBy, invalid }) => (
         <select id={id} aria-describedby={describedBy} aria-invalid={invalid} className={cn(control, "h-11 pr-8", className)} {...props}>
           {children}
@@ -67,9 +70,9 @@ export function SelectField({
   );
 }
 
-export function TextAreaField({ label, hint, error, optional, wrapperClassName, className, ...props }: Common & TextareaHTMLAttributes<HTMLTextAreaElement>) {
+export function TextAreaField({ label, hint, error, optional, optionalLabel, wrapperClassName, className, ...props }: Common & TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
-    <FieldShell label={label} hint={hint} error={error} optional={optional} className={wrapperClassName}>
+    <FieldShell label={label} hint={hint} error={error} optional={optional} optionalLabel={optionalLabel} className={wrapperClassName}>
       {({ id, describedBy, invalid }) => (
         <textarea id={id} aria-describedby={describedBy} aria-invalid={invalid} className={cn(control, "min-h-28 py-2.5", className)} {...props} />
       )}

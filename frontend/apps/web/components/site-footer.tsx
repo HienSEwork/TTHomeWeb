@@ -1,53 +1,59 @@
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { SITE } from "@tthome/data";
+import { getI18n, type Dictionary, type Lang } from "@/lib/i18n";
 import { BrandLogo } from "./brand-logo";
 
-const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
+type Footer = Dictionary["footer"];
+/** Footer entries that are plain text (not the formatting functions). */
+type FooterKey = { [K in keyof Footer]: Footer[K] extends string ? K : never }[keyof Footer];
+
+const COLUMNS: { title: FooterKey; links: { href: string; label: FooterKey }[] }[] = [
   {
-    title: "Tìm phòng",
+    title: "find",
     links: [
-      { href: "/tim-kiem", label: "Tất cả phòng" },
-      { href: "/khu-vuc", label: "Theo khu vực" },
-      { href: "/tim-kiem?type=studio", label: "Căn studio" },
-      { href: "/tim-kiem?price=0-5000000", label: "Phòng dưới 5 triệu" },
-      { href: "/dat-lich", label: "Nhờ tư vấn tìm phòng" },
+      { href: "/tim-kiem", label: "allRooms" },
+      { href: "/khu-vuc", label: "byArea" },
+      { href: "/tim-kiem?type=studio", label: "studio" },
+      { href: "/tim-kiem?price=0-5000000", label: "under5" },
+      { href: "/dat-lich", label: "askHelp" },
     ],
   },
   {
-    title: "Dành cho chủ nhà",
+    title: "landlords",
     links: [
-      { href: "/ky-gui", label: "Ký gửi phòng" },
-      { href: "/chinh-sach/chinh-sach-ky-gui", label: "Chính sách ký gửi" },
-      { href: "/tuyen-ctv", label: "Làm cộng tác viên" },
+      { href: "/ky-gui", label: "consign" },
+      { href: "/chinh-sach/chinh-sach-ky-gui", label: "consignPolicy" },
+      { href: "/tuyen-ctv", label: "partner" },
     ],
   },
   {
-    title: "Hỗ trợ",
+    title: "support",
     links: [
-      { href: "/tin-tuc", label: "Cẩm nang thuê phòng" },
-      { href: "/hoi-dap", label: "Câu hỏi thường gặp" },
-      { href: "/chinh-sach/quy-trinh-thue-phong", label: "Quy trình thuê phòng" },
-      { href: "/lien-he", label: "Liên hệ" },
+      { href: "/tin-tuc", label: "guide" },
+      { href: "/hoi-dap", label: "faq" },
+      { href: "/chinh-sach/quy-trinh-thue-phong", label: "process" },
+      { href: "/lien-he", label: "contact" },
     ],
   },
   {
-    title: "Về TTHOME",
+    title: "about",
     links: [
-      { href: "/ve-chung-toi", label: "Giới thiệu" },
-      { href: "/chinh-sach/dieu-khoan-su-dung", label: "Điều khoản sử dụng" },
-      { href: "/chinh-sach/chinh-sach-bao-mat", label: "Chính sách bảo mật" },
+      { href: "/ve-chung-toi", label: "intro" },
+      { href: "/chinh-sach/dieu-khoan-su-dung", label: "terms" },
+      { href: "/chinh-sach/chinh-sach-bao-mat", label: "privacy" },
     ],
   },
 ];
 
-export function SiteFooter() {
+export function SiteFooter({ lang }: { lang?: Lang }) {
+  const { t } = getI18n(lang);
   return (
     <footer className="mt-24 border-t border-line bg-ivory">
       <div className="mx-auto grid max-w-[1280px] gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.3fr_repeat(4,1fr)]">
         <div className="max-w-xs">
-          <BrandLogo variant="full" height={96} />
-          <p className="mt-5 text-sm leading-relaxed text-muted">Không gian phù hợp, nhịp sống của riêng bạn. Xem phòng tận nơi cùng nhân viên TTHOME, miễn phí.</p>
+          <BrandLogo variant="full" height={96} alt={t.brand.logoAlt} />
+          <p className="mt-5 text-sm leading-relaxed text-muted">{t.footer.tagline}</p>
           <ul className="mt-5 space-y-2 text-sm text-ink-soft">
             <li className="flex items-center gap-2">
               <Phone aria-hidden className="size-4 text-gold-deep" />
@@ -70,12 +76,12 @@ export function SiteFooter() {
 
         {COLUMNS.map((col) => (
           <div key={col.title}>
-            <h2 className="text-sm font-bold text-ink">{col.title}</h2>
+            <h2 className="text-sm font-bold text-ink">{t.footer[col.title]}</h2>
             <ul className="mt-4 space-y-2.5 text-sm text-muted">
               {col.links.map((l) => (
                 <li key={l.href}>
                   <Link href={l.href} className="transition-colors hover:text-gold-ink">
-                    {l.label}
+                    {t.footer[l.label]}
                   </Link>
                 </li>
               ))}
@@ -87,9 +93,9 @@ export function SiteFooter() {
       <div className="border-t border-line">
         <div className="mx-auto flex max-w-[1280px] flex-col gap-1 px-4 py-6 text-xs text-muted sm:px-6 md:flex-row md:justify-between">
           <p>
-            © 2026 {SITE.company}. Mã số thuế {SITE.taxCode}.
+            © 2026 {SITE.company}. {t.footer.taxCode(SITE.taxCode)}
           </p>
-          <p>Giờ hỗ trợ: {SITE.hours}</p>
+          <p>{t.footer.hours(t.common.hours)}</p>
         </div>
       </div>
     </footer>

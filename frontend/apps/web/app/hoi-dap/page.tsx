@@ -6,28 +6,31 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { FaqList } from "@/components/faq-list";
 import { JsonLd } from "@/components/json-ld";
 import { headingId } from "@/lib/articles";
+import { localFaq } from "@/lib/i18n/content";
+import { getServerI18n } from "@/lib/i18n/server";
 
-export const metadata: Metadata = {
-  title: "Câu hỏi thường gặp",
-  description: "Giải đáp về xem phòng, đặt cọc, hợp đồng thuê, ký gửi phòng và tài khoản TTHOME.",
-  alternates: { canonical: "/hoi-dap" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+  return { title: t.faq.metaTitle, description: t.faq.metaDescription, alternates: { canonical: "/hoi-dap" } };
+}
 
-export default function FaqPage() {
-  const groups = [...new Set(FAQS.map((f) => f.group))];
+export default async function FaqPage() {
+  const { lang, t } = await getServerI18n();
+  const faqs = FAQS.map((f) => localFaq(f, lang));
+  const groups = [...new Set(faqs.map((f) => f.group))];
   return (
     <Container className="py-8 sm:py-12">
       <JsonLd
         data={{
           "@context": "https://schema.org",
           "@type": "FAQPage",
-          mainEntity: FAQS.map((f) => ({ "@type": "Question", name: f.question, acceptedAnswer: { "@type": "Answer", text: f.answer } })),
+          mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.question, acceptedAnswer: { "@type": "Answer", text: f.answer } })),
         }}
       />
-      <Breadcrumbs items={[{ label: "Câu hỏi thường gặp" }]} />
+      <Breadcrumbs items={[{ label: t.faq.title }]} lang={lang} />
       <div className="mt-6 grid gap-10 lg:grid-cols-[240px_1fr]">
-        <nav aria-label="Nhóm câu hỏi" className="lg:sticky lg:top-24 lg:self-start">
-          <h1 className="text-title font-extrabold text-ink">Câu hỏi thường gặp</h1>
+        <nav aria-label={t.faq.groups} className="lg:sticky lg:top-24 lg:self-start">
+          <h1 className="text-title font-extrabold text-ink">{t.faq.title}</h1>
           <ul className="mt-6 flex flex-wrap gap-2 lg:flex-col lg:gap-1">
             {groups.map((g) => (
               <li key={g}>
@@ -45,18 +48,18 @@ export default function FaqPage() {
                 {g}
               </h2>
               <div className="mt-4">
-                <FaqList items={FAQS.filter((f) => f.group === g)} />
+                <FaqList items={faqs.filter((f) => f.group === g)} />
               </div>
             </section>
           ))}
           <div className="flex flex-col items-start gap-3 rounded-card bg-plate-tint p-6 sm:flex-row sm:items-center sm:justify-between">
-            <p className="font-semibold text-plate-dark">Không thấy câu trả lời bạn cần?</p>
+            <p className="font-semibold text-plate-dark">{t.faq.notFound}</p>
             <div className="flex gap-2">
               <a href={SITE.hotlineHref} className={buttonStyles({ variant: "plate" })}>
-                Gọi {SITE.hotline}
+                {t.common.call(SITE.hotline)}
               </a>
               <Link href="/lien-he" className={buttonStyles({ variant: "secondary" })}>
-                Gửi câu hỏi
+                {t.faq.ask}
               </Link>
             </div>
           </div>

@@ -7,8 +7,10 @@ import { LayoutDashboard, Menu, Phone, X } from "lucide-react";
 import { SITE } from "@tthome/data";
 import { buttonStyles, cn } from "@tthome/ui";
 import { hasDemoSession } from "@/lib/demo-session";
+import { useI18n } from "@/lib/i18n/client";
 import { MAIN_NAV, isActive } from "@/lib/nav";
 import { BrandLockup } from "./brand-logo";
+import { LangSwitch } from "./lang-switch";
 import { Magnetic } from "./magnetic";
 
 /** The admin app. Served under /admin in production; set NEXT_PUBLIC_ADMIN_URL when it runs on another port locally. */
@@ -18,6 +20,7 @@ const noSubscription = () => () => {};
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const { t } = useI18n();
   // The menu belongs to the page it was opened on, so any navigation closes it.
   const [openOn, setOpenOn] = useState<string | null>(null);
   const open = openOn === pathname;
@@ -26,7 +29,7 @@ export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   // The demo session lives in a cookie: read on every render in the browser, never on the server.
   const signedIn = useSyncExternalStore(noSubscription, hasDemoSession, () => false);
-  const account = signedIn ? { href: "/tai-khoan/ho-so", label: "Tài khoản" } : { href: "/dang-nhap", label: "Đăng nhập" };
+  const account = signedIn ? { href: "/tai-khoan/ho-so", label: t.nav.account } : { href: "/dang-nhap", label: t.nav.signIn };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -61,11 +64,11 @@ export function SiteHeader() {
       )}
     >
       <div className={cn("mx-auto flex max-w-[1280px] items-center gap-6 px-4 transition-[height] duration-500 ease-out-expo sm:px-6", scrolled ? "h-16" : "h-20")}>
-        <Link href="/" aria-label="TTHOME, về trang chủ" className="shrink-0">
-          <BrandLockup />
+        <Link href="/" aria-label={t.brand.homeLink} className="shrink-0">
+          <BrandLockup tagline={t.brand.tagline} />
         </Link>
 
-        <nav aria-label="Menu chính" className="hidden flex-1 justify-center lg:flex">
+        <nav aria-label={t.nav.main} className="hidden flex-1 justify-center lg:flex">
           <ul className="flex items-center gap-8">
             {MAIN_NAV.map((item) => {
               const active = isActive(pathname, item.href);
@@ -80,7 +83,7 @@ export function SiteHeader() {
                       active ? "text-gold-ink after:opacity-100" : "text-ink-soft after:opacity-0 hover:text-gold-ink",
                     )}
                   >
-                    {item.label}
+                    {t.nav[item.key]}
                   </Link>
                 </li>
               );
@@ -89,7 +92,8 @@ export function SiteHeader() {
         </nav>
 
         <div className="ml-auto flex items-center gap-1 sm:gap-3 lg:ml-0">
-          <a href={ADMIN_URL} className="rounded-lg p-2 text-muted transition-colors hover:bg-ivory hover:text-gold-ink max-sm:hidden" aria-label="Trang quản trị" title="Trang quản trị">
+          <LangSwitch className="max-lg:hidden" />
+          <a href={ADMIN_URL} className="rounded-lg p-2 text-muted transition-colors hover:bg-ivory hover:text-gold-ink max-sm:hidden" aria-label={t.nav.admin} title={t.nav.admin}>
             <LayoutDashboard aria-hidden className="size-5" />
           </a>
           <Link href={account.href} className="px-2 py-2 text-[0.9375rem] font-semibold text-ink-soft transition-colors hover:text-gold-ink max-sm:hidden">
@@ -97,7 +101,7 @@ export function SiteHeader() {
           </Link>
           <Magnetic strength={0.2} className="max-sm:hidden">
             <Link href="/ky-gui" className={buttonStyles({ size: "md", className: "rounded-full px-5 shadow-[var(--shadow-soft)]" })}>
-              Ký gửi phòng
+              {t.nav.consign}
             </Link>
           </Magnetic>
           <button
@@ -109,13 +113,13 @@ export function SiteHeader() {
             onClick={() => setOpen(!open)}
           >
             {open ? <X aria-hidden /> : <Menu aria-hidden />}
-            <span className="sr-only">{open ? "Đóng menu" : "Mở menu"}</span>
+            <span className="sr-only">{open ? t.nav.closeMenu : t.nav.openMenu}</span>
           </button>
         </div>
       </div>
 
       {open ? (
-        <nav id="menu-di-dong" aria-label="Menu chính" className={cn("fixed inset-x-0 bottom-0 overflow-y-auto border-t border-line bg-alabaster px-4 pt-2 pb-10 lg:hidden", scrolled ? "top-16" : "top-20")}>
+        <nav id="menu-di-dong" aria-label={t.nav.main} className={cn("fixed inset-x-0 bottom-0 overflow-y-auto border-t border-line bg-alabaster px-4 pt-2 pb-10 lg:hidden", scrolled ? "top-16" : "top-20")}>
           <ul className="flex flex-col">
             {MAIN_NAV.map((item) => (
               <li key={item.href}>
@@ -125,25 +129,29 @@ export function SiteHeader() {
                   aria-current={isActive(pathname, item.href) ? "page" : undefined}
                   className="flex items-center border-b border-line py-4 text-lg font-semibold text-ink aria-[current=page]:text-gold-ink"
                 >
-                  {item.label}
+                  {t.nav[item.key]}
                 </Link>
               </li>
             ))}
           </ul>
+          <div className="mt-6 flex items-center justify-between gap-3">
+            <span className="text-sm font-semibold text-muted">{t.lang.label}</span>
+            <LangSwitch size="lg" />
+          </div>
           <div className="mt-6 grid gap-2">
             <Link href="/ky-gui" onClick={() => setOpen(false)} className={buttonStyles({ size: "lg", className: "w-full" })}>
-              Ký gửi phòng
+              {t.nav.consign}
             </Link>
             <Link href={account.href} onClick={() => setOpen(false)} className={buttonStyles({ variant: "secondary", size: "lg", className: "w-full" })}>
               {account.label}
             </Link>
             <a href={SITE.hotlineHref} className={buttonStyles({ variant: "ghost", size: "lg", className: "w-full" })}>
               <Phone aria-hidden />
-              Gọi {SITE.hotline}
+              {t.common.call(SITE.hotline)}
             </a>
             <a href={ADMIN_URL} className={buttonStyles({ variant: "ghost", size: "lg", className: "w-full" })}>
               <LayoutDashboard aria-hidden />
-              Trang quản trị
+              {t.nav.admin}
             </a>
           </div>
         </nav>

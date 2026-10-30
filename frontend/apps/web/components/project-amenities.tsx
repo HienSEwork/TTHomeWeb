@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { AirVent, ArrowUpDown, Bath, CircleParking, Clock, CookingPot, Heater, KeyRound, Refrigerator, ShieldCheck, Sparkles, Sun, WashingMachine } from "lucide-react";
-import { AMENITY_NAME } from "@tthome/data";
+import { getI18n, labelOf, type Lang } from "@/lib/i18n";
 
 const ICONS: Record<string, LucideIcon> = {
   aircon: AirVent,
@@ -19,7 +19,8 @@ const ICONS: Record<string, LucideIcon> = {
   cleaning: Sparkles,
 };
 
-export function AmenityList({ codes }: { codes: string[] }) {
+export function AmenityList({ codes, lang }: { codes: string[]; lang?: Lang }) {
+  const { t } = getI18n(lang);
   return (
     <ul className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
       {codes.map((code) => {
@@ -27,7 +28,7 @@ export function AmenityList({ codes }: { codes: string[] }) {
         return (
           <li key={code} className="flex items-center gap-2.5 text-ink-soft">
             <Icon aria-hidden className="size-5 shrink-0 text-shutter" />
-            {AMENITY_NAME[code] ?? code}
+            {labelOf(t.labels.amenity, code)}
           </li>
         );
       })}

@@ -1,20 +1,12 @@
 import { PROJECTS, TODAY, type Project, type Room } from "@tthome/data";
+import { vi } from "./i18n/vi";
 
 export type RoomRef = { room: Room; project: Project };
 
 export type Highlight = "aircon" | "private_wc" | "balcony" | "window" | "furnished" | "elevator" | "parking" | "fingerprint" | "pet";
 
-export const HIGHLIGHT_LABEL: Record<Highlight, string> = {
-  aircon: "Máy lạnh",
-  private_wc: "WC riêng",
-  balcony: "Ban công",
-  window: "Cửa sổ",
-  furnished: "Full nội thất",
-  elevator: "Thang máy",
-  parking: "Chỗ để xe",
-  fingerprint: "Khóa vân tay",
-  pet: "Thú cưng",
-};
+/** Vietnamese highlight labels; other languages read them from their dictionary (`t.labels.highlight`). */
+export const HIGHLIGHT_LABEL: Record<Highlight, string> = vi.labels.highlight;
 
 /**
  * The few amenities worth showing on a card, most telling first. Only what the data says is true
@@ -45,10 +37,10 @@ export function isNewListing(project: Project): boolean {
 }
 
 /** One label per card at most: an offer beats "new", which beats "featured". */
-export function cardBadge(project: Project): { label: string; tone: "offer" | "new" | "featured" } | null {
-  if (project.promo) return { label: "Ưu đãi", tone: "offer" };
-  if (isNewListing(project)) return { label: "Mới", tone: "new" };
-  if (project.exclusive) return { label: "Nổi bật", tone: "featured" };
+export function cardBadge(project: Project, labels: typeof vi.card.badge = vi.card.badge): { label: string; tone: "offer" | "new" | "featured" } | null {
+  if (project.promo) return { label: labels.offer, tone: "offer" };
+  if (isNewListing(project)) return { label: labels.new, tone: "new" };
+  if (project.exclusive) return { label: labels.featured, tone: "featured" };
   return null;
 }
 

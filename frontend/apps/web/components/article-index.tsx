@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { POST_CATEGORIES, type Post } from "@tthome/data";
 import { Container, EmptyState, buttonStyles, cn } from "@tthome/ui";
+import { getI18n, type Lang } from "@/lib/i18n";
+import { localCategory, localPost } from "@/lib/i18n/content";
 import { Breadcrumbs, type Crumb } from "./breadcrumbs";
 import { PostCard } from "./post-card";
 
@@ -11,23 +13,27 @@ export function ArticleIndex({
   posts,
   crumbs,
   activeCategory,
+  lang,
 }: {
   title: string;
   description: string;
+  /** Posts as stored; they are shown in `lang`. */
   posts: Post[];
   crumbs: Crumb[];
   activeCategory?: string;
+  lang?: Lang;
 }) {
-  const [lead, ...rest] = posts;
+  const { lang: l, t } = getI18n(lang);
+  const [lead, ...rest] = posts.map((p) => localPost(p, l));
   return (
     <Container className="py-8 sm:py-12">
-      <Breadcrumbs items={crumbs} />
+      <Breadcrumbs items={crumbs} lang={l} />
       <h1 className="mt-6 text-title font-extrabold text-ink">{title}</h1>
       <p className="mt-2 max-w-2xl text-ink-soft">{description}</p>
 
-      <nav aria-label="Chuyên mục" className="scrollbar-none -mx-4 mt-6 overflow-x-auto px-4">
+      <nav aria-label={t.news.categories} className="scrollbar-none -mx-4 mt-6 overflow-x-auto px-4">
         <ul className="flex gap-2">
-          {[{ slug: "", name: "Tất cả" }, ...POST_CATEGORIES].map((c) => {
+          {[{ slug: "", name: t.news.all }, ...POST_CATEGORIES.map((c) => localCategory(c, l))].map((c) => {
             const active = (activeCategory ?? "") === c.slug;
             return (
               <li key={c.slug} className="shrink-0">
@@ -50,12 +56,12 @@ export function ArticleIndex({
       {lead ? (
         <>
           <div className="mt-10 max-w-4xl">
-            <PostCard post={lead} large />
+            <PostCard post={lead} large lang={l} />
           </div>
           {rest.length ? (
             <div className="mt-14 grid gap-x-8 gap-y-12 border-t border-line pt-10 sm:grid-cols-2 lg:grid-cols-3">
               {rest.map((p) => (
-                <PostCard key={p.slug} post={p} />
+                <PostCard key={p.slug} post={p} lang={l} />
               ))}
             </div>
           ) : null}
@@ -63,11 +69,11 @@ export function ArticleIndex({
       ) : (
         <EmptyState
           className="mt-10"
-          title="Chưa có bài viết trong mục này"
-          description="Các bài mới được đăng mỗi tuần. Trong lúc chờ, bạn có thể đọc các chuyên mục khác."
+          title={t.news.emptyTitle}
+          description={t.news.emptyText}
           action={
             <Link href="/tin-tuc" className={buttonStyles({ variant: "secondary" })}>
-              Xem tất cả bài viết
+              {t.news.allPosts}
             </Link>
           }
         />

@@ -3,32 +3,35 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Heart, TrendingDown, TrendingUp } from "lucide-react";
-import { EmptyState, buttonStyles, formatPriceShort } from "@tthome/ui";
+import { EmptyState, buttonStyles } from "@tthome/ui";
 import type { SavedRoom } from "@/lib/account";
+import { useI18n } from "@/lib/i18n/client";
 import { RoomCard } from "./room-card";
 
 function PriceChange({ saved, now }: { saved: number; now: number }) {
-  if (saved === now) return <p className="text-sm text-muted">Giá chưa đổi từ khi bạn lưu</p>;
+  const { t, fmt } = useI18n();
+  if (saved === now) return <p className="text-sm text-muted">{t.account.priceSame}</p>;
   const down = now < saved;
   const Icon = down ? TrendingDown : TrendingUp;
   return (
     <p className={`flex items-center gap-1.5 text-sm font-semibold ${down ? "text-shutter" : "text-warn"}`}>
       <Icon aria-hidden className="size-4" />
-      {down ? "Giảm" : "Tăng"} {formatPriceShort(Math.abs(now - saved))} so với lúc bạn lưu
+      {(down ? t.account.priceDown : t.account.priceUp)(fmt.priceShort(Math.abs(now - saved)))}
     </p>
   );
 }
 
 export function SavedRooms({ initial }: { initial: SavedRoom[] }) {
+  const { lang, t } = useI18n();
   const [items, setItems] = useState(initial);
   if (items.length === 0) {
     return (
       <EmptyState
-        title="Chưa có phòng nào được lưu"
-        description="Bấm biểu tượng trái tim trên trang phòng để lưu lại. TTHOME sẽ báo bạn khi giá thay đổi."
+        title={t.account.savedEmpty}
+        description={t.account.savedEmptyText}
         action={
           <Link href="/tim-kiem" className={buttonStyles({ variant: "primary" })}>
-            Tìm phòng
+            {t.common.findRoom}
           </Link>
         }
       />
@@ -38,7 +41,7 @@ export function SavedRooms({ initial }: { initial: SavedRoom[] }) {
     <ul className="grid gap-4 xl:grid-cols-2">
       {items.map(({ room, project, savedPrice }) => (
         <li key={room.id} className="flex flex-col gap-2">
-          <RoomCard room={room} project={project} showProject />
+          <RoomCard room={room} project={project} showProject lang={lang} />
           <div className="flex items-center justify-between gap-3 px-1">
             <PriceChange saved={savedPrice} now={room.price} />
             <button
@@ -47,7 +50,7 @@ export function SavedRooms({ initial }: { initial: SavedRoom[] }) {
               className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-muted hover:text-danger"
             >
               <Heart aria-hidden className="size-4 fill-current" />
-              Bỏ lưu
+              {t.account.unsave}
             </button>
           </div>
         </li>

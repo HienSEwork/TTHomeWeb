@@ -3,8 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useId, useState, type ReactNode } from "react";
 import { ChevronDown, LayoutGrid, MapPin, Search, Wallet } from "lucide-react";
-import { PRICE_BANDS, ROOM_TYPE_LABEL, type RoomType } from "@tthome/data";
+import { PRICE_BANDS, type RoomType } from "@tthome/data";
 import { cn } from "@tthome/ui";
+import { labelOf } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n/client";
 import { toSearchQuery } from "@/lib/search-params";
 import { Magnetic } from "./magnetic";
 
@@ -35,6 +37,7 @@ const control = "w-full min-w-0 appearance-none truncate bg-transparent py-0.5 t
 /** The hero's three-field search: where, how much, what kind. Submits to /tim-kiem. */
 export function HeroSearch({ className }: { className?: string }) {
   const router = useRouter();
+  const { t } = useI18n();
   const id = useId();
   const [q, setQ] = useState("");
   const [band, setBand] = useState("");
@@ -54,7 +57,7 @@ export function HeroSearch({ className }: { className?: string }) {
   return (
     <form
       role="search"
-      aria-label="Tìm phòng"
+      aria-label={t.hero.form}
       onSubmit={(e) => {
         e.preventDefault();
         submit();
@@ -64,27 +67,27 @@ export function HeroSearch({ className }: { className?: string }) {
         className,
       )}
     >
-      <Field icon={<MapPin />} label="Khu vực" htmlFor={`${id}-q`}>
-        <input id={`${id}-q`} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Quận, phường, tên đường…" autoComplete="off" className={control} />
+      <Field icon={<MapPin />} label={t.hero.area} htmlFor={`${id}-q`}>
+        <input id={`${id}-q`} value={q} onChange={(e) => setQ(e.target.value)} placeholder={t.hero.areaPlaceholder} autoComplete="off" className={control} />
       </Field>
       <span aria-hidden className="mx-5 h-px bg-line md:mx-0 md:h-8 md:w-px" />
-      <Field icon={<Wallet />} label="Khoảng giá" htmlFor={`${id}-price`} select>
+      <Field icon={<Wallet />} label={t.hero.price} htmlFor={`${id}-price`} select>
         <select id={`${id}-price`} value={band} onChange={(e) => setBand(e.target.value)} className={cn(control, !band && "text-muted")}>
-          <option value="">Chọn ngân sách</option>
+          <option value="">{t.hero.pricePlaceholder}</option>
           {PRICE_BANDS.map((b) => (
             <option key={b.slug} value={b.slug}>
-              {b.label}
+              {labelOf(t.labels.priceBand, b.slug)}
             </option>
           ))}
         </select>
       </Field>
       <span aria-hidden className="mx-5 h-px bg-line md:mx-0 md:h-8 md:w-px" />
-      <Field icon={<LayoutGrid />} label="Loại phòng" htmlFor={`${id}-type`} select>
+      <Field icon={<LayoutGrid />} label={t.hero.type} htmlFor={`${id}-type`} select>
         <select id={`${id}-type`} value={type} onChange={(e) => setType(e.target.value)} className={cn(control, !type && "text-muted")}>
-          <option value="">Studio, phòng đơn…</option>
-          {TYPES.map((t) => (
-            <option key={t} value={t}>
-              {ROOM_TYPE_LABEL[t]}
+          <option value="">{t.hero.typePlaceholder}</option>
+          {TYPES.map((type) => (
+            <option key={type} value={type}>
+              {t.labels.roomType[type]}
             </option>
           ))}
         </select>
@@ -95,7 +98,7 @@ export function HeroSearch({ className }: { className?: string }) {
           className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary px-8 text-base font-semibold text-on-primary hover:bg-primary-hover md:h-[60px]"
         >
           <Search aria-hidden className="size-5" />
-          Tìm phòng
+          {t.hero.submit}
         </button>
       </Magnetic>
     </form>

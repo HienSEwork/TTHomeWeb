@@ -1,12 +1,14 @@
 import { headingId } from "@/lib/articles";
+import { getI18n, type Lang } from "@/lib/i18n";
 
 type Section = { heading: string; paragraphs: string[] };
 
 /** Table of contents for long text. */
-export function ArticleToc({ sections }: { sections: Section[] }) {
+export function ArticleToc({ sections, lang }: { sections: Section[]; lang?: Lang }) {
+  const { t } = getI18n(lang);
   return (
-    <nav aria-label="Mục lục" className="rounded-card border border-line bg-surface p-5">
-      <p className="text-sm font-bold text-ink">Trong bài này</p>
+    <nav aria-label={t.news.toc} className="rounded-card border border-line bg-surface p-5">
+      <p className="text-sm font-bold text-ink">{t.news.inThisArticle}</p>
       <ol className="mt-3 space-y-2 text-sm">
         {sections.map((s) => (
           <li key={s.heading}>

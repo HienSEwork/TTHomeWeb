@@ -1,14 +1,19 @@
 import type { Metadata } from "next";
 import { MyAppointments } from "@/components/account-appointments";
 import { myAppointments } from "@/lib/account";
+import { getServerI18n } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: "Lịch hẹn của tôi" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+  return { title: t.account.appointmentsTitle };
+}
 
-export default function AppointmentsPage() {
+export default async function AppointmentsPage() {
+  const { t } = await getServerI18n();
   return (
     <div>
-      <h1 className="text-title font-extrabold text-ink">Lịch hẹn của tôi</h1>
-      <p className="mt-1 mb-6 text-sm text-muted">Đổi hoặc hủy lịch trước giờ hẹn ít nhất 2 giờ để nhân viên sắp xếp lại.</p>
+      <h1 className="text-title font-extrabold text-ink">{t.account.appointmentsTitle}</h1>
+      <p className="mt-1 mb-6 text-sm text-muted">{t.account.appointmentsText}</p>
       <MyAppointments initial={myAppointments()} />
     </div>
   );

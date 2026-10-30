@@ -1,4 +1,9 @@
 import { TODAY } from "@tthome/data";
+import { vi } from "./i18n/vi";
+
+/** Error messages in the visitor's language; Vietnamese unless a dictionary passes others. */
+export type ValidationMessages = typeof vi.validation;
+const VI = vi.validation;
 
 export type Errors<K extends string> = Partial<Record<K, string>>;
 
@@ -19,20 +24,20 @@ export function isEmail(input: string): boolean {
 }
 
 /** At least 8 characters with a letter and a digit. */
-export function passwordProblem(password: string): string | undefined {
-  if (password.length < 8) return "Mật khẩu cần ít nhất 8 ký tự";
-  if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) return "Mật khẩu cần có cả chữ và số";
+export function passwordProblem(password: string, m: ValidationMessages = VI): string | undefined {
+  if (password.length < 8) return m.passwordShort;
+  if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) return m.passwordMix;
   return undefined;
 }
 
-function phoneError(phone: string): string | undefined {
-  if (!phone.trim()) return "Nhập số điện thoại để nhân viên gọi xác nhận";
-  if (!isVnPhone(phone)) return "Số điện thoại cần 10 số, bắt đầu bằng 03, 05, 07, 08 hoặc 09";
+function phoneError(phone: string, m: ValidationMessages): string | undefined {
+  if (!phone.trim()) return m.phoneMissing;
+  if (!isVnPhone(phone)) return m.phoneInvalid;
   return undefined;
 }
 
-function nameError(name: string): string | undefined {
-  return name.trim().length < 2 ? "Nhập họ tên của bạn" : undefined;
+function nameError(name: string, m: ValidationMessages): string | undefined {
+  return name.trim().length < 2 ? m.name : undefined;
 }
 
 function compact<K extends string>(errors: Errors<K>): Errors<K> {
@@ -67,14 +72,14 @@ export type BookingInput = {
 
 export type BookingField = keyof BookingInput;
 
-export function validateBooking(input: BookingInput, from = TODAY): Errors<BookingField> {
+export function validateBooking(input: BookingInput, from = TODAY, m: ValidationMessages = VI): Errors<BookingField> {
   return compact<BookingField>({
-    area: input.area ? undefined : "Chọn khu vực bạn muốn ở",
-    date: !input.date ? "Chọn ngày xem phòng" : input.date <= from ? "Chọn một ngày từ ngày mai trở đi" : undefined,
-    slot: input.slot ? undefined : "Chọn giờ xem phòng",
-    name: nameError(input.name),
-    phone: phoneError(input.phone),
-    consent: input.consent ? undefined : "Bạn cần đồng ý để TTHOME liên hệ lại",
+    area: input.area ? undefined : m.area,
+    date: !input.date ? m.date : input.date <= from ? m.dateFuture : undefined,
+    slot: input.slot ? undefined : m.slot,
+    name: nameError(input.name, m),
+    phone: phoneError(input.phone, m),
+    consent: input.consent ? undefined : m.bookingConsent,
   });
 }
 
@@ -94,18 +99,18 @@ export type ConsignInput = {
 
 export type ConsignField = keyof ConsignInput;
 
-export function validateConsign(input: ConsignInput): Errors<ConsignField> {
+export function validateConsign(input: ConsignInput, m: ValidationMessages = VI): Errors<ConsignField> {
   const rooms = Number(input.roomCount);
   const price = Number(input.priceFrom.replace(/\D/g, ""));
   return compact<ConsignField>({
-    address: input.address.trim().length < 6 ? "Nhập số nhà và tên đường" : undefined,
-    district: input.district ? undefined : "Chọn quận hoặc thành phố",
-    roomCount: !Number.isInteger(rooms) || rooms < 1 || rooms > 500 ? "Nhập số phòng từ 1 đến 500" : undefined,
-    priceFrom: !price || price < 500_000 ? "Nhập giá thuê thấp nhất, ví dụ 3500000" : undefined,
-    roomTypes: input.roomTypes.length ? undefined : "Chọn ít nhất một loại phòng",
-    name: nameError(input.name),
-    phone: phoneError(input.phone),
-    consent: input.consent ? undefined : "Bạn cần đồng ý với chính sách ký gửi",
+    address: input.address.trim().length < 6 ? m.address : undefined,
+    district: input.district ? undefined : m.district,
+    roomCount: !Number.isInteger(rooms) || rooms < 1 || rooms > 500 ? m.roomCount : undefined,
+    priceFrom: !price || price < 500_000 ? m.priceFrom : undefined,
+    roomTypes: input.roomTypes.length ? undefined : m.roomTypes,
+    name: nameError(input.name, m),
+    phone: phoneError(input.phone, m),
+    consent: input.consent ? undefined : m.consignConsent,
   });
 }
 
@@ -114,12 +119,12 @@ export function validateConsign(input: ConsignInput): Errors<ConsignField> {
 export type ContactInput = { name: string; phone: string; email: string; message: string };
 export type ContactField = keyof ContactInput;
 
-export function validateContact(input: ContactInput, requireMessage = true): Errors<ContactField> {
+export function validateContact(input: ContactInput, requireMessage = true, m: ValidationMessages = VI): Errors<ContactField> {
   return compact<ContactField>({
-    name: nameError(input.name),
-    phone: phoneError(input.phone),
-    email: input.email && !isEmail(input.email) ? "Email chưa đúng định dạng" : undefined,
-    message: requireMessage && input.message.trim().length < 10 ? "Viết ít nhất 10 ký tự để chúng tôi hiểu rõ yêu cầu" : undefined,
+    name: nameError(input.name, m),
+    phone: phoneError(input.phone, m),
+    email: input.email && !isEmail(input.email) ? m.email : undefined,
+    message: requireMessage && input.message.trim().length < 10 ? m.message : undefined,
   });
 }
 

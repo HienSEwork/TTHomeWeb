@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useRef, useState, type FormEvent } from "react";
 import { Camera, X } from "lucide-react";
-import { DISTRICTS, ROOM_TYPE_LABEL, type RoomType } from "@tthome/data";
-import { Button, SelectField, TextAreaField, TextField, ToggleChip, formatPriceShort } from "@tthome/ui";
+import { DISTRICTS, type RoomType } from "@tthome/data";
+import { Button, SelectField, TextAreaField, TextField, ToggleChip } from "@tthome/ui";
+import { useI18n } from "@/lib/i18n/client";
 import { validateConsign, type ConsignField, type ConsignInput, type Errors } from "@/lib/validation";
 import { ConsentCheck, FormErrorSummary, FormSection, FormSuccess } from "./form-parts";
 
@@ -12,6 +13,7 @@ const TYPES: RoomType[] = ["room", "studio", "1pn", "2pn", "duplex", "shared", "
 const MAX_PHOTOS = 20;
 
 export function ConsignForm() {
+  const { lang, t, fmt } = useI18n();
   const fileInput = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [input, setInput] = useState<Omit<ConsignInput, "photos">>({
@@ -32,7 +34,7 @@ export function ConsignForm() {
   function set<K extends keyof typeof input>(key: K, value: (typeof input)[K]) {
     const next = { ...input, [key]: value };
     setInput(next);
-    if (tried) setErrors(validateConsign({ ...next, photos: files.length }));
+    if (tried) setErrors(validateConsign({ ...next, photos: files.length }, t.validation));
   }
 
   function toggleType(type: RoomType, on: boolean) {
@@ -41,7 +43,7 @@ export function ConsignForm() {
 
   function submit(e: FormEvent) {
     e.preventDefault();
-    const found = validateConsign({ ...input, photos: files.length });
+    const found = validateConsign({ ...input, photos: files.length }, t.validation);
     setTried(true);
     setErrors(found);
     if (Object.keys(found).length === 0) setSent(true);
@@ -49,11 +51,8 @@ export function ConsignForm() {
 
   if (sent) {
     return (
-      <FormSuccess title="Đã gửi thông tin ký gửi">
-        <p>
-          Cảm ơn anh/chị {input.name.trim()}. Nhân viên TTHOME sẽ gọi số {input.phone} trong 24 giờ để xác nhận và hẹn lịch chụp ảnh. Theo dõi trạng thái ở mục
-          Phòng ký gửi trong tài khoản.
-        </p>
+      <FormSuccess title={t.consign.done} lang={lang}>
+        <p>{t.consign.doneText(input.name.trim(), input.phone)}</p>
       </FormSuccess>
     );
   }
@@ -62,45 +61,45 @@ export function ConsignForm() {
 
   return (
     <form noValidate onSubmit={submit} className="flex flex-col gap-8 rounded-card border border-line bg-surface p-5 sm:p-8">
-      <FormSection title="Địa chỉ tòa nhà">
-        <TextField label="Số nhà, tên đường" placeholder="62/4 Nguyễn Trãi, Phường Tân An" value={input.address} onChange={(e) => set("address", e.target.value)} error={errors.address} wrapperClassName="sm:col-span-2" />
-        <SelectField label="Quận hoặc thành phố" value={input.district} onChange={(e) => set("district", e.target.value)} error={errors.district}>
-          <option value="">Chọn</option>
+      <FormSection title={t.consign.addressTitle}>
+        <TextField label={t.consign.address} placeholder={t.consign.addressPlaceholder} value={input.address} onChange={(e) => set("address", e.target.value)} error={errors.address} wrapperClassName="sm:col-span-2" />
+        <SelectField label={t.consign.district} value={input.district} onChange={(e) => set("district", e.target.value)} error={errors.district}>
+          <option value="">{t.common.choose}</option>
           {DISTRICTS.map((d) => (
             <option key={d.slug} value={d.slug}>
               {d.name}
             </option>
           ))}
-          <option value="khac">Khu vực khác</option>
+          <option value="khac">{t.consign.otherArea}</option>
         </SelectField>
       </FormSection>
 
-      <FormSection title="Phòng cho thuê">
-        <TextField label="Số phòng" type="number" inputMode="numeric" min={1} value={input.roomCount} onChange={(e) => set("roomCount", e.target.value)} error={errors.roomCount} />
+      <FormSection title={t.consign.roomsTitle}>
+        <TextField label={t.consign.roomCount} type="number" inputMode="numeric" min={1} value={input.roomCount} onChange={(e) => set("roomCount", e.target.value)} error={errors.roomCount} />
         <TextField
-          label="Giá thấp nhất mỗi tháng (đ)"
+          label={t.consign.priceFrom}
           inputMode="numeric"
           placeholder="3500000"
           value={input.priceFrom}
           onChange={(e) => set("priceFrom", e.target.value)}
           error={errors.priceFrom}
-          hint={price >= 500_000 ? `Tức là ${formatPriceShort(price)} mỗi tháng` : undefined}
+          hint={price >= 500_000 ? t.consign.priceHint(fmt.priceShort(price)) : undefined}
         />
         <div className="sm:col-span-2">
-          <p className="text-sm font-semibold text-ink">Loại phòng</p>
+          <p className="text-sm font-semibold text-ink">{t.consign.roomTypes}</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            {TYPES.map((t) => (
-              <ToggleChip key={t} checked={input.roomTypes.includes(t)} onChange={(on) => toggleType(t, on)}>
-                {ROOM_TYPE_LABEL[t]}
+            {TYPES.map((type) => (
+              <ToggleChip key={type} checked={input.roomTypes.includes(type)} onChange={(on) => toggleType(type, on)}>
+                {t.labels.roomType[type]}
               </ToggleChip>
             ))}
           </div>
           {errors.roomTypes ? <p className="mt-1.5 text-[0.8125rem] text-danger">{errors.roomTypes}</p> : null}
         </div>
-        <TextAreaField label="Mô tả thêm" optional placeholder="Tiện nghi, giờ giấc, chỗ để xe, điều kiện thuê…" value={note} onChange={(e) => setNote(e.target.value)} wrapperClassName="sm:col-span-2" />
+        <TextAreaField label={t.consign.note} optional optionalLabel={t.common.optional} placeholder={t.consign.notePlaceholder} value={note} onChange={(e) => setNote(e.target.value)} wrapperClassName="sm:col-span-2" />
       </FormSection>
 
-      <FormSection title="Ảnh phòng" description="Không có ảnh cũng được, đội TTHOME sẽ đến chụp miễn phí. Tối đa 20 ảnh.">
+      <FormSection title={t.consign.photosTitle} description={t.consign.photosText}>
         <div className="sm:col-span-2">
           <button
             type="button"
@@ -108,8 +107,8 @@ export function ConsignForm() {
             className="flex w-full flex-col items-center gap-2 rounded-card border-2 border-dashed border-line-strong px-4 py-8 text-center text-sm text-muted transition-colors hover:border-plate hover:bg-plate-tint/40"
           >
             <Camera aria-hidden className="size-7 text-plate" />
-            <span className="font-semibold text-ink">Chọn ảnh từ máy</span>
-            JPG hoặc PNG, mỗi ảnh dưới 10 MB
+            <span className="font-semibold text-ink">{t.consign.pickPhotos}</span>
+            {t.consign.photoRules}
           </button>
           <input
             ref={fileInput}
@@ -118,7 +117,7 @@ export function ConsignForm() {
             multiple
             className="sr-only"
             tabIndex={-1}
-            aria-label="Chọn ảnh phòng"
+            aria-label={t.consign.pickPhotosLabel}
             onChange={(e) => {
               const picked = Array.from(e.target.files ?? []).filter((f) => f.size <= 10 * 1024 * 1024);
               setFiles((prev) => [...prev, ...picked].slice(0, MAX_PHOTOS));
@@ -130,7 +129,7 @@ export function ConsignForm() {
               {files.map((f, i) => (
                 <li key={`${f.name}-${i}`} className="flex items-center justify-between gap-3 rounded-lg bg-wash px-3 py-2 text-sm">
                   <span className="truncate text-ink">{f.name}</span>
-                  <button type="button" onClick={() => setFiles(files.filter((_, j) => j !== i))} className="shrink-0 text-muted hover:text-danger" aria-label={`Bỏ ảnh ${f.name}`}>
+                  <button type="button" onClick={() => setFiles(files.filter((_, j) => j !== i))} className="shrink-0 text-muted hover:text-danger" aria-label={t.consign.removePhoto(f.name)}>
                     <X aria-hidden className="size-4" />
                   </button>
                 </li>
@@ -140,21 +139,21 @@ export function ConsignForm() {
         </div>
       </FormSection>
 
-      <FormSection title="Liên hệ chủ nhà">
-        <TextField label="Họ tên" autoComplete="name" value={input.name} onChange={(e) => set("name", e.target.value)} error={errors.name} />
-        <TextField label="Số điện thoại" type="tel" inputMode="tel" autoComplete="tel" value={input.phone} onChange={(e) => set("phone", e.target.value)} error={errors.phone} />
+      <FormSection title={t.consign.ownerTitle}>
+        <TextField label={t.common.name} autoComplete="name" value={input.name} onChange={(e) => set("name", e.target.value)} error={errors.name} />
+        <TextField label={t.common.phone} type="tel" inputMode="tel" autoComplete="tel" value={input.phone} onChange={(e) => set("phone", e.target.value)} error={errors.phone} />
         <ConsentCheck checked={input.consent} onChange={(v) => set("consent", v)} error={errors.consent}>
-          Tôi đã đọc và đồng ý với{" "}
+          {t.consign.consent}{" "}
           <Link href="/chinh-sach/chinh-sach-ky-gui" className="font-semibold text-plate underline">
-            chính sách ký gửi
+            {t.consign.consentLink}
           </Link>
           .
         </ConsentCheck>
-        <FormErrorSummary count={Object.keys(errors).length} />
+        <FormErrorSummary count={Object.keys(errors).length} lang={lang} />
       </FormSection>
 
       <Button type="submit" size="lg" className="self-start">
-        Gửi thông tin ký gửi
+        {t.consign.submit}
       </Button>
     </form>
   );

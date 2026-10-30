@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useId, useMemo, useState } from "react";
 import { ExternalLink, X } from "lucide-react";
-import { Plate, cn, formatFromPrice, formatPriceShort } from "@tthome/ui";
+import { Plate, cn } from "@tthome/ui";
+import { useI18n } from "@/lib/i18n/client";
 import { CITY_BOUNDS, fitBounds, googleMapsUrl, project, RIVERS, type LatLng, type Bounds } from "@/lib/map-projection";
 
 export type MapPin = {
@@ -41,13 +42,14 @@ function riverPath(river: LatLng[], b: Bounds): string {
  * Google Maps only loads when someone follows "Mở trên Google Maps".
  */
 export function MapView({ pins, landmarks = [], fit, className }: Props) {
+  const { t, fmt } = useI18n();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const gridId = useId();
   const bounds = useMemo(() => (fit ? fitBounds([...pins, ...landmarks]) : CITY_BOUNDS), [fit, pins, landmarks]);
   const selected = pins.find((p) => p.id === selectedId) ?? null;
 
   return (
-    <div className={cn("relative isolate overflow-hidden bg-[#e9eeec]", className)} role="region" aria-label="Bản đồ các tòa nhà còn phòng">
+    <div className={cn("relative isolate overflow-hidden bg-[#e9eeec]", className)} role="region" aria-label={t.map.sketchRegion}>
       <svg aria-hidden viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full">
         <defs>
           <pattern id={gridId} width="6" height="6" patternUnits="userSpaceOnUse">
@@ -83,13 +85,13 @@ export function MapView({ pins, landmarks = [], fit, className }: Props) {
                 type="button"
                 onClick={() => setSelectedId(active ? null : pin.id)}
                 aria-pressed={active}
-                aria-label={`${pin.name}, ${formatFromPrice(pin.minPrice)}, ${pin.vacant} phòng trống`}
+                aria-label={t.map.pin(pin.name, fmt.fromPrice(pin.minPrice), pin.vacant)}
                 className={cn(
                   "relative rounded-md px-1.5 py-0.5 text-xs font-bold whitespace-nowrap shadow-sm transition-transform after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-[5px] after:border-transparent hover:scale-110",
                   active ? "plate scale-110 after:border-t-plate" : "bg-surface text-ink ring-1 ring-line-strong after:border-t-surface",
                 )}
               >
-                {pin.minPrice ? formatPriceShort(pin.minPrice).replace(" triệu", "tr") : "Liên hệ"}
+                {fmt.mapPrice(pin.minPrice)}
               </button>
             </li>
           );
@@ -107,21 +109,21 @@ export function MapView({ pins, landmarks = [], fit, className }: Props) {
             </Link>
             <p className="line-clamp-1 text-sm text-muted">{selected.address}</p>
             <div className="mt-1.5 flex items-center gap-2">
-              <span className="font-extrabold text-ink">{formatFromPrice(selected.minPrice)}</span>
-              <Plate value={selected.vacant} unit="trống" size="xs" />
+              <span className="font-extrabold text-ink">{fmt.fromPrice(selected.minPrice)}</span>
+              <Plate value={selected.vacant} unit={t.map.vacantShort} size="xs" />
             </div>
             <a href={googleMapsUrl(selected)} target="_blank" rel="noopener" className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-plate hover:underline">
-              Mở trên Google Maps
+              {t.map.openGoogle}
               <ExternalLink aria-hidden className="size-3" />
             </a>
           </div>
-          <button type="button" onClick={() => setSelectedId(null)} className="self-start rounded-md p-1 text-muted hover:bg-wash hover:text-ink" aria-label="Đóng">
+          <button type="button" onClick={() => setSelectedId(null)} className="self-start rounded-md p-1 text-muted hover:bg-wash hover:text-ink" aria-label={t.common.close}>
             <X aria-hidden className="size-4" />
           </button>
         </div>
       ) : null}
 
-      <p className="absolute top-3 right-3 z-30 rounded-md bg-surface/90 px-2 py-1 text-[0.6875rem] text-muted">Bản đồ sơ lược, bấm ghim để xem tòa nhà</p>
+      <p className="absolute top-3 right-3 z-30 rounded-md bg-surface/90 px-2 py-1 text-[0.6875rem] text-muted">{t.map.sketchNote}</p>
     </div>
   );
 }

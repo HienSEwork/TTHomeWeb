@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { CircleCheck } from "lucide-react";
 import { buttonStyles, cn } from "@tthome/ui";
+import { getI18n, type Lang } from "@/lib/i18n";
 
 /** A titled group of fields inside a long form. */
 export function FormSection({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
@@ -75,7 +76,8 @@ export function ChoiceGroup<T extends string>({
 }
 
 /** What the person sees after a form is sent: what happens next and where to go. */
-export function FormSuccess({ title, children, onReset, resetLabel }: { title: string; children: ReactNode; onReset?: () => void; resetLabel?: string }) {
+export function FormSuccess({ title, children, onReset, resetLabel, lang }: { title: string; children: ReactNode; onReset?: () => void; resetLabel?: string; lang?: Lang }) {
+  const { t } = getI18n(lang);
   return (
     <div role="status" className="flex flex-col items-start rounded-card border border-shutter/30 bg-shutter-tint p-6 sm:p-8">
       <CircleCheck aria-hidden className="size-9 text-shutter" />
@@ -83,11 +85,11 @@ export function FormSuccess({ title, children, onReset, resetLabel }: { title: s
       <div className="mt-2 max-w-lg text-ink-soft">{children}</div>
       <div className="mt-6 flex flex-wrap gap-2">
         <Link href="/tim-kiem" className={buttonStyles({ variant: "primary" })}>
-          Xem thêm phòng
+          {t.common.seeMoreRooms}
         </Link>
         {onReset ? (
           <button type="button" onClick={onReset} className={buttonStyles({ variant: "secondary" })}>
-            {resetLabel ?? "Gửi thêm"}
+            {resetLabel ?? t.common.sendMore}
           </button>
         ) : null}
       </div>
@@ -96,11 +98,12 @@ export function FormSuccess({ title, children, onReset, resetLabel }: { title: s
 }
 
 /** Message shown above the submit button when some fields need fixing. */
-export function FormErrorSummary({ count }: { count: number }) {
+export function FormErrorSummary({ count, lang }: { count: number; lang?: Lang }) {
   if (count === 0) return null;
+  const { t } = getI18n(lang);
   return (
     <p role="alert" className="rounded-lg bg-danger-tint px-3 py-2 text-sm font-medium text-danger sm:col-span-2">
-      Còn {count} mục cần sửa trước khi gửi.
+      {t.common.errorCount(count)}
     </p>
   );
 }

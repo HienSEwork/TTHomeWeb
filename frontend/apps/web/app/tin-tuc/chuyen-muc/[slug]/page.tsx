@@ -1,33 +1,33 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { POST_CATEGORIES } from "@tthome/data";
 import { ArticleIndex } from "@/components/article-index";
 import { findCategory, postsByCategory } from "@/lib/articles";
-
-export const revalidate = 600;
+import { localCategory } from "@/lib/i18n/content";
+import { getServerI18n } from "@/lib/i18n/server";
 
 type Props = { params: Promise<{ slug: string }> };
 
-export function generateStaticParams() {
-  return POST_CATEGORIES.map((c) => ({ slug: c.slug }));
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const category = findCategory((await params).slug);
-  if (!category) return {};
-  return { title: category.name, description: `Bài viết chuyên mục ${category.name} trên cẩm nang TTHOME.`, alternates: { canonical: `/tin-tuc/chuyen-muc/${category.slug}` } };
+  const found = findCategory((await params).slug);
+  if (!found) return {};
+  const { lang, t } = await getServerI18n();
+  const category = localCategory(found, lang);
+  return { title: category.name, description: t.news.categoryMeta(category.name), alternates: { canonical: `/tin-tuc/chuyen-muc/${category.slug}` } };
 }
 
 export default async function CategoryPage({ params }: Props) {
-  const category = findCategory((await params).slug);
-  if (!category) notFound();
+  const found = findCategory((await params).slug);
+  if (!found) notFound();
+  const { lang, t } = await getServerI18n();
+  const category = localCategory(found, lang);
   return (
     <ArticleIndex
       title={category.name}
-      description={`Bài viết trong chuyên mục ${category.name.toLowerCase()}.`}
+      description={t.news.categoryLead(category.name)}
       posts={postsByCategory(category.slug)}
-      crumbs={[{ href: "/tin-tuc", label: "Cẩm nang" }, { label: category.name }]}
+      crumbs={[{ href: "/tin-tuc", label: t.news.crumb }, { label: category.name }]}
       activeCategory={category.slug}
+      lang={lang}
     />
   );
 }

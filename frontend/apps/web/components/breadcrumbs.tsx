@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { getI18n, type Lang } from "@/lib/i18n";
 import { JsonLd } from "./json-ld";
 
 export type Crumb = { href?: string; label: string };
 
 /** Visible breadcrumb plus BreadcrumbList structured data. */
-export function Breadcrumbs({ items }: { items: Crumb[] }) {
-  const all: Crumb[] = [{ href: "/", label: "Trang chủ" }, ...items];
+export function Breadcrumbs({ items, lang }: { items: Crumb[]; lang?: Lang }) {
+  const { t } = getI18n(lang);
+  const all: Crumb[] = [{ href: "/", label: t.common.home }, ...items];
   return (
     <>
-      <nav aria-label="Đường dẫn" className="text-sm text-muted">
+      <nav aria-label={t.common.breadcrumb} className="text-sm text-muted">
         <ol className="flex flex-wrap items-center gap-1">
           {all.map((c, i) => (
             <li key={`${c.label}-${i}`} className="flex items-center gap-1">

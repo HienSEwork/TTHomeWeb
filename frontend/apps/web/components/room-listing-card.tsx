@@ -1,9 +1,10 @@
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { AirVent, AppWindow, ArrowUpDown, Bath, CircleParking, KeyRound, MapPin, PawPrint, Ruler, Sofa } from "lucide-react";
-import { findDistrict, ROOM_TYPE_LABEL, roomSlug, TODAY } from "@tthome/data";
-import { cn, formatDate } from "@tthome/ui";
-import { cardBadge, HIGHLIGHT_LABEL, roomHighlights, type Highlight, type RoomRef } from "@/lib/listing";
+import { findDistrict, roomSlug, TODAY } from "@tthome/data";
+import { cn } from "@tthome/ui";
+import { getI18n, type Lang } from "@/lib/i18n";
+import { cardBadge, roomHighlights, type Highlight, type RoomRef } from "@/lib/listing";
 import { CardGallery } from "./card-gallery";
 import { FavoriteButton } from "./favorite-button";
 
@@ -25,20 +26,16 @@ const BADGE_STYLE = {
   featured: "border-white/15 bg-ink/70 text-white",
 } as const;
 
-function priceParts(vnd: number): { value: string; unit: string } {
-  const millions = Math.round((vnd / 1_000_000) * 10) / 10;
-  return { value: millions.toLocaleString("vi-VN"), unit: "triệu/tháng" };
-}
-
 /** A vacant room: photo, where it is, monthly price, size and the few amenities that matter. */
-export function RoomListingCard({ listing, priority, className }: { listing: RoomRef; priority?: boolean; className?: string }) {
+export function RoomListingCard({ listing, priority, className, lang }: { listing: RoomRef; priority?: boolean; className?: string; lang?: Lang }) {
+  const { t, fmt } = getI18n(lang);
   const { room, project } = listing;
   const href = `/phong/${roomSlug(room, project)}`;
   const district = findDistrict(project.districtSlug);
-  const badge = cardBadge(project);
-  const price = priceParts(room.price);
+  const badge = cardBadge(project, t.card.badge);
+  const price = fmt.priceParts(room.price);
   const title = project.name;
-  const moveIn = room.availableFrom <= TODAY ? "Vào ở ngay" : `Trống từ ${formatDate(room.availableFrom).slice(0, 5)}`;
+  const moveIn = room.availableFrom <= TODAY ? t.common.moveInNow : t.common.vacantFrom(fmt.dayMonth(room.availableFrom));
 
   return (
     <article
@@ -50,7 +47,7 @@ export function RoomListingCard({ listing, priority, className }: { listing: Roo
       <div className="relative aspect-[4/3] overflow-hidden bg-ivory">
         <CardGallery
           images={room.images}
-          alt={`${ROOM_TYPE_LABEL[room.type]} ${room.area} m² tại ${title}`}
+          alt={t.card.roomPhoto(t.labels.roomType[room.type], room.area, title)}
           priority={priority}
           sizes="(min-width: 1280px) 240px, (min-width: 640px) 300px, 78vw"
         />
@@ -63,7 +60,9 @@ export function RoomListingCard({ listing, priority, className }: { listing: Roo
       <div className="flex flex-1 flex-col p-4">
         <p className="flex items-center gap-1 text-xs text-muted">
           <MapPin aria-hidden className="size-3.5 shrink-0 text-gold-deep" />
-          <span className="truncate">{district?.name}, Cần Thơ</span>
+          <span className="truncate">
+            {district?.name}, {t.common.city}
+          </span>
         </p>
         <h3 className="mt-1.5 truncate text-[0.9375rem] leading-[1.3] font-semibold text-ink">
           <Link href={href} className="after:absolute after:inset-0 after:z-0 focus-visible:outline-none after:focus-visible:rounded-card after:focus-visible:outline-2 after:focus-visible:outline-focus">
@@ -84,16 +83,16 @@ export function RoomListingCard({ listing, priority, className }: { listing: Roo
           <span aria-hidden className="text-line-strong">
             /
           </span>
-          <span>{ROOM_TYPE_LABEL[room.type]}</span>
+          <span>{t.labels.roomType[room.type]}</span>
         </p>
 
-        <ul className="mt-3 flex flex-wrap gap-1.5 border-t border-line pt-3" aria-label="Tiện nghi">
+        <ul className="mt-3 flex flex-wrap gap-1.5 border-t border-line pt-3" aria-label={t.card.amenities}>
           {roomHighlights(listing).map((h) => {
             const Icon = HIGHLIGHT_ICON[h];
             return (
               <li key={h} className="inline-flex items-center gap-1 rounded-full bg-ivory px-2 py-1 text-xs font-medium text-ink-soft">
                 <Icon aria-hidden className="size-3.5 text-gold-deep" />
-                {HIGHLIGHT_LABEL[h]}
+                {t.labels.highlight[h]}
               </li>
             );
           })}

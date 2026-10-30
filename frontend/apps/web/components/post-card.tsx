@@ -1,9 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Post } from "@tthome/data";
-import { formatDate } from "@tthome/ui";
+import { getI18n, type Lang } from "@/lib/i18n";
 
-export function PostCard({ post, large }: { post: Post; large?: boolean }) {
+/** Pass the post already in the visitor's language (see localPost). */
+export function PostCard({ post, large, lang }: { post: Post; large?: boolean; lang?: Lang }) {
+  const { t, fmt } = getI18n(lang);
   return (
     <article className="group relative flex flex-col">
       <div className={`relative overflow-hidden rounded-card bg-line ${large ? "aspect-[16/10]" : "aspect-[3/2]"}`}>
@@ -17,7 +19,7 @@ export function PostCard({ post, large }: { post: Post; large?: boolean }) {
       </h3>
       {large ? <p className="mt-2 text-ink-soft">{post.excerpt}</p> : null}
       <p className="mt-2 text-sm text-muted">
-        <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>, {post.readMinutes} phút đọc
+        <time dateTime={post.publishedAt}>{fmt.date(post.publishedAt)}</time>, {t.news.readMinutes(post.readMinutes)}
       </p>
     </article>
   );

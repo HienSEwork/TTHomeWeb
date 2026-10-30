@@ -2,22 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { MapPin, Phone } from "lucide-react";
-import {
-  findDistrict,
-  findWard,
-  FURNITURE_LABEL,
-  getRoomBySlug,
-  PET_LABEL,
-  PROJECTS,
-  projectAddress,
-  ROOM_STATUS,
-  ROOM_TYPE_LABEL,
-  roomSlug,
-  similarRooms,
-  SITE,
-  TODAY,
-} from "@tthome/data";
-import { Badge, Container, buttonStyles, formatDate, formatPriceShort, formatVnd } from "@tthome/ui";
+import { findDistrict, findWard, getRoomBySlug, projectAddress, ROOM_STATUS, roomSlug, similarRooms, SITE, TODAY } from "@tthome/data";
+import { Badge, Container, buttonStyles } from "@tthome/ui";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { GalleryGrid } from "@/components/gallery-grid";
 import { JsonLd } from "@/components/json-ld";
@@ -25,24 +11,21 @@ import { AmenityList } from "@/components/project-amenities";
 import { ProjectActions } from "@/components/project-actions";
 import { RoomCard } from "@/components/room-card";
 import { areaHref } from "@/lib/area-route";
+import { localRoomName, projectCopy } from "@/lib/i18n/content";
+import { getServerI18n } from "@/lib/i18n/server";
 import { googleMapsUrl } from "@/lib/map-projection";
 import { monthlyCost } from "@/lib/room-cost";
 
-export const revalidate = 600;
-
 type Props = { params: Promise<{ slug: string }> };
-
-export function generateStaticParams() {
-  return PROJECTS.flatMap((p) => p.rooms.filter((r) => r.status !== "hidden").map((r) => ({ slug: roomSlug(r, p) })));
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const found = getRoomBySlug((await params).slug);
   if (!found) return {};
   const { room, project } = found;
+  const { lang, t, fmt } = await getServerI18n();
   return {
-    title: `${ROOM_TYPE_LABEL[room.type]} ${room.area} m², ${formatPriceShort(room.price)}/tháng tại ${project.name}`,
-    description: `${room.name}, ${FURNITURE_LABEL[room.furniture].toLowerCase()}, tầng ${room.floor}. ${projectAddress(project)}.`,
+    title: t.room.metaTitle(t.labels.roomType[room.type], room.area, fmt.priceShort(room.price), project.name),
+    description: t.room.metaDescription(localRoomName(room.name, lang), t.labels.furniture[room.furniture], room.floor, projectAddress(project)),
     alternates: { canonical: `/phong/${roomSlug(room, project)}` },
     robots: room.status === "hidden" ? { index: false } : undefined,
   };
@@ -55,23 +38,26 @@ export default async function RoomPage({ params }: Props) {
   const { room, project } = found;
   const canonical = roomSlug(room, project);
   if (slug !== canonical) permanentRedirect(`/phong/${canonical}`);
+  const { lang, t, fmt } = await getServerI18n();
+  const name = localRoomName(room.name, lang);
+  const copy = projectCopy(project, lang);
 
   const district = findDistrict(project.districtSlug)!;
   const ward = findWard(project.districtSlug, project.wardSlug)!;
   const status = ROOM_STATUS[room.status];
-  const cost = monthlyCost(room, project.fees, Math.min(room.maxPeople, room.type === "2pn" ? 2 : 1));
+  const cost = monthlyCost(room, project.fees, Math.min(room.maxPeople, room.type === "2pn" ? 2 : 1), 1, t.cost);
   const similar = similarRooms(room, project, 4);
   const bookable = room.status === "available" || room.status === "reserved";
   const facts: [string, string][] = [
-    ["Loại phòng", ROOM_TYPE_LABEL[room.type]],
-    ["Diện tích", `${room.area} m²`],
-    ["Tầng", String(room.floor)],
-    ["Nội thất", FURNITURE_LABEL[room.furniture]],
-    ["Cửa sổ", room.hasWindow ? "Có" : "Không"],
-    ["Ban công", room.hasBalcony ? "Có" : "Không"],
-    ["Ở tối đa", `${room.maxPeople} người`],
-    ["Tiền cọc", formatVnd(room.deposit)],
-    ["Thú cưng", PET_LABEL[project.petPolicy]],
+    [t.room.facts.type, t.labels.roomType[room.type]],
+    [t.room.facts.area, `${room.area} m²`],
+    [t.room.facts.floor, String(room.floor)],
+    [t.room.facts.furniture, t.labels.furniture[room.furniture]],
+    [t.room.facts.window, room.hasWindow ? t.common.yes : t.common.no],
+    [t.room.facts.balcony, room.hasBalcony ? t.common.yes : t.common.no],
+    [t.room.facts.maxPeople, t.room.people(room.maxPeople)],
+    [t.room.facts.deposit, fmt.vnd(room.deposit)],
+    [t.room.facts.pets, t.labels.pet[project.petPolicy]],
   ];
 
   return (
@@ -80,7 +66,7 @@ export default async function RoomPage({ params }: Props) {
         data={{
           "@context": "https://schema.org",
           "@type": "Accommodation",
-          name: `${room.name}, ${project.name}`,
+          name: `${name}, ${project.name}`,
           image: room.images,
           floorSize: { "@type": "QuantitativeValue", value: room.area, unitCode: "MTK" },
           address: { "@type": "PostalAddress", streetAddress: project.street, addressLocality: `${ward.name}, ${district.name}`, addressCountry: "VN" },
@@ -90,15 +76,16 @@ export default async function RoomPage({ params }: Props) {
 
       <Container className="pt-6">
         <Breadcrumbs
+          lang={lang}
           items={[
             { href: areaHref({ district }), label: district.name },
             { href: areaHref({ district, ward }), label: ward.name },
             { href: `/du-an/${project.slug}`, label: project.name },
-            { label: room.name },
+            { label: name },
           ]}
         />
         <div className="mt-5">
-          <GalleryGrid images={[...room.images, ...project.images.slice(1, 3)]} alt={`${room.name}, ${project.name}`} />
+          <GalleryGrid images={[...room.images, ...project.images.slice(1, 3)]} alt={`${name}, ${project.name}`} />
         </div>
       </Container>
 
@@ -106,12 +93,10 @@ export default async function RoomPage({ params }: Props) {
         <div className="min-w-0">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <Badge tone={status.tone}>{status.label}</Badge>
-              <h1 className="mt-3 text-title font-extrabold sm:text-[2.25rem]">
-                {room.name}, {ROOM_TYPE_LABEL[room.type].toLowerCase()} {room.area} m²
-              </h1>
+              <Badge tone={status.tone}>{t.labels.roomStatus[room.status]}</Badge>
+              <h1 className="mt-3 text-title font-extrabold sm:text-[2.25rem]">{t.room.heading(name, t.labels.roomType[room.type], room.area)}</h1>
               <p className="mt-2 text-ink-soft">
-                Tại{" "}
+                {t.room.at}{" "}
                 <Link href={`/du-an/${project.slug}`} className="font-semibold text-plate hover:underline">
                   {project.name}
                 </Link>
@@ -121,12 +106,12 @@ export default async function RoomPage({ params }: Props) {
                 <span>
                   {projectAddress(project)}{" "}
                   <a href={googleMapsUrl(project)} target="_blank" rel="noopener" className="font-semibold text-plate hover:underline">
-                    Chỉ đường
+                    {t.common.directions}
                   </a>
                 </span>
               </p>
             </div>
-            <ProjectActions url={`/phong/${canonical}`} title={`${room.name}, ${project.name}`} />
+            <ProjectActions url={`/phong/${canonical}`} title={`${name}, ${project.name}`} />
           </div>
 
           <dl className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-3">
@@ -140,9 +125,9 @@ export default async function RoomPage({ params }: Props) {
 
           <section aria-labelledby="tong-chi-phi" className="mt-12">
             <h2 id="tong-chi-phi" className="text-xl font-extrabold">
-              Tổng chi phí mỗi tháng
+              {t.room.costTitle}
             </h2>
-            <p className="mt-1 text-sm text-muted">Ước tính cho {cost.lines[2]?.note}, dựa trên đơn giá của tòa nhà. Tiền điện tùy cách dùng máy lạnh.</p>
+            <p className="mt-1 text-sm text-muted">{t.room.costNote(cost.lines[2]?.note ?? "")}</p>
             <table className="mt-4 w-full max-w-lg text-[0.9375rem]">
               <tbody>
                 {cost.lines.map((l) => (
@@ -151,16 +136,16 @@ export default async function RoomPage({ params }: Props) {
                       {l.label}
                       {l.note ? <span className="block text-xs text-muted">{l.note}</span> : null}
                     </th>
-                    <td className="tabular py-2.5 text-right font-semibold">{formatVnd(l.amount)}</td>
+                    <td className="tabular py-2.5 text-right font-semibold">{fmt.vnd(l.amount)}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
                 <tr>
                   <th scope="row" className="pt-3 text-left font-bold">
-                    Tổng cộng
+                    {t.room.total}
                   </th>
-                  <td className="tabular pt-3 text-right text-xl font-extrabold text-shutter">{formatVnd(cost.total)}</td>
+                  <td className="tabular pt-3 text-right text-xl font-extrabold text-shutter">{fmt.vnd(cost.total)}</td>
                 </tr>
               </tfoot>
             </table>
@@ -168,19 +153,19 @@ export default async function RoomPage({ params }: Props) {
 
           <section aria-labelledby="tien-nghi-phong" className="mt-12">
             <h2 id="tien-nghi-phong" className="text-xl font-extrabold">
-              Tiện nghi
+              {t.room.amenities}
             </h2>
             <div className="mt-4">
-              <AmenityList codes={[...room.amenities, ...project.amenities]} />
+              <AmenityList codes={[...room.amenities, ...project.amenities]} lang={lang} />
             </div>
           </section>
 
           <section aria-labelledby="noi-quy-phong" className="mt-12">
             <h2 id="noi-quy-phong" className="text-xl font-extrabold">
-              Nội quy
+              {t.room.rules}
             </h2>
             <ul className="mt-4 list-disc space-y-1.5 pl-5 text-ink-soft marker:text-line-strong">
-              {project.rules.map((r) => (
+              {copy.rules.map((r) => (
                 <li key={r}>{r}</li>
               ))}
             </ul>
@@ -189,40 +174,40 @@ export default async function RoomPage({ params }: Props) {
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <div className="rounded-card border border-line bg-surface p-5">
-            <p className="text-sm text-muted">Giá thuê</p>
+            <p className="text-sm text-muted">{t.room.price}</p>
             <p>
-              <span className="text-3xl font-extrabold">{formatPriceShort(room.price)}</span>
-              <span className="text-muted">/tháng</span>
+              <span className="text-3xl font-extrabold">{fmt.priceShort(room.price)}</span>
+              <span className="text-muted">{t.common.perMonth}</span>
             </p>
             <p className="mt-1 text-sm font-semibold text-shutter">
-              {room.status === "available" && room.availableFrom <= TODAY ? "Vào ở ngay" : `Trống từ ${formatDate(room.availableFrom)}`}
+              {room.status === "available" && room.availableFrom <= TODAY ? t.common.moveInNow : t.common.vacantFrom(fmt.date(room.availableFrom))}
             </p>
             {bookable ? (
               <Link href={`/dat-lich?project=${project.code}&room=${room.code}`} className={buttonStyles({ size: "lg", className: "mt-5 w-full" })}>
-                Đặt lịch xem phòng này
+                {t.room.bookThis}
               </Link>
             ) : (
               <Link href={`/du-an/${project.slug}`} className={buttonStyles({ size: "lg", className: "mt-5 w-full" })}>
-                Xem phòng khác cùng tòa
+                {t.room.otherRooms}
               </Link>
             )}
             <a href={SITE.hotlineHref} className={buttonStyles({ variant: "secondary", size: "lg", className: "mt-2 w-full" })}>
               <Phone aria-hidden />
-              Gọi {SITE.hotline}
+              {t.common.call(SITE.hotline)}
             </a>
-            {room.status === "reserved" ? <p className="mt-4 rounded-lg bg-wall-tint p-3 text-sm text-wall-dark">Phòng đang có người giữ chỗ. Đặt lịch để được báo ngay nếu phòng trống lại.</p> : null}
+            {room.status === "reserved" ? <p className="mt-4 rounded-lg bg-wall-tint p-3 text-sm text-wall-dark">{t.room.reserved}</p> : null}
           </div>
         </aside>
       </Container>
 
       {similar.length > 0 ? (
         <Container className="mt-16">
-          <h2 className="text-xl font-extrabold">Phòng tương tự</h2>
-          <p className="mt-1 text-sm text-muted">Cùng khu vực, giá chênh không quá một phần tư.</p>
+          <h2 className="text-xl font-extrabold">{t.room.similarTitle}</h2>
+          <p className="mt-1 text-sm text-muted">{t.room.similarText}</p>
           <ul className="mt-5 grid gap-4 md:grid-cols-2">
             {similar.map((s) => (
               <li key={s.room.id}>
-                <RoomCard room={s.room} project={s.project} showProject />
+                <RoomCard room={s.room} project={s.project} showProject lang={lang} />
               </li>
             ))}
           </ul>

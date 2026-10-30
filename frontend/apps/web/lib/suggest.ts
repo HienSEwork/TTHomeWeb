@@ -6,7 +6,7 @@ export type Suggestion = { kind: "project" | "area" | "landmark"; label: string;
 const KIND_ORDER = { area: 0, landmark: 1, project: 2 } as const;
 
 /** Suggestions while typing: wards and districts, landmarks, then projects. */
-export function suggest(query: string, limit = 7): Suggestion[] {
+export function suggest(query: string, limit = 7, near: (name: string) => string = (name) => `Gần ${name}`): Suggestion[] {
   const needle = normalizeVi(query);
   if (needle.length < 2) return [];
   const words = needle.split(/\s+/);
@@ -23,7 +23,7 @@ export function suggest(query: string, limit = 7): Suggestion[] {
     }
   }
   for (const l of LANDMARKS) {
-    if (hit(`${l.name} ${l.shortName}`)) out.push({ kind: "landmark", label: `Gần ${l.shortName}`, detail: l.name, href: `/tim-kiem?landmark=${l.slug}` });
+    if (hit(`${l.name} ${l.shortName}`)) out.push({ kind: "landmark", label: near(l.shortName), detail: l.name, href: `/tim-kiem?landmark=${l.slug}` });
   }
   for (const p of PROJECTS) {
     if (hit(`${p.name} ${projectAddress(p)}`)) out.push({ kind: "project", label: p.name, detail: projectAddress(p), href: `/du-an/${p.slug}` });

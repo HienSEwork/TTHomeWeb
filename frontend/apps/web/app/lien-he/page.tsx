@@ -5,25 +5,26 @@ import { Container } from "@tthome/ui";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { ContactMap } from "@/components/contact-map";
 import { ContactForm } from "@/components/form-contact";
+import { getServerI18n } from "@/lib/i18n/server";
 
-export const metadata: Metadata = {
-  title: "Liên hệ",
-  description: `Gọi ${SITE.hotline}, nhắn Zalo hoặc ghé văn phòng TTHOME tại ${SITE.address}.`,
-  alternates: { canonical: "/lien-he" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerI18n();
+  return { title: t.contact.metaTitle, description: t.contact.metaDescription(SITE.hotline, SITE.address), alternates: { canonical: "/lien-he" } };
+}
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const { lang, t } = await getServerI18n();
   const rows = [
-    { icon: Phone, label: "Tổng đài", value: SITE.hotline, href: SITE.hotlineHref },
-    { icon: Mail, label: "Email", value: SITE.email, href: `mailto:${SITE.email}` },
-    { icon: MapPin, label: "Văn phòng", value: SITE.address },
-    { icon: Clock, label: "Giờ làm việc", value: SITE.hours },
+    { icon: Phone, label: t.contact.hotline, value: SITE.hotline, href: SITE.hotlineHref },
+    { icon: Mail, label: t.contact.email, value: SITE.email, href: `mailto:${SITE.email}` },
+    { icon: MapPin, label: t.contact.office, value: SITE.address },
+    { icon: Clock, label: t.contact.hours, value: t.common.hours },
   ];
   return (
     <Container className="py-8 sm:py-12">
-      <Breadcrumbs items={[{ label: "Liên hệ" }]} />
-      <h1 className="mt-6 text-title font-extrabold text-ink">Liên hệ TTHOME</h1>
-      <p className="mt-2 max-w-2xl text-ink-soft">Cần xem phòng gấp, hãy gọi tổng đài. Câu hỏi khác, gửi tin nhắn bên dưới và chúng tôi trả lời trong giờ làm việc.</p>
+      <Breadcrumbs items={[{ label: t.contact.crumb }]} lang={lang} />
+      <h1 className="mt-6 text-title font-extrabold text-ink">{t.contact.title}</h1>
+      <p className="mt-2 max-w-2xl text-ink-soft">{t.contact.lead}</p>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_1.2fr]">
         <dl className="flex flex-col divide-y divide-line rounded-card border border-line bg-surface">
@@ -50,7 +51,7 @@ export default function ContactPage() {
 
       <section aria-labelledby="gui-tin" className="mt-14 max-w-3xl">
         <h2 id="gui-tin" className="text-2xl font-extrabold text-ink">
-          Gửi tin nhắn
+          {t.contact.formTitle}
         </h2>
         <div className="mt-5">
           <ContactForm />

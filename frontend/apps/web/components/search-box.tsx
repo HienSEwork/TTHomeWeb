@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useId, useMemo, useState, type KeyboardEvent } from "react";
 import { Building, GraduationCap, MapPin, Search } from "lucide-react";
 import { Button, cn } from "@tthome/ui";
+import { useI18n } from "@/lib/i18n/client";
 import { suggest, type Suggestion } from "@/lib/suggest";
 
 const KIND_ICON = { area: MapPin, landmark: GraduationCap, project: Building } as const;
@@ -14,11 +15,12 @@ const KIND_ICON = { area: MapPin, landmark: GraduationCap, project: Building } a
  */
 export function SearchBox({ defaultValue = "", size = "lg", className }: { defaultValue?: string; size?: "md" | "lg"; className?: string }) {
   const router = useRouter();
+  const { t } = useI18n();
   const listId = useId();
   const [value, setValue] = useState(defaultValue);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
-  const items = useMemo(() => suggest(value), [value]);
+  const items = useMemo(() => suggest(value, 7, t.searchBox.near), [value, t]);
   const showList = open && items.length > 0;
 
   function go(item?: Suggestion) {
@@ -53,7 +55,7 @@ export function SearchBox({ defaultValue = "", size = "lg", className }: { defau
       <div className={cn("flex items-center gap-2 rounded-2xl border border-line-strong bg-surface p-1.5 pl-4 focus-within:border-plate focus-within:ring-4 focus-within:ring-plate/15", size === "lg" && "sm:p-2 sm:pl-5")}>
         <Search aria-hidden className="size-5 shrink-0 text-muted" />
         <label htmlFor={`${listId}-input`} className="sr-only">
-          Tìm theo tên đường, phường, trường học hoặc tên tòa nhà
+          {t.searchBox.label}
         </label>
         <input
           id={`${listId}-input`}
@@ -72,16 +74,16 @@ export function SearchBox({ defaultValue = "", size = "lg", className }: { defau
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 120)}
           onKeyDown={onKeyDown}
-          placeholder="Tên đường, phường, trường học, tòa nhà…"
+          placeholder={t.searchBox.placeholder}
           className={cn("min-w-0 flex-1 bg-transparent text-ink placeholder:text-muted focus:outline-none", size === "lg" ? "h-11 text-base sm:text-[1.0625rem]" : "h-9 text-[0.9375rem]")}
         />
         <Button type="submit" size={size === "lg" ? "lg" : "md"} className="shrink-0">
-          Tìm phòng
+          {t.searchBox.submit}
         </Button>
       </div>
 
       {showList ? (
-        <ul id={listId} role="listbox" aria-label="Gợi ý" className="absolute inset-x-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border border-line bg-surface py-1.5 shadow-[var(--shadow-lift)]">
+        <ul id={listId} role="listbox" aria-label={t.searchBox.suggestions} className="absolute inset-x-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border border-line bg-surface py-1.5 shadow-[var(--shadow-lift)]">
           {items.map((item, i) => {
             const Icon = KIND_ICON[item.kind];
             return (
