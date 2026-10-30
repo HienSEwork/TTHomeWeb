@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { Component, type ReactNode } from "react";
 import { MapView, type MapLandmark, type MapPin } from "./map-view";
 
-type Props = { pins: MapPin[]; landmarks?: MapLandmark[]; className?: string };
+type Props = { pins: MapPin[]; landmarks?: MapLandmark[]; className?: string; focus?: { viewKm: number; areaKm: number } };
 
 /** MapLibre needs window and WebGL, so it only loads in the browser. */
 const SearchMap = dynamic(() => import("./search-map"), {
@@ -23,11 +23,11 @@ class Fallback extends Component<{ fallback: ReactNode; children: ReactNode }, {
   }
 }
 
-export function SearchMapLazy({ pins, landmarks, className }: Props) {
+export function SearchMapLazy({ pins, landmarks, className, focus }: Props) {
   return (
     <div className={className}>
       <Fallback fallback={<MapView pins={pins} landmarks={landmarks} fit className="size-full" />}>
-        <SearchMap pins={pins} landmarks={landmarks} className="size-full" />
+        <SearchMap pins={pins} landmarks={landmarks} focus={focus} className="size-full" />
       </Fallback>
     </div>
   );

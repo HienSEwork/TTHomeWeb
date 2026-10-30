@@ -22,7 +22,7 @@ import { Badge, Container, Plate, buttonStyles } from "@tthome/ui";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { GalleryGrid } from "@/components/gallery-grid";
 import { JsonLd } from "@/components/json-ld";
-import { MapView } from "@/components/map-view";
+import { SearchMapLazy } from "@/components/search-map-lazy";
 import { AmenityList } from "@/components/project-amenities";
 import { ProjectActions } from "@/components/project-actions";
 import { ProjectCard } from "@/components/project-card";
@@ -30,10 +30,13 @@ import { areaHref } from "@/lib/area-route";
 import { localRoomName, projectCopy } from "@/lib/i18n/content";
 import { getServerI18n } from "@/lib/i18n/server";
 import { googleMapsUrl } from "@/lib/map-projection";
-import { toMapPins } from "@/lib/map-pins";
+import { toApproxMapPins } from "@/lib/map-pins";
 
 type Props = { params: Promise<{ slug: string }> };
 
+
+/** The building's page opens on about 10 km of city with its approximate area, 2 km round, shaded. */
+const AREA_FOCUS = { viewKm: 10, areaKm: 2 };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const project = getProjectBySlug((await params).slug);
   if (!project) return {};
@@ -62,7 +65,7 @@ export default async function ProjectPage({ params }: Props) {
   const listed = project.rooms.filter((r) => r.status !== "hidden").sort((a, b) => Number(b.status === "available") - Number(a.status === "available") || a.price - b.price);
   const nearby = LANDMARKS.map((l) => ({ l, km: distanceKm(l, project) })).filter((x) => x.km < 4).sort((a, b) => a.km - b.km);
   const others = searchProjects({ district: project.districtSlug }).filter((m) => m.project.id !== project.id).slice(0, 3);
-  const pin = toMapPins([{ project, rooms: vacant, minPrice: from, distanceKm: null }]);
+  const pin = toApproxMapPins([{ project, rooms: vacant, minPrice: from, distanceKm: null }]);
   const url = `/du-an/${project.slug}`;
 
   return (
@@ -230,12 +233,7 @@ export default async function ProjectPage({ params }: Props) {
               {t.project.location}
             </h2>
             <div className="mt-4 grid gap-4 md:grid-cols-[1fr_240px]">
-              <MapView
-                pins={pin}
-                landmarks={nearby.map(({ l }) => ({ slug: l.slug, name: l.shortName, lat: l.lat, lng: l.lng }))}
-                fit
-                className="aspect-[4/3] rounded-card border border-line"
-              />
+              <SearchMapLazy pins={pin} focus={AREA_FOCUS} className="aspect-[4/3] min-w-0 overflow-hidden rounded-card border border-line" />
               <ul className="space-y-2 text-sm">
                 {nearby.length === 0 ? <li className="text-muted">{t.project.noNearby}</li> : null}
                 {nearby.map(({ l, km }) => (

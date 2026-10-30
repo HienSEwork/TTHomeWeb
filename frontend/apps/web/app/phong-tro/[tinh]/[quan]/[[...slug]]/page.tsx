@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { areaStats, distanceKm, LANDMARKS, PRICE_BANDS, PROVINCE, searchProjects, type ProjectMatch } from "@tthome/data";
+import { areaStats, PRICE_BANDS, PROVINCE, searchProjects, type ProjectMatch } from "@tthome/data";
 import { Container, EmptyState, Plate, buttonStyles, cn } from "@tthome/ui";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { JsonLd } from "@/components/json-ld";
-import { MapView } from "@/components/map-view";
 import { ProjectCard } from "@/components/project-card";
+import { SearchMapLazy } from "@/components/search-map-lazy";
 import { areaHref, areaName, resolveAreaRoute, type AreaRoute } from "@/lib/area-route";
 import { labelOf, type Dictionary } from "@/lib/i18n";
 import { getServerI18n } from "@/lib/i18n/server";
-import { toMapLandmarks, toMapPins } from "@/lib/map-pins";
+import { toApproxMapPins } from "@/lib/map-pins";
 
 type Props = { params: Promise<{ tinh: string; quan: string; slug?: string[] }> };
 
@@ -175,12 +175,7 @@ export default async function AreaPage({ params }: Props) {
         <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
           {matches.length > 0 ? (
             <div className="overflow-hidden rounded-card border border-line">
-              <MapView
-                pins={toMapPins(matches)}
-                landmarks={toMapLandmarks(LANDMARKS.filter((l) => matches.some((m) => distanceKm(l, m.project) < 4)).map((l) => l.slug))}
-                fit
-                className="aspect-square"
-              />
+              <SearchMapLazy pins={toApproxMapPins(matches)} className="aspect-square" />
             </div>
           ) : null}
           <nav aria-label={t.area.wardsNav(route.district.name)} className="rounded-card border border-line bg-surface p-4">

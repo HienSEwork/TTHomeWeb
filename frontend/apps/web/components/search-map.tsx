@@ -21,6 +21,9 @@ import type { MapLandmark, MapPin } from "./map-view";
 
 const AMBER = "#D99B4B";
 
+/** Shops and pharmacies are many and small; they appear only once the map is close enough to tell them apart. */
+const ICON_ZOOM: Record<PlaceKind, number> = { school: 0, hospital: 0, shopping: 0, landmark: 0, store: 13.5, pharmacy: 13.5 };
+
 /** Coloured street map (roads, water, parks, building footprints when zoomed in); free, no token. */
 const STREETS = "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json";
 
@@ -74,7 +77,7 @@ const areaFill: LayerProps = {
   type: "fill",
   paint: {
     "fill-color": AMBER,
-    "fill-opacity": ["match", ["get", "state"], "active", 0.3, "hover", 0.22, 0.12],
+    "fill-opacity": ["match", ["get", "state"], "active", 0.3, "hover", 0.22, "focus", 0.2, 0.12],
   },
 };
 const areaLine: LayerProps = {
@@ -85,6 +88,14 @@ const areaLine: LayerProps = {
     "line-width": ["match", ["get", "state"], "active", 2.5, "hover", 2, 1.25],
     "line-dasharray": [2, 2],
   },
+  filter: ["!=", ["get", "state"], "focus"],
+};
+/** The solid ring round a building's area on its own page. */
+const focusLine: LayerProps = {
+  id: "areas-focus-line",
+  type: "line",
+  paint: { "line-color": "#A8702C", "line-width": 2.5 },
+  filter: ["==", ["get", "state"], "focus"],
 };
 
 const PLACE_STYLE: Record<PlaceKind, { icon: LucideIcon; color: string }> = {
@@ -101,6 +112,11 @@ type Props = {
   pins: MapPin[];
   landmarks?: MapLandmark[];
   className?: string;
+  /**
+   * One building's page: open on a square this many km across around its area, draw the area itself
+   * (`areaKm` in radius) as a filled circle, and leave page scrolling alone until two fingers or ctrl are used.
+   */
+  focus?: { viewKm: number; areaKm: number };
 };
 
 /**
@@ -128,7 +144,18 @@ function boundsOf(points: { lat: number; lng: number }[]): [[number, number], [n
  * Search results on a real map of Cần Thơ. Every building is a shaded area instead of a pin, so the map never
  * points at a landlord's address. Choosing an area, its price tag or "Xem vùng" on a card flies the map to it.
  */
-export default function SearchMap({ pins, landmarks = [], className }: Props) {
+/** A square `km` across around a point, as map bounds. */
+function squareAround({ lat, lng }: { lat: number; lng: number }, km: number): [[number, number], [number, number]] {
+  const dLat = km / 2 / 111.32;
+  const dLng = dLat / Math.cos((lat * Math.PI) / 180);
+  return [
+    [lng - dLng, lat - dLat],
+    [lng + dLng, lat + dLat],
+  ];
+}
+
+export default function SearchMap({ pins, landmarks = [], className, focus }: Props) {
+  const radiusKm = focus?.areaKm ?? AREA_RADIUS_KM;
   const map = useRef<MapRef>(null);
   const router = useRouter();
   const { t, fmt } = useI18n();
@@ -146,12 +173,15 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
       return next;
     });
   const selected = pins.find((p) => p.id === selectedId) ?? null;
-  const initialBounds = useMemo(() => boundsOf(pins.length ? mainCluster(pins) : landmarks), [pins, landmarks]);
+  const initialBounds = useMemo(
+    () => (focus && pins[0] ? squareAround(pins[0], focus.viewKm) : boundsOf(pins.length ? mainCluster(pins) : landmarks)),
+    [focus, pins, landmarks],
+  );
 
-  const shapes = useMemo(() => new Map(pins.map((p) => [p.id, circle([p.lng, p.lat], AREA_RADIUS_KM, { steps: 64, units: "kilometers" })])), [pins]);
+  const shapes = useMemo(() => new Map(pins.map((p) => [p.id, circle([p.lng, p.lat], radiusKm, { steps: 96, units: "kilometers" })])), [pins, radiusKm]);
 
   // Buildings whose areas overlap the chosen one; the list beside the map filters to these too.
-  const nearIds = useMemo(() => (selectedId ? overlappingIds(pins, selectedId, AREA_RADIUS_KM * 1000, distanceMeters) : []), [pins, selectedId]);
+  const nearIds = useMemo(() => (selectedId ? overlappingIds(pins, selectedId, radiusKm * 1000, distanceMeters) : []), [pins, selectedId, radiusKm]);
   const near = useMemo(() => nearIds.map((id) => pins.find((p) => p.id === id)!), [nearIds, pins]);
 
   const stateOf = useCallback((id: string) => (id === selectedId ? "active" : nearIds.includes(id) ? "near" : id === hoverId ? "hover" : "idle"), [selectedId, nearIds, hoverId]);
@@ -168,16 +198,20 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
   const outlines = useMemo<FeatureCollection<Polygon>>(
     () => ({
       type: "FeatureCollection",
-      features: [...new Set([selectedId, hoverId].filter((id): id is string => Boolean(id)))].map((id) => ({ ...shapes.get(id)!, properties: { id, state: stateOf(id) } })),
+      // A building's own page always shows its area; the search map only the one in focus.
+      features: (focus ? pins.map((p) => p.id) : [...new Set([selectedId, hoverId].filter((id): id is string => Boolean(id)))]).map((id) => ({
+        ...shapes.get(id)!,
+        properties: { id, state: focus ? "focus" : stateOf(id) },
+      })),
     }),
-    [selectedId, hoverId, shapes, stateOf],
+    [focus, pins, selectedId, hoverId, shapes, stateOf],
   );
 
   const select = useCallback(
     (id: string | null) => {
       setSelectedId(id);
       if (!id) return emitMapArea({ ids: null });
-      const ids = overlappingIds(pins, id, AREA_RADIUS_KM * 1000, distanceMeters);
+      const ids = overlappingIds(pins, id, radiusKm * 1000, distanceMeters);
       emitMapArea({ ids });
       const rings = ids.map((x) => shapes.get(x)!.geometry.coordinates[0]!);
       const lngs = rings.flatMap((r) => r.map((c) => c[0]!));
@@ -190,7 +224,7 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
         { padding: { top: 70, bottom: 230, left: 40, right: 40 }, duration: 1200, maxZoom: 15.5 },
       );
     },
-    [pins, shapes],
+    [pins, shapes, radiusKm],
   );
 
   // "Bỏ lọc vùng" beside the list clears the choice here too.
@@ -217,7 +251,8 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
     <div className={cn("relative isolate overflow-hidden bg-[#f2f0eb]", className)} role="region" aria-label={t.map.region}>
       <MapGL
         ref={map}
-        initialViewState={{ bounds: initialBounds, fitBoundsOptions: { padding: 48, maxZoom: 14 } }}
+        initialViewState={{ bounds: initialBounds, fitBoundsOptions: focus ? { padding: 0 } : { padding: 48, maxZoom: 14 } }}
+        cooperativeGestures={Boolean(focus)}
         mapStyle={view === "streets" ? STREETS : satelliteStyle}
         maxBounds={CAN_THO_MAX_BOUNDS}
         minZoom={10}
@@ -231,7 +266,7 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
           setZoom(e.target.getZoom());
         }}
         onZoomEnd={(e) => setZoom(e.viewState.zoom)}
-        interactiveLayerIds={["areas-dot", "areas-fill"]}
+        interactiveLayerIds={focus ? [] : ["areas-dot", "areas-fill"]}
         onClick={onMapClick}
         onMouseMove={(e) => setHoverId((e.features?.[0]?.properties?.id as string | undefined) ?? null)}
         onMouseLeave={() => setHoverId(null)}
@@ -247,15 +282,18 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
         <Source id="border" type="geojson" data={{ type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: CAN_THO_OUTLINE } }}>
           <Layer {...borderLayer} />
         </Source>
-        <Source id="dots" type="geojson" data={dots}>
-          <Layer {...areaDots} />
-        </Source>
+        {focus ? null : (
+          <Source id="dots" type="geojson" data={dots}>
+            <Layer {...areaDots} />
+          </Source>
+        )}
         <Source id="areas" type="geojson" data={outlines}>
           <Layer {...areaFill} />
           <Layer {...areaLine} />
+          <Layer {...focusLine} />
         </Source>
 
-        {MAP_PLACES.filter((p) => kinds.has(p.kind)).map((p) => {
+        {MAP_PLACES.filter((p) => kinds.has(p.kind) && zoom >= ICON_ZOOM[p.kind]).map((p) => {
           const { icon: Icon, color } = PLACE_STYLE[p.kind];
           const named = zoom >= LABEL_ZOOM[p.kind];
           const onPhoto = view === "satellite";
@@ -294,6 +332,14 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
           const active = pin.id === selectedId;
           // Once an area is open, the buildings in it lead straight to their page.
           const inRange = selectedId !== null && nearIds.includes(pin.id);
+          if (focus)
+            return (
+              <Marker key={pin.id} longitude={pin.lng} latitude={pin.lat} anchor="center" style={{ zIndex: 1, pointerEvents: "none" }}>
+                <span className="rounded-full bg-[#A8702C] px-2.5 py-1 text-xs font-bold whitespace-nowrap text-white shadow-[0_2px_8px_rgb(45_35_20/0.25)] ring-2 ring-white/80">
+                  {t.map.areaTag(pin.vacant, priceRange(pin))}
+                </span>
+              </Marker>
+            );
           return (
             // The tag sits in the middle of the building's circle, like "3 phòng: 16tr - 22tr".
             <Marker key={pin.id} longitude={pin.lng} latitude={pin.lat} anchor="center" style={{ zIndex: active ? 2 : 1 }}>
