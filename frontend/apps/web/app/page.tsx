@@ -170,7 +170,7 @@ export default function HomePage() {
         <RoomRow rooms={featured} label="Phòng nổi bật" eager />
       </section>
 
-      <section aria-labelledby="khu-vuc" className="bg-sand/60 py-20">
+      <section aria-labelledby="khu-vuc" className="border-y border-line/70 bg-cream py-20">
         <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
           <SectionHeading
             id="khu-vuc"
@@ -233,32 +233,34 @@ export default function HomePage() {
         </section>
       ) : null}
 
-      <section aria-labelledby="phong-cach" className="mx-auto max-w-[1280px] px-4 pb-20 sm:px-6">
-        <SectionHeading id="phong-cach" title="Tìm phòng theo phong cách sống" center className="reveal" />
-        <ul className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-          {LIFESTYLES.map(({ icon: Icon, title, note, href }, i) => (
-            <li key={title} style={stagger(i)} className="reveal">
-              <Link
-                href={href}
-                className="group glass-line flex h-full flex-col items-center gap-3 rounded-[28px] bg-white px-4 pt-6 pb-5 text-center shadow-[var(--shadow-soft)] transition-[box-shadow,translate] duration-500 ease-glide hover:-translate-y-1 hover:shadow-[0_0_0_1px_var(--color-gold),0_0_0_5px_rgb(217_155_75/0.12),0_18px_36px_-16px_rgb(217_155_75/0.55)] active:scale-[0.98] motion-reduce:hover:translate-y-0"
-              >
-                <span
-                  aria-hidden
-                  className="grid size-14 place-items-center rounded-full bg-gold-soft text-gold-deep transition-[background-color,color,rotate,scale] duration-500 ease-out-expo group-hover:-rotate-8 group-hover:scale-110 group-hover:bg-gold group-hover:text-on-primary motion-reduce:group-hover:rotate-0"
+      <section aria-labelledby="phong-cach" className="border-y border-line/70 bg-cream py-20">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
+          <SectionHeading id="phong-cach" title="Tìm phòng theo phong cách sống" center className="reveal" />
+          <ul className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+            {LIFESTYLES.map(({ icon: Icon, title, note, href }, i) => (
+              <li key={title} style={stagger(i)} className="reveal">
+                <Link
+                  href={href}
+                  className="group glass-line flex h-full flex-col items-center gap-3 rounded-[28px] bg-white px-4 pt-6 pb-5 text-center shadow-[var(--shadow-soft)] transition-[box-shadow,translate] duration-500 ease-glide hover:-translate-y-1 hover:shadow-[0_0_0_1px_var(--color-gold),0_0_0_5px_rgb(217_155_75/0.12),0_18px_36px_-16px_rgb(217_155_75/0.55)] active:scale-[0.98] motion-reduce:hover:translate-y-0"
                 >
-                  <Icon className="size-6 [stroke-width:1.75]" />
-                </span>
-                <span>
-                  <span className="block font-semibold text-ink">{title}</span>
-                  <span className="mt-0.5 block text-sm text-muted">{note}</span>
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+                  <span
+                    aria-hidden
+                    className="grid size-14 place-items-center rounded-full bg-gold-soft text-gold-deep transition-[background-color,color,rotate,scale] duration-500 ease-out-expo group-hover:-rotate-8 group-hover:scale-110 group-hover:bg-gold group-hover:text-on-primary motion-reduce:group-hover:rotate-0"
+                  >
+                    <Icon className="size-6 [stroke-width:1.75]" />
+                  </span>
+                  <span>
+                    <span className="block font-semibold text-ink">{title}</span>
+                    <span className="mt-0.5 block text-sm text-muted">{note}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
 
-      <section aria-labelledby="vi-sao" className="border-y border-line bg-white py-20">
+      <section aria-labelledby="vi-sao" className="bg-white py-20">
         <div className="mx-auto grid max-w-[1280px] gap-12 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.4fr] lg:items-center">
           <div className="reveal">
             <h2 id="vi-sao" className="text-[1.75rem] leading-tight font-bold sm:text-[2.375rem]">
@@ -288,54 +290,56 @@ export default function HomePage() {
       </section>
 
       {posts.length ? (
-        <section aria-labelledby="cam-nang" className="mx-auto max-w-[1280px] px-4 py-20 sm:px-6">
-          <SectionHeading
-            id="cam-nang"
-            title="Cẩm nang thuê phòng"
-            description="Một chút chuẩn bị để tìm phòng nhẹ nhàng hơn."
-            href="/tin-tuc"
-            linkLabel="Xem tất cả bài viết"
-            className="reveal"
-          />
-          <ul
-            aria-label="Bài viết mới"
-            className="scrollbar-none -mx-4 mt-10 flex snap-x snap-mandatory scroll-px-4 gap-5 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:scroll-px-6 sm:px-6 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0"
-          >
-            {posts.map((post, i) => (
-              <li key={post.slug} style={stagger(i)} className="reveal w-[82vw] shrink-0 snap-start sm:w-[360px] md:w-auto">
-                <article className="group glass-line relative flex h-full flex-col overflow-hidden rounded-card bg-white shadow-[var(--shadow-soft)] transition-[box-shadow,translate] duration-500 ease-glide hover:-translate-y-1 hover:shadow-[var(--shadow-lift)] motion-reduce:hover:translate-y-0">
-                  <div className="relative aspect-[16/10] overflow-hidden bg-ivory">
-                    <Image
-                      src={post.cover}
-                      alt=""
-                      fill
-                      sizes="(min-width: 768px) 400px, 82vw"
-                      className="object-cover transition-transform duration-600 ease-glide group-hover:scale-[1.04] motion-reduce:group-hover:scale-100"
-                    />
-                    <span className="absolute top-3 left-3 rounded-full border border-white/60 bg-white/75 px-3 py-1 text-xs font-semibold text-gold-ink backdrop-blur-md">{post.category.name}</span>
-                  </div>
-                  <div className="flex flex-1 flex-col p-5">
-                    <p className="text-xs text-muted">
-                      <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>, {post.readMinutes} phút đọc
-                    </p>
-                    <h3 className="mt-2 text-lg leading-snug font-bold text-ink">
-                      <Link href={`/tin-tuc/${post.slug}`} className="after:absolute after:inset-0">
-                        {post.title}
-                      </Link>
-                    </h3>
-                    <span className="mt-auto inline-flex items-center gap-1.5 pt-4 text-sm font-semibold text-gold-ink">
-                      Đọc bài viết
-                      <ArrowRight aria-hidden className="size-4 transition-transform group-hover:translate-x-0.5" />
-                    </span>
-                  </div>
-                </article>
-              </li>
-            ))}
-          </ul>
+        <section aria-labelledby="cam-nang" className="border-y border-line/70 bg-cream py-20">
+          <div className="mx-auto max-w-[1280px] px-4 sm:px-6">
+            <SectionHeading
+              id="cam-nang"
+              title="Cẩm nang thuê phòng"
+              description="Một chút chuẩn bị để tìm phòng nhẹ nhàng hơn."
+              href="/tin-tuc"
+              linkLabel="Xem tất cả bài viết"
+              className="reveal"
+            />
+            <ul
+              aria-label="Bài viết mới"
+              className="scrollbar-none -mx-4 mt-10 flex snap-x snap-mandatory scroll-px-4 gap-5 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:scroll-px-6 sm:px-6 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0"
+            >
+              {posts.map((post, i) => (
+                <li key={post.slug} style={stagger(i)} className="reveal w-[82vw] shrink-0 snap-start sm:w-[360px] md:w-auto">
+                  <article className="group glass-line relative flex h-full flex-col overflow-hidden rounded-card bg-white shadow-[var(--shadow-soft)] transition-[box-shadow,translate] duration-500 ease-glide hover:-translate-y-1 hover:shadow-[var(--shadow-lift)] motion-reduce:hover:translate-y-0">
+                    <div className="relative aspect-[16/10] overflow-hidden bg-ivory">
+                      <Image
+                        src={post.cover}
+                        alt=""
+                        fill
+                        sizes="(min-width: 768px) 400px, 82vw"
+                        className="object-cover transition-transform duration-600 ease-glide group-hover:scale-[1.04] motion-reduce:group-hover:scale-100"
+                      />
+                      <span className="absolute top-3 left-3 rounded-full border border-white/60 bg-white/75 px-3 py-1 text-xs font-semibold text-gold-ink backdrop-blur-md">{post.category.name}</span>
+                    </div>
+                    <div className="flex flex-1 flex-col p-5">
+                      <p className="text-xs text-muted">
+                        <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>, {post.readMinutes} phút đọc
+                      </p>
+                      <h3 className="mt-2 text-lg leading-snug font-bold text-ink">
+                        <Link href={`/tin-tuc/${post.slug}`} className="after:absolute after:inset-0">
+                          {post.title}
+                        </Link>
+                      </h3>
+                      <span className="mt-auto inline-flex items-center gap-1.5 pt-4 text-sm font-semibold text-gold-ink">
+                        Đọc bài viết
+                        <ArrowRight aria-hidden className="size-4 transition-transform group-hover:translate-x-0.5" />
+                      </span>
+                    </div>
+                  </article>
+                </li>
+              ))}
+            </ul>
+          </div>
         </section>
       ) : null}
 
-      <section aria-labelledby="chu-nha" className="mx-auto max-w-[1280px] px-4 pb-4 sm:px-6">
+      <section aria-labelledby="chu-nha" className="mx-auto max-w-[1280px] px-4 pt-20 pb-4 sm:px-6">
         <div className="bg-grain reveal relative isolate overflow-hidden rounded-[28px] px-6 py-14 text-white shadow-[0_30px_60px_-30px_rgb(28_26_23/0.6)] sm:px-12 md:py-20">
           <div aria-hidden className="absolute -right-6 -bottom-10 -z-10 opacity-[0.12] sm:right-10">
             <BrandLogo variant="mark" height={300} />

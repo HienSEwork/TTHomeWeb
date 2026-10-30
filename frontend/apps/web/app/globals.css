@@ -4,7 +4,7 @@
 @source "../../../packages/ui/src";
 
 /*
- * TTHOME public brand, warm minimalist: alabaster ground, white surfaces with hairline warm borders,
+ * TTHOME public brand, light gold on white: white ground, cream bands between sections, hairline warm borders,
  * honey-amber accent, espresso text. Redefines the shared roles so every shared component follows.
  */
 @theme {
@@ -16,11 +16,13 @@
   --color-muted: #6e6961;
   --color-line: #ece5da;
   --color-line-strong: #dcd2c3;
-  --color-wash: #fbf9f5;
+  --color-wash: #fdf9f1;
   --color-surface: #ffffff;
-  --color-alabaster: #fbf9f5;
-  --color-sand: #f3ece2;
-  --color-dune: #ede4d8;
+  --color-alabaster: #ffffff;
+  /* Light gold band that separates homepage sections. */
+  --color-cream: #fcf6ea;
+  --color-sand: #f9eedb;
+  --color-dune: #f5e6cb;
 
   /* Honey amber is a fill colour (espresso text on it ≈ 7:1); small amber-toned text uses gold-ink. */
   --color-gold: #d99b4b;
@@ -28,7 +30,7 @@
   --color-gold-soft: #f7eddf;
   /* Deep amber dark enough for small text on white (contrast ≈ 6:1). */
   --color-gold-ink: #7a5520;
-  --color-ivory: #f6f1ea;
+  --color-ivory: #fbf4e6;
 
   --color-primary: #d99b4b;
   --color-primary-hover: #c58635;
