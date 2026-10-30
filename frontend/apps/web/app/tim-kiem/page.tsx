@@ -3,9 +3,11 @@ import Link from "next/link";
 import { Bookmark } from "lucide-react";
 import { DISTRICTS, findLandmark, searchProjects } from "@tthome/data";
 import { EmptyState, buttonStyles } from "@tthome/ui";
-import { MapSheet } from "@/components/map-sheet";
+import { AreaFilterBanner } from "@/components/area-filter-banner";
 import { MapLinkedCard } from "@/components/map-linked-card";
+import { PAGE_SIZE, Pagination, pageFrom } from "@/components/pagination";
 import { ProjectCard } from "@/components/project-card";
+import { ResultsLayout } from "@/components/results-layout";
 import { SearchMapLazy } from "@/components/search-map-lazy";
 import { SearchBox } from "@/components/search-box";
 import { SearchToolbar } from "@/components/search-filters";
@@ -40,16 +42,19 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 export default async function SearchPage({ searchParams }: Props) {
-  const filters = parseSearchParams(await searchParams);
+  const params = await searchParams;
+  const filters = parseSearchParams(params);
   const { lang, t } = await getServerI18n();
   const results = searchProjects(filters);
   const roomCount = results.reduce((n, r) => n + r.rooms.length, 0);
-  const pins = toApproxMapPins(results);
+  const page = pageFrom(params.trang, results.length);
+  const shown = results.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  // The map shows the buildings on this page, so choosing an area filters exactly the cards in view.
+  const pins = toApproxMapPins(shown);
   const landmarks = toMapLandmarks(filters.landmark ? [filters.landmark] : undefined);
 
-  return (
-    <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(400px,40%)]">
-      <div className="min-w-0 px-4 pt-6 pb-24 sm:px-6 lg:pb-12 xl:pl-[max(1.5rem,calc((100vw-1240px)/2+1.5rem))]">
+  const list = (
+      <div className="min-w-0 px-4 pt-6 pb-28 sm:px-6 lg:pb-12 xl:pl-[max(1.5rem,calc((100vw-1240px)/2+1.5rem))]">
         <SearchBox defaultValue={filters.q ?? ""} size="md" className="max-w-2xl" />
 
         <div className="mt-6 flex flex-wrap items-end justify-between gap-3">
@@ -86,24 +91,22 @@ export default async function SearchPage({ searchParams }: Props) {
             }
           />
         ) : (
+          <>
+          <AreaFilterBanner />
           <ul className="mt-6 grid gap-5 sm:grid-cols-2">
-            {results.map((m, i) => (
-              <li key={m.project.id} className="flex">
+            {shown.map((m, i) => (
+              <li key={m.project.id} className="flex empty:hidden">
                 <MapLinkedCard id={m.project.id} name={m.project.name}>
                   <ProjectCard match={m} priority={i < 2} className="w-full" lang={lang} />
                 </MapLinkedCard>
               </li>
             ))}
           </ul>
+          <Pagination page={page} total={results.length} basePath="/tim-kiem" params={params} labels={t.pagination} />
+          </>
         )}
       </div>
-
-      <aside aria-label={t.search.mapRegion} className="hidden lg:block">
-        <div className="sticky top-16 h-[calc(100dvh-4rem)] border-l border-line">
-          <SearchMapLazy pins={pins} landmarks={landmarks} className="size-full" />
-        </div>
-      </aside>
-      <MapSheet pins={pins} landmarks={landmarks} />
-    </div>
   );
+
+  return <ResultsLayout list={list} map={<SearchMapLazy pins={pins} landmarks={landmarks} className="size-full" />} />;
 }

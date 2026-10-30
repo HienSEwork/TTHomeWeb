@@ -1,13 +1,17 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import { LocateFixed } from "lucide-react";
 import { useI18n } from "@/lib/i18n/client";
-import { emitMapFocus } from "@/lib/map-focus";
+import { emitMapFocus, useMapArea, type MapAreaEvent } from "@/lib/map-focus";
 
 /** Wraps a result card: hovering it highlights the building's area on the map, the button flies the map to it. */
 export function MapLinkedCard({ id, name, children }: { id: string; name: string; children: ReactNode }) {
   const { t } = useI18n();
+  // Hidden while an area chosen on the map does not include this building.
+  const [outside, setOutside] = useState(false);
+  useMapArea(useCallback((e: MapAreaEvent) => setOutside(e.ids !== null && !e.ids.includes(id)), [id]));
+  if (outside) return null;
   return (
     <div className="relative flex w-full" onPointerEnter={() => emitMapFocus({ id, kind: "hover" })} onPointerLeave={() => emitMapFocus({ id: null, kind: "hover" })}>
       {children}

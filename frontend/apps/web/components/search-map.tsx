@@ -5,14 +5,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useMemo, useRef, useState } from "react";
 import circle from "@turf/circle";
-import type { FeatureCollection, Polygon } from "geojson";
+import type { FeatureCollection, Point, Polygon } from "geojson";
 import type { StyleSpecification } from "maplibre-gl";
 import { X } from "lucide-react";
 import MapGL, { Layer, Marker, NavigationControl, Source, type LayerProps, type MapLayerMouseEvent, type MapRef } from "react-map-gl/maplibre";
 import { Plate, cn } from "@tthome/ui";
 import { CAN_THO_MAX_BOUNDS, CAN_THO_OUTLINE, OUTSIDE_CAN_THO } from "@/lib/can-tho-area";
 import { useI18n } from "@/lib/i18n/client";
-import { useMapFocus, type MapFocusEvent } from "@/lib/map-focus";
+import { distanceMeters } from "@/lib/location-privacy";
+import { emitMapArea, overlappingIds, useMapArea, useMapFocus, type MapAreaEvent, type MapFocusEvent } from "@/lib/map-focus";
 import type { MapLandmark, MapPin } from "./map-view";
 
 const AMBER = "#D99B4B";
@@ -43,6 +44,24 @@ const AREA_RADIUS_KM = 0.7;
 
 const maskLayer: LayerProps = { id: "outside-fill", type: "fill", paint: { "fill-color": "#FBF9F5", "fill-opacity": 0.88 } };
 const borderLayer: LayerProps = { id: "city-border", type: "line", paint: { "line-color": "#C58635", "line-width": 1.5, "line-opacity": 0.6 } };
+
+/**
+ * Every building's area as a circle that is never smaller than ~16 px on screen and matches the real
+ * 700 m radius once zoomed in (at Cần Thơ's latitude one pixel is ~154 166 / 2^zoom metres).
+ */
+const areaDots: LayerProps = {
+  id: "areas-dot",
+  type: "circle",
+  paint: {
+    "circle-radius": ["interpolate", ["exponential", 2], ["zoom"], 10, 16, 12, 18.6, 18, 1190],
+    "circle-color": AMBER,
+    "circle-opacity": ["match", ["get", "state"], "active", 0.32, "near", 0.24, "hover", 0.24, 0.14],
+    "circle-stroke-color": ["match", ["get", "state"], "active", "#A8702C", AMBER],
+    "circle-stroke-width": ["match", ["get", "state"], "active", 2, "near", 1.5, 1],
+    "circle-stroke-opacity": 0.9,
+    "circle-pitch-alignment": "map",
+  },
+};
 
 const areaFill: LayerProps = {
   id: "areas-fill",
@@ -95,35 +114,51 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
 
   const shapes = useMemo(() => new Map(pins.map((p) => [p.id, circle([p.lng, p.lat], AREA_RADIUS_KM, { steps: 64, units: "kilometers" })])), [pins]);
 
-  const areas = useMemo<FeatureCollection<Polygon>>(
+  // Buildings whose areas overlap the chosen one; the list beside the map filters to these too.
+  const nearIds = useMemo(() => (selectedId ? overlappingIds(pins, selectedId, AREA_RADIUS_KM * 1000, distanceMeters) : []), [pins, selectedId]);
+  const near = useMemo(() => nearIds.map((id) => pins.find((p) => p.id === id)!), [nearIds, pins]);
+
+  const stateOf = useCallback((id: string) => (id === selectedId ? "active" : nearIds.includes(id) ? "near" : id === hoverId ? "hover" : "idle"), [selectedId, nearIds, hoverId]);
+
+  const dots = useMemo<FeatureCollection<Point>>(
     () => ({
       type: "FeatureCollection",
-      features: pins.map((p) => ({
-        ...shapes.get(p.id)!,
-        properties: { id: p.id, state: p.id === selectedId ? "active" : p.id === hoverId ? "hover" : "idle" },
-      })),
+      features: pins.map((p) => ({ type: "Feature", geometry: { type: "Point", coordinates: [p.lng, p.lat] }, properties: { id: p.id, state: stateOf(p.id) } })),
     }),
-    [pins, shapes, selectedId, hoverId],
+    [pins, stateOf],
+  );
+
+  // The exact 700 m outline, dashed, only for the area in focus.
+  const outlines = useMemo<FeatureCollection<Polygon>>(
+    () => ({
+      type: "FeatureCollection",
+      features: [...new Set([selectedId, hoverId].filter((id): id is string => Boolean(id)))].map((id) => ({ ...shapes.get(id)!, properties: { id, state: stateOf(id) } })),
+    }),
+    [selectedId, hoverId, shapes, stateOf],
   );
 
   const select = useCallback(
     (id: string | null) => {
       setSelectedId(id);
-      const shape = id ? shapes.get(id) : null;
-      if (!shape) return;
-      const ring = shape.geometry.coordinates[0]!;
-      const lngs = ring.map((c) => c[0]!);
-      const lats = ring.map((c) => c[1]!);
+      if (!id) return emitMapArea({ ids: null });
+      const ids = overlappingIds(pins, id, AREA_RADIUS_KM * 1000, distanceMeters);
+      emitMapArea({ ids });
+      const rings = ids.map((x) => shapes.get(x)!.geometry.coordinates[0]!);
+      const lngs = rings.flatMap((r) => r.map((c) => c[0]!));
+      const lats = rings.flatMap((r) => r.map((c) => c[1]!));
       map.current?.fitBounds(
         [
           [Math.min(...lngs), Math.min(...lats)],
           [Math.max(...lngs), Math.max(...lats)],
         ],
-        { padding: { top: 70, bottom: 150, left: 40, right: 40 }, duration: 1200, maxZoom: 15.5 },
+        { padding: { top: 70, bottom: 230, left: 40, right: 40 }, duration: 1200, maxZoom: 15.5 },
       );
     },
-    [shapes],
+    [pins, shapes],
   );
+
+  // "Bỏ lọc vùng" beside the list clears the choice here too.
+  useMapArea(useCallback((e: MapAreaEvent) => e.ids === null && setSelectedId(null), []));
 
   useMapFocus(
     useCallback(
@@ -137,8 +172,7 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
 
   const onMapClick = (e: MapLayerMouseEvent) => {
     const id = e.features?.[0]?.properties?.id as string | undefined;
-    if (id) select(id === selectedId ? null : id);
-    else setSelectedId(null);
+    select(id && id !== selectedId ? id : null);
   };
 
   return (
@@ -155,7 +189,7 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
         pitchWithRotate={false}
         maxPitch={0}
         onLoad={(e) => e.target.touchZoomRotate.disableRotation()}
-        interactiveLayerIds={["areas-fill"]}
+        interactiveLayerIds={["areas-dot", "areas-fill"]}
         onClick={onMapClick}
         onMouseMove={(e) => setHoverId((e.features?.[0]?.properties?.id as string | undefined) ?? null)}
         onMouseLeave={() => setHoverId(null)}
@@ -171,7 +205,10 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
         <Source id="border" type="geojson" data={{ type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: CAN_THO_OUTLINE } }}>
           <Layer {...borderLayer} />
         </Source>
-        <Source id="areas" type="geojson" data={areas}>
+        <Source id="dots" type="geojson" data={dots}>
+          <Layer {...areaDots} />
+        </Source>
+        <Source id="areas" type="geojson" data={outlines}>
           <Layer {...areaFill} />
           <Layer {...areaLine} />
         </Source>
@@ -188,7 +225,7 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
         {pins.map((pin) => {
           const active = pin.id === selectedId;
           return (
-            <Marker key={pin.id} longitude={pin.lng} latitude={pin.lat} anchor="center" style={{ zIndex: active ? 2 : 1 }}>
+            <Marker key={pin.id} longitude={pin.lng} latitude={pin.lat} anchor="bottom" offset={[0, -10]} style={{ zIndex: active ? 2 : 1 }}>
               <button
                 type="button"
                 onClick={(e) => {
@@ -235,23 +272,32 @@ export default function SearchMap({ pins, landmarks = [], className }: Props) {
       </p>
 
       {selected ? (
-        <div className="absolute inset-x-3 bottom-3 z-10 flex gap-3 rounded-[18px] border border-white/60 bg-white/90 p-3 shadow-[0_24px_48px_-20px_rgb(45_35_20/0.4)] backdrop-blur-md sm:right-auto sm:w-96">
-          <div className="relative size-20 shrink-0 overflow-hidden rounded-[12px] bg-line">
-            <Image src={selected.image} alt="" fill sizes="80px" className="object-cover" />
+        <div className="absolute inset-x-3 bottom-3 z-10 flex max-h-[45%] flex-col rounded-[18px] border border-white/60 bg-white/95 shadow-[0_24px_48px_-20px_rgb(45_35_20/0.4)] backdrop-blur-md sm:right-auto sm:w-[26rem]">
+          <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-2.5">
+            <p className="text-sm font-bold text-ink">{t.map.inArea(near.length)}</p>
+            <button type="button" onClick={() => select(null)} className="rounded-md p-1 text-muted hover:bg-wash hover:text-ink" aria-label={t.common.close}>
+              <X aria-hidden className="size-4" />
+            </button>
           </div>
-          <div className="min-w-0 flex-1">
-            <Link href={selected.href} className="line-clamp-1 font-bold text-ink hover:underline">
-              {selected.name}
-            </Link>
-            <p className="text-sm text-muted">{t.map.insideArea}</p>
-            <div className="mt-1.5 flex items-center gap-2">
-              <span className="font-extrabold text-ink">{fmt.fromPrice(selected.minPrice)}</span>
-              <Plate value={selected.vacant} unit={t.map.vacantShort} size="xs" />
-            </div>
-          </div>
-          <button type="button" onClick={() => setSelectedId(null)} className="self-start rounded-md p-1 text-muted hover:bg-wash hover:text-ink" aria-label={t.common.close}>
-            <X aria-hidden className="size-4" />
-          </button>
+          <ul className="min-h-0 overflow-y-auto overscroll-contain p-2">
+            {near.map((p) => (
+              <li key={p.id}>
+                <Link href={p.href} className={cn("flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-ivory", p.id === selectedId && "bg-ivory")}>
+                  <span className="relative size-14 shrink-0 overflow-hidden rounded-[10px] bg-line">
+                    <Image src={p.image} alt="" fill sizes="56px" className="object-cover" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="line-clamp-1 font-semibold text-ink">{p.name}</span>
+                    <span className="mt-0.5 flex items-center gap-2">
+                      <span className="text-sm font-extrabold text-ink">{fmt.fromPrice(p.minPrice)}</span>
+                      <Plate value={p.vacant} unit={t.map.vacantShort} size="xs" />
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-xs font-semibold text-gold-ink">{t.map.seeRooms}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       ) : null}
     </div>
