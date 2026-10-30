@@ -17,24 +17,26 @@ const renderHero = () =>
 describe("HeroSearch", () => {
   beforeEach(() => push.mockReset());
 
-  it("lists every district of Can Tho when the area field opens", () => {
+  it("offers every district of Can Tho as a choice, not a text box", () => {
     renderHero();
-    fireEvent.focus(screen.getByRole("combobox", { name: "Khu vực" }));
+    const area = screen.getByRole("combobox", { name: /Khu vực/ });
+    expect(area.tagName).toBe("BUTTON");
+    fireEvent.click(area);
     const options = screen.getAllByRole("option");
-    expect(options).toHaveLength(DISTRICTS.length);
     expect(DISTRICTS).toHaveLength(9);
-    expect(options[0]).toHaveTextContent("Quận Ninh Kiều");
-    expect(options[0]).toHaveTextContent("12 phòng trống");
+    expect(options).toHaveLength(DISTRICTS.length + 1);
+    expect(options[0]).toHaveTextContent("Toàn TP. Cần Thơ");
+    expect(options[1]).toHaveTextContent("Quận Ninh Kiều");
+    expect(options[1]).toHaveTextContent("12 phòng trống");
   });
 
-  it("searches a ward picked from the typed matches", () => {
+  it("searches the chosen district", () => {
     renderHero();
-    const area = screen.getByRole("combobox", { name: "Khu vực" });
-    fireEvent.change(area, { target: { value: "xuan khanh" } });
-    fireEvent.click(screen.getByRole("option", { name: /Phường Xuân Khánh/ }));
-    expect(area).toHaveValue("Phường Xuân Khánh, Quận Ninh Kiều");
+    fireEvent.click(screen.getByRole("combobox", { name: /Khu vực/ }));
+    fireEvent.click(screen.getByRole("option", { name: /Quận Cái Răng/ }));
+    expect(screen.getByRole("combobox", { name: /Khu vực/ })).toHaveTextContent("Quận Cái Răng");
     fireEvent.click(screen.getByRole("button", { name: "Tìm phòng" }));
-    expect(push).toHaveBeenCalledWith(expect.stringMatching(/district=ninh-kieu.*ward=xuan-khanh|ward=xuan-khanh.*district=ninh-kieu/));
+    expect(push).toHaveBeenCalledWith(expect.stringContaining("district=cai-rang"));
   });
 
   it("picks a room type with the keyboard from the styled list", () => {

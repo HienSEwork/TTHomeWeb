@@ -3,25 +3,26 @@ import { vi } from "./i18n/vi";
 
 export type RoomRef = { room: Room; project: Project };
 
-export type Highlight = "aircon" | "private_wc" | "balcony" | "window" | "furnished" | "elevator" | "parking" | "fingerprint" | "pet";
+export type Highlight = "fingerprint" | "elevator" | "aircon" | "fridge" | "washer" | "furnished" | "balcony" | "pet" | "parking";
 
 /** Vietnamese highlight labels; other languages read them from their dictionary (`t.labels.highlight`). */
 export const HIGHLIGHT_LABEL: Record<Highlight, string> = vi.labels.highlight;
 
 /**
- * The few amenities worth showing on a card, most telling first. Only what the data says is true
- * is listed, and at most `limit` of them.
+ * The selling points worth showing on a card, most telling first: a smart lock, a lift and the appliances
+ * in the room count for more than a window or a bathroom, which every room is expected to have. Only what
+ * the data says is true is listed, and at most `limit` of them.
  */
-export function roomHighlights({ room, project }: RoomRef, limit = 3): Highlight[] {
+export function roomHighlights({ room, project }: RoomRef, limit = 4): Highlight[] {
   const out: Highlight[] = [];
-  if (room.furniture === "full") out.push("furnished");
-  if (room.hasBalcony) out.push("balcony");
-  else if (room.hasWindow) out.push("window");
-  if (room.amenities.includes("private_wc")) out.push("private_wc");
-  if (project.petPolicy !== "none" && project.petPolicy !== "ask_owner") out.push("pet");
-  if (room.amenities.includes("aircon")) out.push("aircon");
   if (project.amenities.includes("fingerprint")) out.push("fingerprint");
   if (project.amenities.includes("elevator")) out.push("elevator");
+  if (room.amenities.includes("aircon")) out.push("aircon");
+  if (room.amenities.includes("fridge")) out.push("fridge");
+  if (room.amenities.includes("washer")) out.push("washer");
+  if (room.furniture === "full") out.push("furnished");
+  if (room.hasBalcony) out.push("balcony");
+  if (project.petPolicy !== "none" && project.petPolicy !== "ask_owner") out.push("pet");
   if (project.amenities.includes("parking")) out.push("parking");
   return out.slice(0, limit);
 }

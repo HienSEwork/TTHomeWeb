@@ -1,14 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useMemo, useRef, useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { ChevronDown, LayoutGrid, MapPin, Search, Wallet } from "lucide-react";
 import { DISTRICTS, PRICE_BANDS, type RoomType } from "@tthome/data";
-import { cn, normalizeVi } from "@tthome/ui";
+import { cn } from "@tthome/ui";
 import { labelOf } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n/client";
 import { toSearchQuery } from "@/lib/search-params";
-import { ListPanel, SelectMenu, useListKeys, useOutsidePress, type MenuOption } from "./hero-dropdown";
+import { SelectMenu, type MenuOption } from "./hero-dropdown";
 
 const TYPES: RoomType[] = ["studio", "room", "1pn", "duplex", "2pn", "shared", "dorm"];
 
@@ -39,113 +39,26 @@ function Field({ icon, label, labelId, htmlFor, children, select }: { icon: Reac
 
 const control = "w-full min-w-0 appearance-none truncate bg-transparent py-0.5 text-[0.9375rem] text-ink placeholder:text-muted focus:outline-none";
 
-type Area = { district: string; ward?: string };
-type AreaOption = MenuOption & { area: Area };
-
-/** Typing filters the districts and wards of Cần Thơ; with nothing typed the list shows every district. */
-function AreaField({ id, labelId, placeholder, vacantByDistrict, onArea }: { id: string; labelId: string; placeholder: string; vacantByDistrict: Record<string, number>; onArea: (text: string, area: Area | null) => void }) {
-  const { t } = useI18n();
-  const [text, setText] = useState("");
-  const [area, setArea] = useState<Area | null>(null);
-  const [open, setOpenState] = useState(false);
-  const input = useRef<HTMLInputElement>(null);
-  const panel = useRef<HTMLUListElement>(null);
-
-  const options = useMemo<AreaOption[]>(() => {
-    const vacant = (slug: string) => t.hero.vacant(vacantByDistrict[slug] ?? 0);
-    const needle = area ? "" : normalizeVi(text.trim());
-    if (!needle) return DISTRICTS.map((d) => ({ value: d.slug, label: d.name, hint: vacant(d.slug), group: t.hero.districtsTitle, area: { district: d.slug } }));
-    const words = needle.split(/\s+/);
-    const hit = (s: string) => {
-      const hay = normalizeVi(s);
-      return words.every((w) => hay.includes(w));
-    };
-    const out: AreaOption[] = [];
-    for (const d of DISTRICTS) {
-      if (hit(d.name)) out.push({ value: d.slug, label: d.name, hint: vacant(d.slug), group: t.hero.areaMatches, area: { district: d.slug } });
-      for (const w of d.wards) {
-        if (hit(`${w.name} ${d.name}`)) out.push({ value: `${d.slug}/${w.slug}`, label: w.name, hint: d.name, group: t.hero.areaMatches, area: { district: d.slug, ward: w.slug } });
-      }
-    }
-    return out.slice(0, 12);
-  }, [text, area, t, vacantByDistrict]);
-
-  const pick = (i: number) => {
-    const o = options[i]!;
-    const name = o.area.ward ? `${o.label}, ${o.hint}` : o.label;
-    setText(name);
-    setArea(o.area);
-    onArea(name, o.area);
-    setOpen(false);
-  };
-  const keys = useListKeys({ open, count: options.length, setOpen: (o) => setOpen(o), onPick: pick });
-  function setOpen(next: boolean) {
-    setOpenState(next);
-    keys.setActive(-1);
-  }
-  useOutsidePress(open, [input, panel], () => setOpen(false));
-  const shown = open && options.length > 0;
-
-  return (
-    <>
-      <input
-        ref={input}
-        id={id}
-        role="combobox"
-        aria-autocomplete="list"
-        aria-expanded={shown}
-        aria-controls={`${id}-list`}
-        aria-activedescendant={shown && keys.active >= 0 ? `${id}-list-opt-${keys.active}` : undefined}
-        value={text}
-        onChange={(e) => {
-          setText(e.target.value);
-          setArea(null);
-          onArea(e.target.value, null);
-          setOpenState(true);
-          keys.setActive(-1);
-        }}
-        onFocus={() => setOpen(true)}
-        onClick={() => !open && setOpen(true)}
-        onKeyDown={keys.onKeyDown}
-        placeholder={placeholder}
-        autoComplete="off"
-        className={control}
-      />
-      <ListPanel
-        id={`${id}-list`}
-        open={shown}
-        anchor={input}
-        panelRef={panel}
-        options={options}
-        active={keys.active}
-        selected={area ? (area.ward ? `${area.district}/${area.ward}` : area.district) : undefined}
-        labelledBy={labelId}
-        onPick={pick}
-        onHover={keys.setActive}
-      />
-    </>
-  );
-}
-
 /** The hero's three-field search: where, how much, what kind. Submits to /tim-kiem. */
 export function HeroSearch({ className, vacantByDistrict = {} }: { className?: string; vacantByDistrict?: Record<string, number> }) {
   const router = useRouter();
   const { t } = useI18n();
   const id = useId();
-  const [q, setQ] = useState("");
-  const [area, setArea] = useState<Area | null>(null);
+  const [district, setDistrict] = useState("");
   const [band, setBand] = useState("");
   const [type, setType] = useState("");
 
+  const areaOptions: MenuOption[] = [
+    { value: "", label: t.hero.anyArea },
+    ...DISTRICTS.map((d) => ({ value: d.slug, label: d.name, hint: t.hero.vacant(vacantByDistrict[d.slug] ?? 0), group: t.hero.districtsTitle })),
+  ];
   const priceOptions: MenuOption[] = [{ value: "", label: t.hero.anyPrice }, ...PRICE_BANDS.map((b) => ({ value: b.slug, label: labelOf(t.labels.priceBand, b.slug) }))];
   const typeOptions: MenuOption[] = [{ value: "", label: t.hero.anyType }, ...TYPES.map((type) => ({ value: type, label: t.labels.roomType[type] }))];
 
   function submit() {
     const b = PRICE_BANDS.find((p) => p.slug === band);
     const query = toSearchQuery({
-      q: area ? undefined : q.trim() || undefined,
-      district: area?.district,
-      ward: area?.ward,
+      district: district || undefined,
       priceMin: b?.min || undefined,
       priceMax: b && b.max !== Number.MAX_SAFE_INTEGER ? b.max : undefined,
       types: type ? [type as RoomType] : undefined,
@@ -166,17 +79,8 @@ export function HeroSearch({ className, vacantByDistrict = {} }: { className?: s
         className,
       )}
     >
-      <Field icon={<MapPin />} label={t.hero.area} labelId={`${id}-q-label`} htmlFor={`${id}-q`}>
-        <AreaField
-          id={`${id}-q`}
-          labelId={`${id}-q-label`}
-          placeholder={t.hero.areaPlaceholder}
-          vacantByDistrict={vacantByDistrict}
-          onArea={(text, chosen) => {
-            setQ(text);
-            setArea(chosen);
-          }}
-        />
+      <Field icon={<MapPin />} label={t.hero.area} labelId={`${id}-area-label`} htmlFor={`${id}-area`} select>
+        <SelectMenu id={`${id}-area`} labelId={`${id}-area-label`} value={district} options={areaOptions} placeholder={t.hero.areaPlaceholder} onChange={setDistrict} className={control} />
       </Field>
       <span aria-hidden className="mx-5 h-px bg-line md:mx-0 md:h-8 md:w-px" />
       <Field icon={<Wallet />} label={t.hero.price} labelId={`${id}-price-label`} htmlFor={`${id}-price`} select>

@@ -55,6 +55,24 @@ const REASONS: { icon: LucideIcon; key: "info" | "price" | "photos" | "booking" 
 
 const AREA_SLUGS = ["ninh-kieu", "cai-rang", "binh-thuy", "phong-dien", "o-mon"];
 
+/**
+ * The hero title, revealed a word at a time from `start` on. Gold words also carry a glint that passes
+ * from word to word; each word clips its own gradient because a moving child would escape its parent's.
+ */
+function TitleWords({ text, start = 0, gold }: { text: string; start?: number; gold?: boolean }) {
+  return text.split(" ").map((word, i) => (
+    <span key={i}>
+      {i ? " " : null}
+      <span
+        className={cn("inline-block", gold ? "title-gold-word text-gold-shine pb-1" : "animate-word-in")}
+        style={{ animationDelay: gold ? `${(start + i) * 90}ms, ${1400 + i * 160}ms` : `${(start + i) * 90}ms` } as CSSProperties}
+      >
+        {word}
+      </span>
+    </span>
+  ));
+}
+
 /** Stagger index for the scroll entrance (see the reveal utility in globals.css). */
 const stagger = (i: number) => ({ "--i": i }) as CSSProperties;
 
@@ -129,16 +147,21 @@ export default async function HomePage() {
 
         <div className="relative mx-auto flex max-w-[1120px] flex-col items-center px-4 pt-14 pb-16 text-center sm:px-6 sm:pt-20 lg:pt-24 lg:pb-20">
           <h1 className="text-display font-extrabold text-ink">
-            {t.home.titleA}
-            <span className="text-gold-gradient block pb-1">{t.home.titleB}</span>
+            <span className="sr-only">{`${t.home.titleA} ${t.home.titleB}`}</span>
+            <span aria-hidden className="block">
+              <TitleWords text={t.home.titleA} />
+            </span>
+            <span aria-hidden className="block">
+              <TitleWords text={t.home.titleB} start={t.home.titleA.split(" ").length} gold />
+            </span>
           </h1>
-          <p className="mt-5 max-w-[620px] text-base text-muted sm:text-lg">
+          <p className="mt-5 max-w-[620px] animate-rise text-base text-muted [animation-delay:450ms] sm:text-lg">
             {t.home.lead}
           </p>
 
-          <HeroSearch className="mt-10 w-full max-w-[980px] animate-rise [animation-delay:60ms]" vacantByDistrict={vacantByDistrict} />
+          <HeroSearch className="mt-10 w-full max-w-[980px] animate-rise [animation-delay:550ms]" vacantByDistrict={vacantByDistrict} />
 
-          <ul className="mt-6 flex animate-rise flex-wrap justify-center gap-2 [animation-delay:140ms]" aria-label={t.home.quickFilters}>
+          <ul className="mt-6 flex animate-rise flex-wrap justify-center gap-2 [animation-delay:650ms]" aria-label={t.home.quickFilters}>
             {QUICK_FILTERS.map((f) => (
               <li key={f.href}>
                 <Link
@@ -152,8 +175,8 @@ export default async function HomePage() {
           </ul>
 
           <ul className="mt-8 flex items-center justify-center gap-4 xl:hidden">
-            {trust.map(({ icon: Icon, label }) => (
-              <li key={label} title={label} className="grid size-11 place-items-center rounded-full bg-gold-soft text-gold-deep">
+            {trust.map(({ icon: Icon, label }, i) => (
+              <li key={label} title={label} style={{ animationDelay: `${800 + i * 120}ms` }} className="grid size-11 animate-pop place-items-center rounded-full bg-gold-soft text-gold-deep [animation-fill-mode:both]">
                 <Icon aria-hidden className="size-5" />
                 <span className="sr-only">{label}</span>
               </li>

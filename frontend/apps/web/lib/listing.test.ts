@@ -7,14 +7,14 @@ const room = (patch: Partial<Room>): Room => ({ ...base.rooms[0]!, ...patch });
 const project = (patch: Partial<Project>): Project => ({ ...base, ...patch });
 
 describe("roomHighlights", () => {
-  it("lists only what is true, most telling first, at most three", () => {
-    const ref = { room: room({ furniture: "full", hasBalcony: true, amenities: ["aircon", "private_wc"] }), project: project({ petPolicy: "allowed" }) };
-    expect(roomHighlights(ref)).toEqual(["furnished", "balcony", "private_wc"]);
+  it("leads with the smart lock, lift and appliances, at most four", () => {
+    const ref = { room: room({ furniture: "full", hasBalcony: true, amenities: ["aircon", "private_wc", "fridge"] }), project: project({ petPolicy: "allowed", amenities: ["fingerprint", "elevator"] }) };
+    expect(roomHighlights(ref)).toEqual(["fingerprint", "elevator", "aircon", "fridge"]);
   });
 
-  it("falls back to a window when there is no balcony and skips pets the owner must approve", () => {
-    const ref = { room: room({ furniture: "basic", hasBalcony: false, hasWindow: true, amenities: [] }), project: project({ petPolicy: "ask_owner", amenities: [] }) };
-    expect(roomHighlights(ref)).toEqual(["window"]);
+  it("never sells a window or a bathroom, and skips pets the owner must approve", () => {
+    const ref = { room: room({ furniture: "basic", hasBalcony: false, hasWindow: true, amenities: ["private_wc"] }), project: project({ petPolicy: "ask_owner", amenities: [] }) };
+    expect(roomHighlights(ref)).toEqual([]);
   });
 });
 

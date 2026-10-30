@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
-import { AirVent, AppWindow, ArrowUpDown, Bath, CircleParking, KeyRound, MapPin, PawPrint, Ruler, Sofa } from "lucide-react";
+import { AirVent, ArrowUpDown, CircleParking, Fingerprint, MapPin, PawPrint, Refrigerator, Ruler, Sofa, SunMedium, WashingMachine } from "lucide-react";
 import { findDistrict, roomSlug, TODAY } from "@tthome/data";
 import { cn } from "@tthome/ui";
 import { getI18n, type Lang } from "@/lib/i18n";
@@ -9,15 +9,15 @@ import { CardGallery } from "./card-gallery";
 import { FavoriteButton } from "./favorite-button";
 
 export const HIGHLIGHT_ICON: Record<Highlight, LucideIcon> = {
-  aircon: AirVent,
-  private_wc: Bath,
-  balcony: AppWindow,
-  window: AppWindow,
-  furnished: Sofa,
+  fingerprint: Fingerprint,
   elevator: ArrowUpDown,
-  parking: CircleParking,
-  fingerprint: KeyRound,
+  aircon: AirVent,
+  fridge: Refrigerator,
+  washer: WashingMachine,
+  furnished: Sofa,
+  balcony: SunMedium,
   pet: PawPrint,
+  parking: CircleParking,
 };
 
 const BADGE_STYLE = {
@@ -29,6 +29,7 @@ const BADGE_STYLE = {
 /** A vacant room: photo, where it is, monthly price, size and the few amenities that matter. */
 export function RoomListingCard({ listing, priority, className, lang }: { listing: RoomRef; priority?: boolean; className?: string; lang?: Lang }) {
   const { t, fmt } = getI18n(lang);
+  const highlights = roomHighlights(listing);
   const { room, project } = listing;
   const href = `/phong/${roomSlug(room, project)}`;
   const district = findDistrict(project.districtSlug);
@@ -86,17 +87,19 @@ export function RoomListingCard({ listing, priority, className, lang }: { listin
           <span>{t.labels.roomType[room.type]}</span>
         </p>
 
-        <ul className="mt-3 flex flex-wrap gap-1.5 border-t border-line pt-3" aria-label={t.card.amenities}>
-          {roomHighlights(listing).map((h) => {
-            const Icon = HIGHLIGHT_ICON[h];
-            return (
-              <li key={h} className="inline-flex items-center gap-1 rounded-full bg-ivory px-2 py-1 text-xs font-medium text-ink-soft">
-                <Icon aria-hidden className="size-3.5 text-gold-deep" />
-                {t.labels.highlight[h]}
-              </li>
-            );
-          })}
-        </ul>
+        {highlights.length ? (
+          <ul className="mt-3 flex flex-wrap gap-1.5 border-t border-line pt-3" aria-label={t.card.amenities}>
+            {highlights.map((h) => {
+              const Icon = HIGHLIGHT_ICON[h];
+              return (
+                <li key={h} className="inline-flex items-center gap-1 rounded-full bg-ivory px-2 py-1 text-xs font-medium text-ink-soft">
+                  <Icon aria-hidden className="size-3.5 text-gold-deep" />
+                  {t.labels.highlight[h]}
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
 
         <p className="mt-auto flex items-center gap-1.5 pt-3 text-xs font-medium text-success">
           <span aria-hidden className="size-1.5 rounded-full bg-success" />
