@@ -51,10 +51,13 @@ export function SiteHeader() {
   }, []);
 
   return (
+    <>
+    {/* Holds the header's full height in the page, so the header can shrink on scroll without moving the content. */}
+    <div aria-hidden className="h-20 shrink-0" />
     <header
       data-scrolled={scrolled || undefined}
       className={cn(
-        "sticky top-0 z-40 border-b transition-[background-color,border-color,box-shadow] duration-500 ease-out-expo",
+        "fixed inset-x-0 top-0 z-40 border-b transition-[background-color,border-color,box-shadow] duration-500 ease-out-expo",
         scrolled || open
           ? "border-line/80 bg-alabaster/95 shadow-[0_8px_30px_-12px_rgb(45_35_20/0.12)] backdrop-blur-md supports-[backdrop-filter]:bg-alabaster/75"
           : "border-transparent bg-alabaster",
@@ -174,5 +177,6 @@ export function SiteHeader() {
         </div>
       </Drawer>
     </header>
+    </>
   );
 }

@@ -128,17 +128,17 @@ export default async function HomePage() {
             <span aria-hidden className="size-1.5 rounded-full bg-gold" />
             {t.home.eyebrow}
           </p>
-          <h1 className="mt-6 animate-rise text-display font-extrabold text-ink [animation-delay:90ms]">
+          <h1 className="mt-6 text-display font-extrabold text-ink">
             {t.home.titleA}
             <span className="text-gold-gradient block pb-1">{t.home.titleB}</span>
           </h1>
-          <p className="mt-5 max-w-[620px] animate-rise text-base text-muted [animation-delay:180ms] sm:text-lg">
+          <p className="mt-5 max-w-[620px] text-base text-muted sm:text-lg">
             {t.home.lead}
           </p>
 
-          <HeroSearch className="mt-10 w-full max-w-[980px] animate-rise [animation-delay:270ms]" />
+          <HeroSearch className="mt-10 w-full max-w-[980px] animate-rise [animation-delay:60ms]" />
 
-          <ul className="mt-6 flex animate-rise flex-wrap justify-center gap-2 [animation-delay:360ms]" aria-label={t.home.quickFilters}>
+          <ul className="mt-6 flex animate-rise flex-wrap justify-center gap-2 [animation-delay:140ms]" aria-label={t.home.quickFilters}>
             {QUICK_FILTERS.map((f) => (
               <li key={f.href}>
                 <Link

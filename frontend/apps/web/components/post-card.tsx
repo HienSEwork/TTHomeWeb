@@ -9,7 +9,7 @@ export function PostCard({ post, large, lang }: { post: Post; large?: boolean; l
   return (
     <article className="group relative flex flex-col">
       <div className={`relative overflow-hidden rounded-card bg-line ${large ? "aspect-[16/10]" : "aspect-[3/2]"}`}>
-        <Image src={post.cover} alt="" fill sizes={large ? "(min-width: 1024px) 620px, 100vw" : "(min-width: 1024px) 400px, 100vw"} className="object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+        <Image src={post.cover} alt="" fill priority={large} sizes={large ? "(min-width: 1024px) 620px, 100vw" : "(min-width: 1024px) 400px, 100vw"} className="object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
       </div>
       <p className="mt-4 text-sm font-semibold text-shutter">{post.category.name}</p>
       <h3 className={`mt-1 font-bold text-ink ${large ? "text-2xl leading-tight tracking-tight" : "text-lg leading-snug"}`}>
