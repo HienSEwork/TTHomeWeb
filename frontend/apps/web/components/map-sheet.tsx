@@ -1,14 +1,26 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Map as MapIcon, X } from "lucide-react";
 import { buttonStyles } from "@tthome/ui";
-import { MapView, type MapLandmark, type MapPin } from "./map-view";
+import { emitMapFocus, useMapFocus, type MapFocusEvent } from "@/lib/map-focus";
+import type { MapLandmark, MapPin } from "./map-view";
+import { SearchMapLazy } from "./search-map-lazy";
 
 /** On small screens the map opens full screen from a floating button. The map renders only while open. */
-export function MapSheet({ pins, landmarks, fit }: { pins: MapPin[]; landmarks?: MapLandmark[]; fit?: boolean }) {
+export function MapSheet({ pins, landmarks }: { pins: MapPin[]; landmarks?: MapLandmark[] }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
+  // "Xem vùng" on a card opens the sheet on small screens; the map inside then flies to the area.
+  useMapFocus(
+    useCallback((e: MapFocusEvent) => {
+      if (e.kind !== "select" || !e.id || dialog.current?.open || window.matchMedia("(min-width: 1024px)").matches) return;
+      setOpen(true);
+      dialog.current?.showModal();
+      // The map mounts with the sheet, so repeat the request once it has had time to load.
+      setTimeout(() => emitMapFocus(e), 900);
+    }, []),
+  );
   return (
     <>
       <button
@@ -30,7 +42,7 @@ export function MapSheet({ pins, landmarks, fit }: { pins: MapPin[]; landmarks?:
             Xem danh sách
           </button>
         </div>
-        {open ? <MapView pins={pins} landmarks={landmarks} fit={fit} className="flex-1" /> : null}
+        {open ? <SearchMapLazy pins={pins} landmarks={landmarks} className="min-h-0 flex-1" /> : null}
       </dialog>
     </>
   );

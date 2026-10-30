@@ -4,11 +4,12 @@ import { Bookmark } from "lucide-react";
 import { DISTRICTS, findLandmark, searchProjects } from "@tthome/data";
 import { EmptyState, buttonStyles } from "@tthome/ui";
 import { MapSheet } from "@/components/map-sheet";
-import { MapView } from "@/components/map-view";
+import { MapLinkedCard } from "@/components/map-linked-card";
 import { ProjectCard } from "@/components/project-card";
+import { SearchMapLazy } from "@/components/search-map-lazy";
 import { SearchBox } from "@/components/search-box";
 import { SearchToolbar } from "@/components/search-filters";
-import { toMapLandmarks, toMapPins } from "@/lib/map-pins";
+import { toApproxMapPins, toMapLandmarks } from "@/lib/map-pins";
 import { activeFilterCount, parseSearchParams, toSearchQuery } from "@/lib/search-params";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -39,7 +40,7 @@ export default async function SearchPage({ searchParams }: Props) {
   const filters = parseSearchParams(await searchParams);
   const results = searchProjects(filters);
   const roomCount = results.reduce((n, r) => n + r.rooms.length, 0);
-  const pins = toMapPins(results);
+  const pins = toApproxMapPins(results);
   const landmarks = toMapLandmarks(filters.landmark ? [filters.landmark] : undefined);
 
   return (
@@ -84,7 +85,9 @@ export default async function SearchPage({ searchParams }: Props) {
           <ul className="mt-6 grid gap-5 sm:grid-cols-2">
             {results.map((m, i) => (
               <li key={m.project.id} className="flex">
-                <ProjectCard match={m} priority={i < 2} className="w-full" />
+                <MapLinkedCard id={m.project.id} name={m.project.name}>
+                  <ProjectCard match={m} priority={i < 2} className="w-full" />
+                </MapLinkedCard>
               </li>
             ))}
           </ul>
@@ -93,10 +96,10 @@ export default async function SearchPage({ searchParams }: Props) {
 
       <aside aria-label="Bản đồ" className="hidden lg:block">
         <div className="sticky top-16 h-[calc(100dvh-4rem)] border-l border-line">
-          <MapView pins={pins} landmarks={landmarks} fit className="size-full" />
+          <SearchMapLazy pins={pins} landmarks={landmarks} className="size-full" />
         </div>
       </aside>
-      <MapSheet pins={pins} landmarks={landmarks} fit />
+      <MapSheet pins={pins} landmarks={landmarks} />
     </div>
   );
 }
