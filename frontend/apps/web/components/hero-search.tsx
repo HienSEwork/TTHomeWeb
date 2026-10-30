@@ -6,13 +6,17 @@ import { ChevronDown, LayoutGrid, MapPin, Search, Wallet } from "lucide-react";
 import { PRICE_BANDS, ROOM_TYPE_LABEL, type RoomType } from "@tthome/data";
 import { cn } from "@tthome/ui";
 import { toSearchQuery } from "@/lib/search-params";
+import { Magnetic } from "./magnetic";
 
 const TYPES: RoomType[] = ["studio", "room", "1pn", "duplex", "2pn", "shared", "dorm"];
 
 function Field({ icon, label, htmlFor, children, select }: { icon: ReactNode; label: string; htmlFor: string; children: ReactNode; select?: boolean }) {
   return (
-    <div className="relative flex min-w-0 flex-1 items-center gap-3 rounded-[12px] px-4 py-3 transition-colors focus-within:bg-gold-soft/60 focus-within:ring-2 focus-within:ring-focus md:py-2">
-      <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-full bg-gold-soft text-gold-deep [&_svg]:size-[18px]">
+    <div className="group/field relative flex min-w-0 flex-1 items-center gap-3 rounded-[999px] px-4 py-3 transition-colors duration-300 hover:bg-sand/70 focus-within:bg-white focus-within:shadow-[var(--shadow-soft)] focus-within:ring-2 focus-within:ring-focus md:py-2.5">
+      <span
+        aria-hidden
+        className="grid size-9 shrink-0 place-items-center rounded-full bg-gold-soft text-gold-deep transition-[background-color,color,rotate,scale] duration-300 ease-out-expo group-hover/field:scale-105 group-hover/field:-rotate-6 group-focus-within/field:bg-gold group-focus-within/field:text-on-primary motion-reduce:group-hover/field:rotate-0 [&_svg]:size-[18px]"
+      >
         {icon}
       </span>
       <span className="flex min-w-0 flex-1 flex-col">
@@ -56,14 +60,14 @@ export function HeroSearch({ className }: { className?: string }) {
         submit();
       }}
       className={cn(
-        "flex flex-col rounded-[18px] border border-line bg-white p-2 text-left shadow-[0_18px_50px_-20px_rgb(39_32_21/0.22)] md:flex-row md:items-center",
+        "flex flex-col gap-1 rounded-[28px] border border-white/60 bg-white/80 p-2 text-left shadow-[0_1px_2px_rgb(45_35_20/0.04),0_30px_60px_-24px_rgb(45_35_20/0.25)] backdrop-blur-xl md:flex-row md:items-center md:rounded-full",
         className,
       )}
     >
       <Field icon={<MapPin />} label="Khu vực" htmlFor={`${id}-q`}>
         <input id={`${id}-q`} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Quận, phường, tên đường…" autoComplete="off" className={control} />
       </Field>
-      <span aria-hidden className="mx-4 h-px bg-line md:mx-0 md:h-10 md:w-px" />
+      <span aria-hidden className="mx-5 h-px bg-line md:mx-0 md:h-8 md:w-px" />
       <Field icon={<Wallet />} label="Khoảng giá" htmlFor={`${id}-price`} select>
         <select id={`${id}-price`} value={band} onChange={(e) => setBand(e.target.value)} className={cn(control, !band && "text-muted")}>
           <option value="">Chọn ngân sách</option>
@@ -74,7 +78,7 @@ export function HeroSearch({ className }: { className?: string }) {
           ))}
         </select>
       </Field>
-      <span aria-hidden className="mx-4 h-px bg-line md:mx-0 md:h-10 md:w-px" />
+      <span aria-hidden className="mx-5 h-px bg-line md:mx-0 md:h-8 md:w-px" />
       <Field icon={<LayoutGrid />} label="Loại phòng" htmlFor={`${id}-type`} select>
         <select id={`${id}-type`} value={type} onChange={(e) => setType(e.target.value)} className={cn(control, !type && "text-muted")}>
           <option value="">Studio, phòng đơn…</option>
@@ -85,13 +89,15 @@ export function HeroSearch({ className }: { className?: string }) {
           ))}
         </select>
       </Field>
-      <button
-        type="submit"
-        className="m-1 inline-flex h-14 shrink-0 items-center justify-center gap-2 rounded-[14px] bg-primary px-7 text-base font-semibold text-on-primary transition-colors hover:bg-primary-hover md:h-[60px]"
-      >
-        <Search aria-hidden className="size-5" />
-        Tìm phòng
-      </button>
+      <Magnetic className="m-1 shrink-0 max-md:w-full">
+        <button
+          type="submit"
+          className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary px-8 text-base font-semibold text-on-primary hover:bg-primary-hover md:h-[60px]"
+        >
+          <Search aria-hidden className="size-5" />
+          Tìm phòng
+        </button>
+      </Magnetic>
     </form>
   );
 }
