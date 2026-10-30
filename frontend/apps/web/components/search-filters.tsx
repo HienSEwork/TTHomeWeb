@@ -35,7 +35,7 @@ function useNavigate() {
 }
 
 /** Quick toggles, the full filter dialog and the sort order. */
-export function SearchToolbar({ filters }: { filters: SearchFilters }) {
+export function SearchToolbar({ filters, live = false }: { filters: SearchFilters; live?: boolean }) {
   const { go, pending } = useNavigate();
   const { t } = useI18n();
   const dialog = useRef<HTMLDialogElement>(null);
@@ -83,18 +83,18 @@ export function SearchToolbar({ filters }: { filters: SearchFilters }) {
           if (e.target === e.currentTarget) e.currentTarget.close();
         }}
       >
-        <FilterForm key={toSearchQuery(filters)} filters={filters} onApply={(f) => { dialog.current?.close(); go(f); }} onClose={() => dialog.current?.close()} />
+        <FilterForm key={toSearchQuery(filters)} filters={filters} live={live} onApply={(f) => { dialog.current?.close(); go(f); }} onClose={() => dialog.current?.close()} />
       </dialog>
     </div>
   );
 }
 
-function FilterForm({ filters, onApply, onClose }: { filters: SearchFilters; onApply: (f: SearchFilters) => void; onClose: () => void }) {
+function FilterForm({ filters, live, onApply, onClose }: { filters: SearchFilters; live: boolean; onApply: (f: SearchFilters) => void; onClose: () => void }) {
   const { t } = useI18n();
   const [draft, setDraft] = useState<SearchFilters>(filters);
   const set = (patch: Partial<SearchFilters>) => setDraft((d) => ({ ...d, ...patch }));
-  const results = useMemo(() => searchProjects(draft), [draft]);
-  const rooms = results.reduce((n, r) => n + r.rooms.length, 0);
+  // The live count would need a request per change, so with the real search the button only applies the filters.
+  const rooms = useMemo(() => (live ? null : searchProjects(draft).reduce((n, r) => n + r.rooms.length, 0)), [draft, live]);
   const district = DISTRICTS.find((d) => d.slug === draft.district);
 
   const toggleIn = <T,>(list: T[] | undefined, value: T, on: boolean) => {
@@ -268,7 +268,7 @@ function FilterForm({ filters, onApply, onClose }: { filters: SearchFilters; onA
           {t.filters.clear}
         </Button>
         <Button className={cn("flex-1")} onClick={() => onApply(draft)} disabled={rooms === 0}>
-          {rooms === 0 ? t.filters.noMatch : t.filters.show(rooms)}
+          {rooms === null ? t.filters.showResults : rooms === 0 ? t.filters.noMatch : t.filters.show(rooms)}
         </Button>
       </div>
     </>

@@ -176,6 +176,8 @@ export const en: Dictionary = {
     save: "Save search",
     emptyTitle: "No vacant rooms match these filters yet",
     emptyText: "Try a wider price range, fewer amenities, or tell us what you need and we will call when a room fits.",
+    liveDownTitle: "The search service is not reachable",
+    liveDownText: "Check that search-service is running and SEARCH_API_URL is right, then reload the page.",
     mapRegion: "Map",
   },
   filters: {
@@ -203,6 +205,7 @@ export const en: Dictionary = {
     features: "Policies and features",
     clear: "Clear filters",
     noMatch: "No matching rooms",
+    showResults: "Show results",
     show: (n) => `Show ${rooms(n)}`,
   },
   map: {

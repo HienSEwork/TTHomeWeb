@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Bookmark } from "lucide-react";
-import { DISTRICTS, findLandmark, searchProjects } from "@tthome/data";
+import { DISTRICTS, findLandmark, searchProjects, type ProjectMatch } from "@tthome/data";
 import { EmptyState, buttonStyles } from "@tthome/ui";
 import { AreaFilterBanner } from "@/components/area-filter-banner";
 import { MapLinkedCard } from "@/components/map-linked-card";
@@ -14,6 +14,8 @@ import { SearchToolbar } from "@/components/search-filters";
 import type { Dictionary } from "@/lib/i18n";
 import { getServerI18n } from "@/lib/i18n/server";
 import { toApproxMapPins, toMapLandmarks } from "@/lib/map-pins";
+import { liveSearchEnabled } from "@/lib/search-api";
+import { searchLive } from "@/lib/search-live";
 import { activeFilterCount, parseSearchParams, toSearchQuery } from "@/lib/search-params";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -45,7 +47,14 @@ export default async function SearchPage({ searchParams }: Props) {
   const params = await searchParams;
   const filters = parseSearchParams(params);
   const { lang, t } = await getServerI18n();
-  const results = searchProjects(filters);
+  const live = liveSearchEnabled();
+  let results: ProjectMatch[] = [];
+  let failed = false;
+  try {
+    results = live ? await searchLive(filters) : searchProjects(filters);
+  } catch {
+    failed = true;
+  }
   const roomCount = results.reduce((n, r) => n + r.rooms.length, 0);
   const page = pageFrom(params.trang, results.length);
   const shown = results.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -72,10 +81,12 @@ export default async function SearchPage({ searchParams }: Props) {
         </div>
 
         <div className="sticky top-16 z-20 -mx-4 mt-4 border-b border-line bg-wash/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
-          <SearchToolbar filters={filters} />
+          <SearchToolbar filters={filters} live={live} />
         </div>
 
-        {results.length === 0 ? (
+        {failed ? (
+          <EmptyState className="mt-8" title={t.search.liveDownTitle} description={t.search.liveDownText} />
+        ) : results.length === 0 ? (
           <EmptyState
             className="mt-8"
             title={t.search.emptyTitle}

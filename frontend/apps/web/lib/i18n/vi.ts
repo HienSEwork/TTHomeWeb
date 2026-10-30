@@ -178,6 +178,8 @@ export const vi = {
     save: "Lưu tìm kiếm",
     emptyTitle: "Chưa có phòng trống khớp bộ lọc này",
     emptyText: "Thử nới khoảng giá, bỏ bớt tiện nghi hoặc để lại nhu cầu, nhân viên sẽ gọi khi có phòng phù hợp.",
+    liveDownTitle: "Chưa kết nối được dịch vụ tìm kiếm",
+    liveDownText: "Kiểm tra search-service đã chạy và SEARCH_API_URL đúng, rồi tải lại trang.",
     mapRegion: "Bản đồ",
   },
   filters: {
@@ -205,6 +207,7 @@ export const vi = {
     features: "Chính sách và đặc điểm",
     clear: "Xóa bộ lọc",
     noMatch: "Không có phòng phù hợp",
+    showResults: "Xem kết quả",
     show: (n: number) => `Xem ${n} phòng`,
   },
   map: {
