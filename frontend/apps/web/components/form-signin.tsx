@@ -3,24 +3,36 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { checkDemoCredentials, checkDemoPhone } from "@tthome/data";
 import { Button, TextField, cn } from "@tthome/ui";
-import { isEmail, isOtp, isVnPhone, normalizePhone, passwordProblem } from "@/lib/validation";
+import { safeNext, startDemoSession } from "@/lib/demo-session";
+import { isEmail, isOtp, isVnPhone, normalizePhone } from "@/lib/validation";
 
 type Tab = "phone" | "email";
 type EmailMode = "signin" | "register" | "forgot";
 
 const RESEND_SECONDS = 60;
 
+/** Opens the page the visitor wanted before signing in, or the profile. */
+function useSignedIn() {
+  const router = useRouter();
+  return (email: string) => {
+    startDemoSession(email);
+    router.replace(safeNext(new URLSearchParams(window.location.search).get("next")));
+    router.refresh();
+  };
+}
+
 export function SignInForm() {
-  const [tab, setTab] = useState<Tab>("phone");
+  const [tab, setTab] = useState<Tab>("email");
   return (
     <div className="rounded-card border border-line bg-surface p-5 sm:p-8">
       <div role="tablist" aria-label="Cách đăng nhập" className="grid grid-cols-2 gap-1 rounded-xl bg-wash p-1">
-        <TabButton active={tab === "phone"} onClick={() => setTab("phone")} id="phone">
-          Số điện thoại
-        </TabButton>
         <TabButton active={tab === "email"} onClick={() => setTab("email")} id="email">
           Email và mật khẩu
+        </TabButton>
+        <TabButton active={tab === "phone"} onClick={() => setTab("phone")} id="phone">
+          Số điện thoại
         </TabButton>
       </div>
       <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} className="mt-6">
@@ -47,7 +59,7 @@ function TabButton({ active, onClick, id, children }: { active: boolean; onClick
 }
 
 function PhoneOtp() {
-  const router = useRouter();
+  const signedIn = useSignedIn();
   const [step, setStep] = useState<"phone" | "code">("phone");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
@@ -77,7 +89,12 @@ function PhoneOtp() {
       setError("Mã gồm 6 chữ số trong tin nhắn Zalo hoặc SMS");
       return;
     }
-    router.push("/tai-khoan/ho-so");
+    const account = checkDemoPhone(normalizePhone(phone), code);
+    if (!account) {
+      setError("Mã xác nhận không đúng hoặc số điện thoại chưa có tài khoản demo");
+      return;
+    }
+    signedIn(account.email);
   }
 
   if (step === "phone") {
@@ -130,23 +147,27 @@ function PhoneOtp() {
 }
 
 function EmailPassword() {
-  const router = useRouter();
+  const signedIn = useSignedIn();
   const [mode, setMode] = useState<EmailMode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [failure, setFailure] = useState<string>();
   const [sentReset, setSentReset] = useState(false);
 
   function submit(e: FormEvent) {
     e.preventDefault();
     const next: typeof errors = {};
     if (!isEmail(email)) next.email = "Email chưa đúng định dạng";
-    if (mode === "register") next.password = passwordProblem(password);
-    if (mode === "signin" && !password) next.password = "Nhập mật khẩu";
+    if (mode !== "forgot" && !password) next.password = "Nhập mật khẩu";
     setErrors(next);
+    setFailure(undefined);
     if (next.email || next.password) return;
-    if (mode === "forgot") setSentReset(true);
-    else router.push("/tai-khoan/ho-so");
+    if (mode === "forgot") return setSentReset(true);
+    if (mode === "register") return setFailure("Bản demo không tạo tài khoản mới. Hãy đăng nhập bằng tài khoản demo ở bên dưới.");
+    const account = checkDemoCredentials("user", email, password);
+    if (!account) return setFailure("Email hoặc mật khẩu không đúng. Kiểm tra lại tài khoản demo ở bên dưới.");
+    signedIn(account.email);
   }
 
   if (mode === "forgot" && sentReset) {
@@ -184,6 +205,11 @@ function EmailPassword() {
           <input type="checkbox" defaultChecked className="size-4 accent-shutter" />
           Ghi nhớ đăng nhập trên thiết bị này
         </label>
+      ) : null}
+      {failure ? (
+        <p role="alert" className="rounded-lg bg-danger-tint px-3 py-2 text-sm font-medium text-danger">
+          {failure}
+        </p>
       ) : null}
       <Button type="submit" size="lg">
         {submitLabel}

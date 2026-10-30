@@ -2,16 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { LayoutDashboard, Menu, Phone, X } from "lucide-react";
 import { SITE } from "@tthome/data";
 import { buttonStyles, cn } from "@tthome/ui";
+import { hasDemoSession } from "@/lib/demo-session";
 import { MAIN_NAV, isActive } from "@/lib/nav";
 import { BrandLockup } from "./brand-logo";
 import { Magnetic } from "./magnetic";
 
 /** The admin app. Served under /admin in production; set NEXT_PUBLIC_ADMIN_URL when it runs on another port locally. */
 const ADMIN_URL = process.env.NEXT_PUBLIC_ADMIN_URL ?? "/admin";
+
+const noSubscription = () => () => {};
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -21,6 +24,9 @@ export function SiteHeader() {
   const setOpen = (next: boolean) => setOpenOn(next ? pathname : null);
   const toggle = useRef<HTMLButtonElement>(null);
   const [scrolled, setScrolled] = useState(false);
+  // The demo session lives in a cookie: read on every render in the browser, never on the server.
+  const signedIn = useSyncExternalStore(noSubscription, hasDemoSession, () => false);
+  const account = signedIn ? { href: "/tai-khoan/ho-so", label: "Tài khoản" } : { href: "/dang-nhap", label: "Đăng nhập" };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -86,8 +92,8 @@ export function SiteHeader() {
           <a href={ADMIN_URL} className="rounded-lg p-2 text-muted transition-colors hover:bg-ivory hover:text-gold-ink max-sm:hidden" aria-label="Trang quản trị" title="Trang quản trị">
             <LayoutDashboard aria-hidden className="size-5" />
           </a>
-          <Link href="/dang-nhap" className="px-2 py-2 text-[0.9375rem] font-semibold text-ink-soft transition-colors hover:text-gold-ink max-sm:hidden">
-            Đăng nhập
+          <Link href={account.href} className="px-2 py-2 text-[0.9375rem] font-semibold text-ink-soft transition-colors hover:text-gold-ink max-sm:hidden">
+            {account.label}
           </Link>
           <Magnetic strength={0.2} className="max-sm:hidden">
             <Link href="/ky-gui" className={buttonStyles({ size: "md", className: "rounded-full px-5 shadow-[var(--shadow-soft)]" })}>
@@ -128,8 +134,8 @@ export function SiteHeader() {
             <Link href="/ky-gui" onClick={() => setOpen(false)} className={buttonStyles({ size: "lg", className: "w-full" })}>
               Ký gửi phòng
             </Link>
-            <Link href="/dang-nhap" onClick={() => setOpen(false)} className={buttonStyles({ variant: "secondary", size: "lg", className: "w-full" })}>
-              Đăng nhập
+            <Link href={account.href} onClick={() => setOpen(false)} className={buttonStyles({ variant: "secondary", size: "lg", className: "w-full" })}>
+              {account.label}
             </Link>
             <a href={SITE.hotlineHref} className={buttonStyles({ variant: "ghost", size: "lg", className: "w-full" })}>
               <Phone aria-hidden />

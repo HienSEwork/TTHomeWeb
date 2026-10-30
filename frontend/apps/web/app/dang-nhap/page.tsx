@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { DEMO_ACCOUNTS, DEMO_OTP } from "@tthome/data";
 import { Container } from "@tthome/ui";
 import { BrandLogo } from "@/components/brand-logo";
 import { SignInForm } from "@/components/form-signin";
@@ -30,7 +31,19 @@ export default function SignInPage() {
           <BrandLogo variant="mark" height={56} />
           <h1 className="mt-5 text-2xl font-bold tracking-tight text-ink">Đăng nhập hoặc tạo tài khoản</h1>
           <p className="mt-2 text-muted">Lưu phòng bạn thích, nhận báo khi giá đổi và theo dõi lịch xem phòng.</p>
-          <div className="mt-8">
+          <aside aria-label="Tài khoản demo" className="mt-6 rounded-xl border border-dashed border-line-strong bg-ivory px-4 py-3 text-sm text-ink-soft">
+            <p className="font-semibold text-ink">Tài khoản demo (người thuê)</p>
+            <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">
+              <dt className="text-muted">Email</dt>
+              <dd className="font-mono text-ink">{DEMO_ACCOUNTS.user.email}</dd>
+              <dt className="text-muted">Mật khẩu</dt>
+              <dd className="font-mono text-ink">{DEMO_ACCOUNTS.user.password}</dd>
+            </dl>
+            <p className="mt-1.5 text-xs text-muted">
+              Hoặc số {DEMO_ACCOUNTS.user.phone} với mã {DEMO_OTP}. Bản demo chạy bằng dữ liệu mẫu, không gửi tin nhắn thật.
+            </p>
+          </aside>
+          <div className="mt-6">
             <SignInForm />
           </div>
 

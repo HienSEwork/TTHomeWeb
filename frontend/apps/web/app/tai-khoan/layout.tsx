@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Container } from "@tthome/ui";
 import { AccountNav } from "@/components/account-nav";
 import { CURRENT_USER } from "@/lib/account";
@@ -25,9 +24,10 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
             </div>
           </div>
           <AccountNav />
-          <Link href="/dang-nhap" className="hidden text-sm font-semibold text-muted hover:text-danger lg:block">
+          {/* A plain link: the sign-out route clears the cookie, so it must never be prefetched. */}
+          <a href="/dang-xuat" className="text-sm font-semibold text-muted hover:text-danger">
             Đăng xuất
-          </Link>
+          </a>
         </aside>
         <div className="min-w-0">{children}</div>
       </div>
