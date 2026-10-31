@@ -87,7 +87,8 @@ export function validateBooking(input: BookingInput, from = TODAY, m: Validation
 
 export type ConsignInput = {
   address: string;
-  district: string;
+  city: string;
+  ward: string;
   roomCount: string;
   priceFrom: string;
   roomTypes: string[];
@@ -104,13 +105,82 @@ export function validateConsign(input: ConsignInput, m: ValidationMessages = VI)
   const price = Number(input.priceFrom.replace(/\D/g, ""));
   return compact<ConsignField>({
     address: input.address.trim().length < 6 ? m.address : undefined,
-    district: input.district ? undefined : m.district,
+    city: input.city ? undefined : m.city,
+    ward: input.ward ? undefined : m.ward,
     roomCount: !Number.isInteger(rooms) || rooms < 1 || rooms > 500 ? m.roomCount : undefined,
     priceFrom: !price || price < 500_000 ? m.priceFrom : undefined,
     roomTypes: input.roomTypes.length ? undefined : m.roomTypes,
     name: nameError(input.name, m),
     phone: phoneError(input.phone, m),
     consent: input.consent ? undefined : m.consignConsent,
+  });
+}
+
+/* Asking TTHOME to find a room (the consult popup). */
+
+export const CONSULT_MAX_AREAS = 5;
+export const CONSULT_TIMES = ["morning", "afternoon", "evening", "weekend"] as const;
+export type ConsultTime = (typeof CONSULT_TIMES)[number];
+
+export type ConsultInput = {
+  name: string;
+  phone: string;
+  city: string;
+  wards: string[];
+  budget: string;
+  moveIn: string;
+  times: ConsultTime[];
+  note: string;
+  referral: string;
+  consent: boolean;
+};
+
+export type ConsultField = keyof ConsultInput;
+
+export function validateConsult(input: ConsultInput, m: ValidationMessages = VI): Errors<ConsultField> {
+  return compact<ConsultField>({
+    name: nameError(input.name, m),
+    phone: phoneError(input.phone, m),
+    wards: input.wards.length > CONSULT_MAX_AREAS ? m.tooManyAreas : undefined,
+    consent: input.consent ? undefined : m.bookingConsent,
+  });
+}
+
+/* Job application. */
+
+export const JOB_POSITIONS = ["ctv", "sales"] as const;
+export const JOB_STATUSES = ["student", "graduate", "rental", "otherField", "switching", "other"] as const;
+
+export type JobInput = {
+  position: (typeof JOB_POSITIONS)[number] | "";
+  name: string;
+  birthDate: string;
+  gender: "male" | "female" | "";
+  email: string;
+  phone: string;
+  city: string;
+  status: (typeof JOB_STATUSES)[number] | "";
+  facebook: string;
+  consent: boolean;
+};
+
+export type JobField = keyof JobInput;
+
+/** Applicants must be at least 16 on `today`. */
+export function validateJob(input: JobInput, today = TODAY, m: ValidationMessages = VI): Errors<JobField> {
+  const sixteen = `${Number(today.slice(0, 4)) - 16}${today.slice(4)}`;
+  const facebook = input.facebook.trim();
+  return compact<JobField>({
+    position: input.position ? undefined : m.position,
+    name: nameError(input.name, m),
+    birthDate: !input.birthDate ? m.birthDate : input.birthDate > sixteen ? m.birthDateAge : undefined,
+    gender: input.gender ? undefined : m.gender,
+    email: !input.email.trim() ? m.emailMissing : !isEmail(input.email) ? m.email : undefined,
+    phone: phoneError(input.phone, m),
+    city: input.city ? undefined : m.workArea,
+    status: input.status ? undefined : m.status,
+    facebook: facebook && !/^(https?:\/\/)?([\w-]+\.)?(facebook|fb)\.com\/\S+/i.test(facebook) ? m.facebook : undefined,
+    consent: input.consent ? undefined : m.jobConsent,
   });
 }
 

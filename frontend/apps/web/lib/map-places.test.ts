@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CAN_THO_MAX_BOUNDS } from "./can-tho-area";
+import { SERVICE_MAX_BOUNDS } from "./service-area";
 import { LABEL_ZOOM, MAP_PLACES, PLACE_KINDS } from "./map-places";
 
 describe("MAP_PLACES", () => {
@@ -10,7 +10,7 @@ describe("MAP_PLACES", () => {
   });
 
   it("keeps every place inside the area the map can show", () => {
-    const [w, s, e, n] = CAN_THO_MAX_BOUNDS;
+    const [w, s, e, n] = SERVICE_MAX_BOUNDS;
     for (const p of MAP_PLACES) {
       expect(p.lng).toBeGreaterThan(w);
       expect(p.lng).toBeLessThan(e);

@@ -12,7 +12,7 @@ import type { LucideIcon } from "lucide-react";
 import { GraduationCap, Hospital, Landmark, Pill, ShoppingBag, Store, X } from "lucide-react";
 import MapGL, { Layer, Marker, NavigationControl, Source, type LayerProps, type MapLayerMouseEvent, type MapRef } from "react-map-gl/maplibre";
 import { Plate, cn } from "@tthome/ui";
-import { CAN_THO_MAX_BOUNDS, CAN_THO_OUTLINE, OUTSIDE_CAN_THO } from "@/lib/can-tho-area";
+import { SERVICE_MAX_BOUNDS } from "@/lib/service-area";
 import { useI18n } from "@/lib/i18n/client";
 import { distanceMeters } from "@/lib/location-privacy";
 import { LABEL_ZOOM, MAP_PLACES, PLACE_KINDS, type PlaceKind } from "@/lib/map-places";
@@ -51,8 +51,6 @@ const AREA_RADIUS_KM = 0.7;
 /** Below this zoom the circles crowd together, so each one shows only its lowest price. */
 const TAG_ZOOM = 13.5;
 
-const maskLayer: LayerProps = { id: "outside-fill", type: "fill", paint: { "fill-color": "#FBF9F5", "fill-opacity": 0.88 } };
-const borderLayer: LayerProps = { id: "city-border", type: "line", paint: { "line-color": "#C58635", "line-width": 1.5, "line-opacity": 0.6 } };
 
 /**
  * Every building's area as a circle that is never smaller than ~16 px on screen and matches the real
@@ -141,7 +139,7 @@ function boundsOf(points: { lat: number; lng: number }[]): [[number, number], [n
 }
 
 /**
- * Search results on a real map of Cần Thơ. Every building is a shaded area instead of a pin, so the map never
+ * Search results on a real map of TP.HCM and Cần Thơ. Every building is a shaded area instead of a pin, so the map never
  * points at a landlord's address. Choosing an area, its price tag or "Xem vùng" on a card flies the map to it.
  */
 /** A square `km` across around a point, as map bounds. */
@@ -254,8 +252,8 @@ export default function SearchMap({ pins, landmarks = [], className, focus }: Pr
         initialViewState={{ bounds: initialBounds, fitBoundsOptions: focus ? { padding: 0 } : { padding: 48, maxZoom: 14 } }}
         cooperativeGestures={Boolean(focus)}
         mapStyle={view === "streets" ? STREETS : satelliteStyle}
-        maxBounds={CAN_THO_MAX_BOUNDS}
-        minZoom={10}
+        maxBounds={SERVICE_MAX_BOUNDS}
+        minZoom={8}
         maxZoom={18}
         dragRotate={false}
         touchPitch={false}
@@ -276,12 +274,6 @@ export default function SearchMap({ pins, landmarks = [], className, focus }: Pr
       >
         <NavigationControl position="bottom-right" showCompass={false} />
 
-        <Source id="outside" type="geojson" data={OUTSIDE_CAN_THO}>
-          <Layer {...maskLayer} />
-        </Source>
-        <Source id="border" type="geojson" data={{ type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: CAN_THO_OUTLINE } }}>
-          <Layer {...borderLayer} />
-        </Source>
         {focus ? null : (
           <Source id="dots" type="geojson" data={dots}>
             <Layer {...areaDots} />

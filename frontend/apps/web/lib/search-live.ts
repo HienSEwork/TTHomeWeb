@@ -1,35 +1,14 @@
-import { DISTRICTS, LANDMARKS, TODAY, type PetPolicy, type Project, type ProjectMatch, type Room, type RoomType, type SearchFilters } from "@tthome/data";
-import { CITY_BOUNDS } from "./map-projection";
+import { LANDMARKS, TODAY, type PetPolicy, type Project, type ProjectMatch, type Room, type RoomType, type SearchFilters } from "@tthome/data";
 import { nearbyRooms, searchRooms, type ApiListing, type ApiNearby } from "./search-api";
 
 /*
- * Ids below mirror db/seed_sample_listings.sql of the main repo: inventory.admin_unit for TP. Cần Thơ and the
- * amenity ids of inventory.amenity. A district or ward the database does not hold has no id.
+ * Amenity ids mirror inventory.amenity in db/seed_sample_listings.sql of the main repo. That seed still uses the
+ * pre-2025 districts and wards, so the post-merger ward filter has no ids to send and the city is matched by area.
  */
-const DISTRICT_ID: Record<string, number> = { "ninh-kieu": 916, "binh-thuy": 917, "cai-rang": 918 };
-const WARD_ID: Record<string, number> = {
-  "tan-an": 31141,
-  "an-hoa": 31144,
-  "xuan-khanh": 31147,
-  "hung-loi": 31148,
-  "an-khanh": 31149,
-  "an-thoi": 31162,
-  "le-binh": 31171,
-  "hung-thanh": 31174,
-};
-const AMENITY_ID: Record<string, number> = { aircon: 1, elevator: 2, washer: 3, fingerprint: 6, private_wc: 10, fridge: 11, free_hours: 9, security: 12 };
+const AMENITY_ID: Record<string, number> = { aircon: 1, elevator: 2, washer: 3, fingerprint: 6, fridge: 11, free_hours: 9, security: 12 };
 const AMENITY_CODE = new Map(Object.entries(AMENITY_ID).map(([code, id]) => [id, code]));
 
 const SORT: Record<string, string> = { popular: "POPULAR", newest: "NEWEST", price_asc: "PRICE_ASC", price_desc: "PRICE_DESC" };
-
-export function districtId(slug: string): number | undefined {
-  return DISTRICT_ID[slug];
-}
-
-export function wardId(districtSlug: string, wardSlug: string): number | undefined {
-  const inDistrict = DISTRICTS.find((d) => d.slug === districtSlug)?.wards.some((w) => w.slug === wardSlug);
-  return inDistrict ? WARD_ID[wardSlug] : undefined;
-}
 
 /** The shared part of /search and /nearby, in API names. */
 function commonParams(f: SearchFilters) {
@@ -49,8 +28,6 @@ export function toSearchParams(f: SearchFilters): Record<string, string | number
   return {
     ...commonParams(f),
     q: f.q,
-    district_id: f.district ? districtId(f.district) : undefined,
-    ward_id: f.district && f.ward ? wardId(f.district, f.ward) : undefined,
     furniture: f.furniture,
     balcony: f.balcony || undefined,
     window: f.window || undefined,
@@ -99,7 +76,7 @@ export function toProjectMatches(items: ApiListing[], distances = new Map<string
       name: first.project_name,
       street: first.address ?? "",
       wardSlug: "",
-      districtSlug: "",
+      citySlug: "",
       lat: first.lat ?? 0,
       lng: first.lng ?? 0,
       images: first.cover_url ? [first.cover_url] : [],
@@ -123,22 +100,26 @@ export function toProjectMatches(items: ApiListing[], distances = new Map<string
   });
 }
 
-// The database also holds the TP.HCM demo rows and search has no city filter, so rows outside Cần Thơ are dropped here.
-const inCity = (i: ApiListing) =>
-  i.lat != null && i.lng != null && i.lat >= CITY_BOUNDS.south && i.lat <= CITY_BOUNDS.north && i.lng >= CITY_BOUNDS.west && i.lng <= CITY_BOUNDS.east;
+/** Rooms inside the chosen city: TP.HCM lies north-east of 10.3° N, 106.3° E, TP. Cần Thơ south-west of it. */
+const inCity = (city: string | undefined) => (i: ApiListing) => {
+  if (!city) return true;
+  if (i.lat == null || i.lng == null) return false;
+  const hcm = i.lat > 10.3 && i.lng > 106.3;
+  return city === "ho-chi-minh" ? hcm : !hcm;
+};
 
 /** Project cards for a search. A landmark switches to /nearby, which supports fewer filters but returns distances. */
 export async function searchLive(f: SearchFilters): Promise<ProjectMatch[]> {
-  // A place the database has no id for holds no rooms; sending no id would search the whole city instead.
-  if (f.district && (districtId(f.district) === undefined || (f.ward && wardId(f.district, f.ward) === undefined))) return [];
+  // The database has no ids for the new wards; sending none would search the whole city instead.
+  if (f.ward) return [];
   const landmark = f.landmark ? LANDMARKS.find((l) => l.slug === f.landmark) : undefined;
   let matches: ProjectMatch[];
   if (landmark) {
     const res: ApiNearby = await nearbyRooms({ ...commonParams(f), lat: landmark.lat, lng: landmark.lng, radius_m: (f.radius ?? 3) * 1000, limit: 50 });
     const distances = new Map(res.items.map((n) => [n.room.room_id, n.distance_km]));
-    matches = toProjectMatches(res.items.map((n) => n.room).filter(inCity), distances);
+    matches = toProjectMatches(res.items.map((n) => n.room).filter(inCity(f.city)), distances);
   } else {
-    matches = toProjectMatches((await searchRooms(toSearchParams(f))).items.filter(inCity));
+    matches = toProjectMatches((await searchRooms(toSearchParams(f))).items.filter(inCity(f.city)));
   }
   return f.sort === "nearest" || (landmark && !f.sort) ? matches.sort((a, b) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity)) : matches;
 }

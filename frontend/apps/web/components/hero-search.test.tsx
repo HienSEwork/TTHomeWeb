@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { DISTRICTS } from "@tthome/data";
+import { CITIES } from "@tthome/data";
 import { LangProvider } from "@/lib/i18n/client";
 import { HeroSearch } from "./hero-search";
 
@@ -10,33 +10,38 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 const renderHero = () =>
   render(
     <LangProvider lang="vi">
-      <HeroSearch vacantByDistrict={{ "ninh-kieu": 12 }} />
+      <HeroSearch vacant={{ "ho-chi-minh": 40, "can-tho": 30, "can-tho/ninh-kieu": 12 }} />
     </LangProvider>,
   );
+
+const canTho = CITIES.find((c) => c.slug === "can-tho")!;
 
 describe("HeroSearch", () => {
   beforeEach(() => push.mockReset());
 
-  it("offers every district of Can Tho as a choice, not a text box", () => {
+  it("offers the two cities, then only the wards of the chosen one", () => {
     renderHero();
-    const area = screen.getByRole("combobox", { name: /Khu vực/ });
-    expect(area.tagName).toBe("BUTTON");
-    fireEvent.click(area);
-    const options = screen.getAllByRole("option");
-    expect(DISTRICTS).toHaveLength(9);
-    expect(options).toHaveLength(DISTRICTS.length + 1);
-    expect(options[0]).toHaveTextContent("Toàn TP. Cần Thơ");
-    expect(options[1]).toHaveTextContent("Quận Ninh Kiều");
-    expect(options[1]).toHaveTextContent("12 phòng trống");
+    fireEvent.click(screen.getByRole("combobox", { name: /Thành phố/ }));
+    const cities = screen.getAllByRole("option");
+    expect(cities.map((o) => o.textContent)).toEqual([expect.stringContaining("Cả TP.HCM và Cần Thơ"), expect.stringContaining("TP. Hồ Chí Minh"), expect.stringContaining("TP. Cần Thơ")]);
+    fireEvent.click(screen.getByRole("option", { name: /TP\. Cần Thơ/ }));
+
+    fireEvent.click(screen.getByRole("combobox", { name: /Phường, xã/ }));
+    const wards = screen.getAllByRole("option");
+    expect(wards).toHaveLength(canTho.wards.length + 1);
+    expect(wards[0]).toHaveTextContent("Toàn TP. Cần Thơ");
+    // The ward with vacant rooms comes first.
+    expect(wards[1]).toHaveTextContent("Phường Ninh Kiều");
+    expect(wards[1]).toHaveTextContent("12 phòng trống");
   });
 
-  it("searches the chosen district", () => {
+  it("searches the chosen ward and settles its city", () => {
     renderHero();
-    fireEvent.click(screen.getByRole("combobox", { name: /Khu vực/ }));
-    fireEvent.click(screen.getByRole("option", { name: /Quận Cái Răng/ }));
-    expect(screen.getByRole("combobox", { name: /Khu vực/ })).toHaveTextContent("Quận Cái Răng");
+    fireEvent.click(screen.getByRole("combobox", { name: /Phường, xã/ }));
+    fireEvent.click(screen.getByRole("option", { name: /Phường Ninh Kiều/ }));
+    expect(screen.getByRole("combobox", { name: /Thành phố/ })).toHaveTextContent("TP. Cần Thơ");
     fireEvent.click(screen.getByRole("button", { name: "Tìm phòng" }));
-    expect(push).toHaveBeenCalledWith(expect.stringContaining("district=cai-rang"));
+    expect(push).toHaveBeenCalledWith(expect.stringContaining("city=can-tho&ward=ninh-kieu"));
   });
 
   it("picks a room type with the keyboard from the styled list", () => {
@@ -47,6 +52,6 @@ describe("HeroSearch", () => {
     fireEvent.keyDown(type, { key: "ArrowDown" });
     fireEvent.keyDown(type, { key: "Enter" });
     expect(type).toHaveAttribute("aria-expanded", "false");
-    expect(type).toHaveTextContent("Studio");
+    expect(type).toHaveTextContent("Phòng trọ");
   });
 });

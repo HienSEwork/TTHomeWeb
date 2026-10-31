@@ -6,7 +6,7 @@ export const CURRENT_USER = {
   phone: DEMO_ACCOUNTS.user.phone,
   email: DEMO_ACCOUNTS.user.email,
   joinedAt: "2026-08-14",
-  wantedArea: "ninh-kieu",
+  wantedArea: "can-tho/ninh-kieu",
   budget: "2.5-3.5",
   isLandlord: true,
 };

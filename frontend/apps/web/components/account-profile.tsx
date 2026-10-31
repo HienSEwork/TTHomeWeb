@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent, type ReactNode } from "react";
-import { DISTRICTS } from "@tthome/data";
+import { CITIES } from "@tthome/data";
 import { Button, Card, SelectField, TextField } from "@tthome/ui";
 import { useI18n } from "@/lib/i18n/client";
 import { isEmail, isVnPhone, passwordProblem } from "@/lib/validation";
@@ -49,10 +49,15 @@ export function ProfileForm() {
         <TextField label={t.common.name} value={name} onChange={(e) => { setName(e.target.value); setSaved(false); }} />
         <TextField label={t.common.email} type="email" value={email} onChange={(e) => { setEmail(e.target.value); setSaved(false); }} error={error} />
         <SelectField label={t.account.wantedArea} value={area} onChange={(e) => { setArea(e.target.value); setSaved(false); }}>
-          {DISTRICTS.map((d) => (
-            <option key={d.slug} value={d.slug}>
-              {d.name}
-            </option>
+        {CITIES.map((c) => (
+            <optgroup key={c.slug} label={c.name}>
+              <option value={c.slug}>{t.hero.anyWard(c.name)}</option>
+              {c.wards.map((w) => (
+                <option key={w.slug} value={`${c.slug}/${w.slug}`}>
+                  {w.name}
+                </option>
+              ))}
+            </optgroup>
           ))}
         </SelectField>
         <SelectField label={t.account.budget} value={budget} onChange={(e) => { setBudget(e.target.value); setSaved(false); }}>

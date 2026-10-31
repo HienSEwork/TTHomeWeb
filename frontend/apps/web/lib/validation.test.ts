@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bookingDays, isEmail, isOtp, isVnPhone, normalizePhone, passwordProblem, validateBooking, validateConsign, validateContact, type BookingInput } from "./validation";
+import { bookingDays, isEmail, isOtp, isVnPhone, normalizePhone, passwordProblem, validateBooking, validateConsign, validateConsult, validateContact, validateJob, type BookingInput, type JobInput } from "./validation";
 
 describe("phone numbers", () => {
   it("accepts 10-digit Vietnamese mobiles with spaces or +84", () => {
@@ -53,8 +53,8 @@ describe("validateBooking", () => {
 
 describe("validateConsign", () => {
   it("checks numbers and room types", () => {
-    const errors = validateConsign({ address: "12 Lê Lợi", district: "ninh-kieu", roomCount: "0", priceFrom: "abc", roomTypes: [], photos: 0, name: "An", phone: "0903456512", consent: true });
-    expect(Object.keys(errors).sort()).toEqual(["priceFrom", "roomCount", "roomTypes"]);
+    const errors = validateConsign({ address: "12 Lê Lợi", city: "can-tho", ward: "", roomCount: "0", priceFrom: "abc", roomTypes: [], photos: 0, name: "An", phone: "0903456512", consent: true });
+    expect(Object.keys(errors).sort()).toEqual(["priceFrom", "roomCount", "roomTypes", "ward"]);
   });
 });
 
@@ -63,5 +63,43 @@ describe("validateContact", () => {
     const input = { name: "Minh Trí", phone: "0912345678", email: "", message: "" };
     expect(validateContact(input, false)).toEqual({});
     expect(validateContact(input).message).toBeDefined();
+  });
+});
+
+describe("validateConsult", () => {
+  const input = { name: "Minh Anh", phone: "0939456512", city: "can-tho", wards: [], budget: "", moveIn: "", times: [], note: "", referral: "", consent: true };
+
+  it("needs only a name, a phone and consent", () => {
+    expect(validateConsult(input)).toEqual({});
+    expect(Object.keys(validateConsult({ ...input, name: "", phone: "123", consent: false })).sort()).toEqual(["consent", "name", "phone"]);
+  });
+
+  it("caps the areas at five", () => {
+    expect(validateConsult({ ...input, wards: ["a", "b", "c", "d", "e", "f"] }).wards).toBeDefined();
+  });
+});
+
+describe("validateJob", () => {
+  const input: JobInput = {
+    position: "sales",
+    name: "Nguyễn Văn An",
+    birthDate: "2003-05-12",
+    gender: "male",
+    email: "an@gmail.com",
+    phone: "0939456512",
+    city: "ho-chi-minh",
+    status: "student",
+    facebook: "",
+    consent: true,
+  };
+
+  it("accepts a complete application", () => {
+    expect(validateJob(input, "2026-10-29")).toEqual({});
+  });
+
+  it("flags missing fields, applicants under 16 and odd Facebook links", () => {
+    const errors = validateJob({ ...input, position: "", email: "an@", birthDate: "2012-01-01", facebook: "myspace.com/an", consent: false }, "2026-10-29");
+    expect(Object.keys(errors).sort()).toEqual(["birthDate", "consent", "email", "facebook", "position"]);
+    expect(validateJob({ ...input, facebook: "facebook.com/nguyen.an" }, "2026-10-29")).toEqual({});
   });
 });

@@ -8,7 +8,8 @@ import { cn } from "@tthome/ui";
 const EXIT_MS = 300;
 
 /**
- * A panel that slides in from the right over a dimmed page. Rendered into <body> so no ancestor (a header
+ * A panel that slides in from the right over a dimmed page, or with `placement="center"` a dialog that rises
+ * into the middle of the screen (a full-height sheet on phones). Rendered into <body> so no ancestor (a header
  * with backdrop-filter, a transformed card) can clip it. Escape, the backdrop and the close button close it;
  * focus moves into the panel and back to `returnFocus` afterwards, and the page behind does not scroll.
  */
@@ -20,6 +21,8 @@ export function Drawer({
   returnFocus,
   children,
   className,
+  placement = "right",
+  bodyClassName,
 }: {
   open: boolean;
   onClose: () => void;
@@ -28,6 +31,8 @@ export function Drawer({
   returnFocus?: RefObject<HTMLElement | null>;
   children: ReactNode;
   className?: string;
+  placement?: "right" | "center";
+  bodyClassName?: string;
 }) {
   const titleId = useId();
   const panel = useRef<HTMLDivElement>(null);
@@ -92,8 +97,13 @@ export function Drawer({
         aria-labelledby={titleId}
         tabIndex={-1}
         className={cn(
-          "absolute inset-y-0 right-0 flex w-[min(24rem,88vw)] flex-col bg-white shadow-[-24px_0_60px_-20px_rgb(28_26_23/0.35)] outline-none transition-transform duration-300 ease-out-expo motion-reduce:transition-none",
-          shown ? "translate-x-0" : "translate-x-full",
+          "absolute flex flex-col bg-white outline-none transition-[transform,opacity] duration-300 ease-out-expo motion-reduce:transition-none",
+          placement === "right"
+            ? cn("inset-y-0 right-0 w-[min(24rem,88vw)] shadow-[-24px_0_60px_-20px_rgb(28_26_23/0.35)]", shown ? "translate-x-0" : "translate-x-full")
+            : cn(
+                "inset-0 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:max-h-[min(92vh,60rem)] sm:w-[min(64rem,calc(100vw-3rem))] sm:-translate-x-1/2 sm:rounded-[20px] sm:shadow-[0_40px_80px_-30px_rgb(28_26_23/0.45)]",
+                shown ? "translate-y-0 opacity-100 sm:-translate-y-1/2" : "translate-y-6 opacity-0 sm:-translate-y-[46%]",
+              ),
           className,
         )}
       >
@@ -105,7 +115,7 @@ export function Drawer({
             <X aria-hidden className="size-5" />
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">{children}</div>
+        <div className={cn("min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]", bodyClassName)}>{children}</div>
       </div>
     </div>,
     document.body,

@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Bookmark } from "lucide-react";
-import { DISTRICTS, findLandmark, searchProjects, type ProjectMatch } from "@tthome/data";
+import { areaStats, CITIES, findLandmark, searchProjects, type ProjectMatch } from "@tthome/data";
 import { EmptyState, buttonStyles } from "@tthome/ui";
 import { AreaFilterBanner } from "@/components/area-filter-banner";
 import { MapLinkedCard } from "@/components/map-linked-card";
 import { PAGE_SIZE, Pagination, pageFrom } from "@/components/pagination";
-import { ProjectCard } from "@/components/project-card";
 import { ResultsLayout } from "@/components/results-layout";
 import { SearchMapLazy } from "@/components/search-map-lazy";
-import { SearchBox } from "@/components/search-box";
-import { SearchToolbar } from "@/components/search-filters";
+import { RoomListingCard } from "@/components/room-listing-card";
+import { SearchToolbar, type WardCount } from "@/components/search-filters";
 import type { Dictionary } from "@/lib/i18n";
 import { getServerI18n } from "@/lib/i18n/server";
 import { toApproxMapPins, toMapLandmarks } from "@/lib/map-pins";
@@ -22,11 +21,11 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 
 function headline(f: ReturnType<typeof parseSearchParams>, t: Dictionary): string {
   const landmark = f.landmark ? findLandmark(f.landmark) : undefined;
-  const district = f.district ? DISTRICTS.find((d) => d.slug === f.district) : undefined;
-  const ward = district?.wards.find((w) => w.slug === f.ward);
+  const city = f.city ? CITIES.find((c) => c.slug === f.city) : undefined;
+  const ward = city?.wards.find((w) => w.slug === f.ward);
   if (landmark) return t.search.nearLandmark(landmark.name);
-  if (ward && district) return t.search.inWard(ward.name, district.name);
-  if (district) return t.search.inDistrict(district.name);
+  if (ward && city) return t.search.inWard(ward.name, city.name);
+  if (city) return t.search.inCity(city.name);
   if (f.q) return t.search.forQuery(f.q);
   return t.search.all;
 }
@@ -38,7 +37,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   return {
     title,
     description: t.search.metaDescription(title),
-    alternates: { canonical: `/tim-kiem${toSearchQuery({ landmark: filters.landmark, district: filters.district, ward: filters.ward })}` },
+    alternates: { canonical: `/tim-kiem${toSearchQuery({ landmark: filters.landmark, city: filters.city, ward: filters.ward })}` },
     robots: activeFilterCount(filters) > 2 || filters.q ? { index: false, follow: true } : undefined,
   };
 }
@@ -63,25 +62,20 @@ export default async function SearchPage({ searchParams }: Props) {
   // Well-known places are drawn by the map itself; a landmark only shows when the search is near it.
   const landmarks = filters.landmark ? toMapLandmarks([filters.landmark]) : [];
 
-  const list = (
-      <div className="min-w-0 px-4 pt-6 pb-28 sm:px-6 lg:pb-12 xl:pl-[max(1.5rem,calc((100vw-1240px)/2+1.5rem))]">
-        <SearchBox defaultValue={filters.q ?? ""} size="md" className="max-w-2xl" />
+  const wards = wardCounts(filters, live);
 
-        <div className="mt-6 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-ink sm:text-[1.75rem]">{headline(filters, t)}</h1>
-            <p className="mt-1 text-sm text-muted" aria-live="polite">
-              {t.search.summary(roomCount, results.length)}
-            </p>
-          </div>
-          <Link href={`/dang-nhap?next=${encodeURIComponent(`/tim-kiem${toSearchQuery(filters)}`)}`} className={buttonStyles({ variant: "secondary", size: "sm" })}>
+  const list = (
+      <div className="@container mx-auto min-w-0 max-w-[1320px] px-4 pt-6 pb-28 sm:px-6 lg:pb-12">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h1 className="text-2xl font-extrabold tracking-tight text-ink sm:text-[1.75rem]">{headline(filters, t)}</h1>
+          <Link href={`/dang-nhap?next=${encodeURIComponent(`/tim-kiem${toSearchQuery(filters)}`)}`} className={buttonStyles({ variant: "ghost", size: "sm" })}>
             <Bookmark aria-hidden />
             {t.search.save}
           </Link>
         </div>
 
-        <div className="sticky top-16 z-20 -mx-4 mt-4 border-b border-line bg-wash/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
-          <SearchToolbar filters={filters} live={live} />
+        <div className="mt-4 rounded-card border border-line bg-white p-3 shadow-[var(--shadow-soft)] sm:p-4">
+          <SearchToolbar filters={filters} live={live} wards={wards} total={{ buildings: results.length, rooms: roomCount }} />
         </div>
 
         {failed ? (
@@ -105,11 +99,12 @@ export default async function SearchPage({ searchParams }: Props) {
         ) : (
           <>
           <AreaFilterBanner />
-          <ul className="mt-6 grid gap-5 sm:grid-cols-2">
+          {/* Five across like the home page when the list has the full width, fewer as the map takes room. */}
+          <ul className="mt-6 grid grid-cols-1 gap-4 @xl:grid-cols-2 @3xl:grid-cols-3 @5xl:grid-cols-4 @6xl:grid-cols-5">
             {shown.map((m, i) => (
               <li key={m.project.id} className="flex empty:hidden">
                 <MapLinkedCard id={m.project.id} name={m.project.name}>
-                  <ProjectCard match={m} priority={i < 2} className="w-full" lang={lang} />
+                  <RoomListingCard listing={{ room: cheapest(m), project: m.project }} otherRooms={m.rooms.length - 1} priority={i < 5} className="h-full w-full" lang={lang} />
                 </MapLinkedCard>
               </li>
             ))}
@@ -120,5 +115,33 @@ export default async function SearchPage({ searchParams }: Props) {
       </div>
   );
 
-  return <ResultsLayout list={list} map={<SearchMapLazy pins={pins} landmarks={landmarks} className="size-full" />} />;
+  return <ResultsLayout list={list} initialMap="hidden" map={<SearchMapLazy pins={pins} landmarks={landmarks} className="size-full" />} />;
+}
+
+/** The room a building's card shows: the cheapest one matching the search. */
+function cheapest(m: ProjectMatch) {
+  return m.rooms.reduce((a, b) => (b.price < a.price ? b : a));
+}
+
+/**
+ * Rooms matching the search in each ward, ignoring the ward filter itself, so the chips show where else to look.
+ * With the live search the counts would need another request, so the vacant rooms per ward are shown instead.
+ */
+function wardCounts(filters: ReturnType<typeof parseSearchParams>, live: boolean): WardCount[] {
+  const inCity = (slug: string) => !filters.city || slug === filters.city;
+  if (live) {
+    return areaStats()
+      .filter((s) => inCity(s.city.slug) && s.vacant > 0)
+      .map((s) => ({ city: s.city.slug, ward: s.ward.slug, name: s.ward.name, rooms: s.vacant }));
+  }
+  const counts = new Map<string, WardCount>();
+  for (const m of searchProjects({ ...filters, ward: undefined })) {
+    const key = `${m.project.citySlug}/${m.project.wardSlug}`;
+    const ward = CITIES.find((c) => c.slug === m.project.citySlug)?.wards.find((w) => w.slug === m.project.wardSlug);
+    if (!ward) continue;
+    const entry = counts.get(key) ?? { city: m.project.citySlug, ward: ward.slug, name: ward.name, rooms: 0 };
+    entry.rooms += m.rooms.length;
+    counts.set(key, entry);
+  }
+  return [...counts.values()].sort((a, b) => b.rooms - a.rooms);
 }

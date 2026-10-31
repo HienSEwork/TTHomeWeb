@@ -15,7 +15,7 @@ describe("ProjectCard", () => {
     expect(screen.getByText(String(match.rooms.length))).toBeInTheDocument();
     expect(screen.getByText(/^Từ /)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: match.project.name })).toHaveAttribute("href", `/du-an/${match.project.slug}`);
-    expect(screen.getByText("Độc quyền")).toBeInTheDocument();
+    expect(screen.getByText("TT Home chính chủ")).toBeInTheDocument();
     expect(screen.getByText(match.project.promo!)).toBeInTheDocument();
   });
 
@@ -34,9 +34,9 @@ describe("SearchBox", () => {
     const user = userEvent.setup();
     render(<SearchBox />);
     const input = screen.getByRole("combobox");
-    await user.type(input, "y duoc");
+    await user.type(input, "y duoc can tho");
     const options = await screen.findAllByRole("option");
-    expect(options[0]).toHaveTextContent("Gần Y Dược");
+    expect(options[0]).toHaveTextContent("Gần ĐH Y Dược CT");
     await user.keyboard("{ArrowDown}{Enter}");
     expect(push).toHaveBeenCalledWith("/tim-kiem?landmark=y-duoc-can-tho");
   });

@@ -1,3 +1,5 @@
+import { LANDMARKS, type LandmarkKind } from "@tthome/data";
+
 /** Well-known places shown on the search map so visitors can judge where an area is. */
 export type PlaceKind = "school" | "hospital" | "shopping" | "store" | "pharmacy" | "landmark";
 
@@ -7,7 +9,7 @@ export type MapPlace = { name: string; kind: PlaceKind; lat: number; lng: number
  * Positions come from OpenStreetMap (checked October 2026) and are kept here for the demo; names are written out
  * in full. Chains list a few real branches near the listed buildings, named by their street.
  */
-export const MAP_PLACES: MapPlace[] = [
+const HAND_PICKED: MapPlace[] = [
   { kind: "school", name: "Trường Đại học Cần Thơ", lat: 10.0322, lng: 105.7683 },
   { kind: "school", name: "Trường Đại học Y Dược Cần Thơ", lat: 10.036, lng: 105.7522 },
   { kind: "school", name: "Trường Đại học FPT Cần Thơ", lat: 10.0126, lng: 105.7326 },
@@ -44,6 +46,28 @@ export const MAP_PLACES: MapPlace[] = [
   { kind: "landmark", name: "Cầu Cần Thơ", lat: 10.0329, lng: 105.8102 },
   { kind: "landmark", name: "Cảng Hàng không Quốc tế Cần Thơ", lat: 10.0829, lng: 105.7121 },
   { kind: "landmark", name: "Bến xe Trung tâm Cần Thơ", lat: 10.0052, lng: 105.7723 },
+];
+
+const KIND_OF: Record<LandmarkKind, PlaceKind> = {
+  university: "school",
+  college: "school",
+  vocational: "school",
+  hospital: "hospital",
+  market: "shopping",
+  mall: "shopping",
+  industrial: "landmark",
+  other: "landmark",
+};
+
+/** The hand-picked places plus every school, hospital and market the search can look near, in both cities. */
+export const MAP_PLACES: MapPlace[] = [
+  ...HAND_PICKED,
+  ...LANDMARKS.filter((l) => !HAND_PICKED.some((p) => p.name === l.name || (Math.abs(p.lat - l.lat) < 0.002 && Math.abs(p.lng - l.lng) < 0.002))).map((l) => ({
+    kind: KIND_OF[l.kind],
+    name: l.name,
+    lat: l.lat,
+    lng: l.lng,
+  })),
 ];
 
 export const PLACE_KINDS: PlaceKind[] = ["school", "hospital", "shopping", "store", "pharmacy", "landmark"];

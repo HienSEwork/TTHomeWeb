@@ -54,7 +54,7 @@ describe("components in English", () => {
       </LangProvider>,
     );
     expect(screen.getByText(/^From .*M VND$/)).toBeInTheDocument();
-    expect(screen.getByText("Exclusive")).toBeInTheDocument();
+    expect(screen.getByText("Direct from TT Home")).toBeInTheDocument();
     expect(screen.getByText("50% off the first month")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: `Save ${project.name}` })).toBeInTheDocument();
   });

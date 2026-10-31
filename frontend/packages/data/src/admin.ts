@@ -185,7 +185,7 @@ export type Customer = {
 
 const SOURCES: CustomerSource[] = ["web", "web", "zalo", "facebook", "hotline", "ctv", "web", "tiktok", "meey"];
 const STAGES: CustomerStage[] = ["new", "contacted", "viewing", "viewing", "deposited", "rented", "lost", "new", "contacted"];
-const AREAS = ["Xuân Khánh, gần ĐH Cần Thơ", "Cái Răng", "Tân An hoặc An Cư", "Bình Thủy", "An Khánh, gần Y Dược", "Hưng Lợi", "Cái Khế", "An Bình, gần FPT"];
+const AREAS = ["Phường Ninh Kiều, gần ĐH Cần Thơ", "Phường Bến Thành, TP.HCM", "Phường Cái Răng", "Phường Gia Định, gần Văn Lang", "Phường Tân An, gần Y Dược", "Phường Đông Hòa, Làng Đại học", "Phường Cái Khế", "Phường Gò Vấp, TP.HCM"];
 
 export const CUSTOMERS: Customer[] = NAMES.map((name, i) => ({
   id: `kh-${1000 + i}`,
@@ -234,6 +234,7 @@ export type Submission = {
   landlord: string;
   phone: string;
   address: string;
+  /** The city, on the post-2025 map; the ward is part of the address. */
   district: string;
   roomCount: number;
   priceFrom: number;
@@ -247,17 +248,17 @@ export type Submission = {
 
 export const SUBMISSIONS: Submission[] = [
   {
-    code: "KG01284", landlord: "Nguyễn Văn Phước", phone: phone(81), address: "62/4 Nguyễn Trãi, Phường Tân An", district: "Quận Ninh Kiều",
+    code: "KG01284", landlord: "Nguyễn Văn Phước", phone: phone(81), address: "62/4 Nguyễn Trãi, Phường Ninh Kiều", district: "TP. Cần Thơ",
     roomCount: 6, priceFrom: 6_500_000, roomTypes: "Studio, 1 phòng ngủ", photos: 14, status: "submitted", submittedAt: at(0, 9, 12),
     note: "Tòa mới xây xong, có thang máy.", log: [{ at: at(0, 9, 12), by: "Chủ nhà", text: "Gửi ký gửi qua website." }],
   },
   {
-    code: "KG01283", landlord: "Trần Thị Bích", phone: phone(82), address: "15 Đường số 3, KDC Hồng Loan, Phường Hưng Thạnh", district: "Quận Cái Răng",
+    code: "KG01283", landlord: "Trần Thị Bích", phone: phone(82), address: "15 Đường số 3, KDC Hồng Loan, Phường Cái Răng", district: "TP. Cần Thơ",
     roomCount: 4, priceFrom: 4_200_000, roomTypes: "Phòng trọ", photos: 6, status: "submitted", submittedAt: at(-1, 16, 40),
     note: "", log: [{ at: at(-1, 16, 40), by: "Chủ nhà", text: "Gửi ký gửi qua website." }],
   },
   {
-    code: "KG01281", landlord: "Lê Quang Vinh", phone: phone(83), address: "88 Lê Hồng Phong, Phường Bình Thủy", district: "Quận Bình Thủy",
+    code: "KG01281", landlord: "Lê Quang Vinh", phone: phone(83), address: "88 Lê Hồng Phong, Phường Bình Thủy", district: "TP. Cần Thơ",
     roomCount: 10, priceFrom: 3_600_000, roomTypes: "Studio, phòng trọ", photos: 3, status: "need_info", submittedAt: at(-2, 11, 5),
     note: "Thiếu ảnh WC và giấy phép PCCC.",
     log: [
@@ -266,17 +267,17 @@ export const SUBMISSIONS: Submission[] = [
     ],
   },
   {
-    code: "KG01277", landlord: "Đỗ Thanh Hải", phone: phone(84), address: "21 Đường 3 Tháng 2, Phường Hưng Lợi", district: "Quận Ninh Kiều",
+    code: "KG01277", landlord: "Đỗ Thanh Hải", phone: phone(84), address: "21/4 Cộng Hòa, Phường Tân Sơn Nhất", district: "TP. Hồ Chí Minh",
     roomCount: 12, priceFrom: 2_300_000, roomTypes: "Ký túc xá", photos: 18, status: "approved", submittedAt: at(-4, 13, 0),
     note: "Hẹn chụp ảnh 31/10.", log: [{ at: at(-3, 9, 0), by: "Võ Thu Trang", text: "Duyệt, hẹn đội chụp ảnh." }],
   },
   {
-    code: "KG01270", landlord: "Phạm Hồng Nhung", phone: phone(85), address: "5 Lý Tự Trọng, Phường An Cư", district: "Quận Ninh Kiều",
+    code: "KG01270", landlord: "Phạm Hồng Nhung", phone: phone(85), address: "5 Lý Tự Trọng, Phường Ninh Kiều", district: "TP. Cần Thơ",
     roomCount: 5, priceFrom: 5_800_000, roomTypes: "Studio", photos: 22, status: "published", submittedAt: at(-9, 10, 0),
     note: "", log: [{ at: at(-6, 15, 0), by: "Trần Minh Khoa", text: "Đã đăng 5 phòng." }],
   },
   {
-    code: "KG01266", landlord: "Vũ Minh Tuấn", phone: phone(86), address: "Hẻm 120 Nguyễn Văn Linh, Phường An Khánh", district: "Quận Ninh Kiều",
+    code: "KG01266", landlord: "Vũ Minh Tuấn", phone: phone(86), address: "Hẻm 120 Phan Đăng Lưu, Phường Gia Định", district: "TP. Hồ Chí Minh",
     roomCount: 3, priceFrom: 2_000_000, roomTypes: "Phòng trọ", photos: 2, status: "rejected", submittedAt: at(-11, 8, 0),
     note: "Phòng không có cửa sổ, không đạt tiêu chuẩn.", log: [{ at: at(-10, 9, 0), by: "Phạm Gia Huy", text: "Từ chối: phòng không có cửa sổ và lối thoát hiểm." }],
   },

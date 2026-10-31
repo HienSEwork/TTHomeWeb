@@ -2,15 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useId, useState, type ReactNode } from "react";
-import { ChevronDown, LayoutGrid, MapPin, Search, Wallet } from "lucide-react";
-import { DISTRICTS, PRICE_BANDS, type RoomType } from "@tthome/data";
+import { Building, ChevronDown, LayoutGrid, MapPin, Search, Wallet } from "lucide-react";
+import { CITIES, PRICE_BANDS, ROOM_TYPES, type RoomType } from "@tthome/data";
 import { cn } from "@tthome/ui";
 import { labelOf } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n/client";
 import { toSearchQuery } from "@/lib/search-params";
 import { SelectMenu, type MenuOption } from "./hero-dropdown";
-
-const TYPES: RoomType[] = ["studio", "room", "1pn", "duplex", "2pn", "shared", "dorm"];
 
 function Field({ icon, label, labelId, htmlFor, children, select }: { icon: ReactNode; label: string; labelId: string; htmlFor: string; children: ReactNode; select?: boolean }) {
   return (
@@ -39,26 +37,51 @@ function Field({ icon, label, labelId, htmlFor, children, select }: { icon: Reac
 
 const control = "w-full min-w-0 appearance-none truncate bg-transparent py-0.5 text-[0.9375rem] text-ink placeholder:text-muted focus:outline-none";
 
-/** The hero's three-field search: where, how much, what kind. Submits to /tim-kiem. */
-export function HeroSearch({ className, vacantByDistrict = {} }: { className?: string; vacantByDistrict?: Record<string, number> }) {
+/** Wards with rooms first, most vacant first, then the rest by name. */
+function wardOptions(citySlug: string, vacant: Record<string, number>, t: ReturnType<typeof useI18n>["t"]): MenuOption[] {
+  return CITIES.filter((c) => !citySlug || c.slug === citySlug).flatMap((c) =>
+    [...c.wards]
+      .sort((a, b) => (vacant[`${c.slug}/${b.slug}`] ?? 0) - (vacant[`${c.slug}/${a.slug}`] ?? 0) || a.name.localeCompare(b.name, "vi"))
+      .map((w) => ({ value: `${c.slug}/${w.slug}`, label: w.name, hint: t.hero.vacant(vacant[`${c.slug}/${w.slug}`] ?? 0), group: t.hero.wardsTitle(c.name) })),
+  );
+}
+
+/**
+ * The hero's search: city, then a ward of that city (the post-2025 map has no districts), price and kind of room.
+ * `vacant` counts vacant rooms by city slug and by "city/ward". Submits to /tim-kiem.
+ */
+export function HeroSearch({ className, vacant = {} }: { className?: string; vacant?: Record<string, number> }) {
   const router = useRouter();
   const { t } = useI18n();
   const id = useId();
-  const [district, setDistrict] = useState("");
+  const [city, setCity] = useState("");
+  const [ward, setWard] = useState("");
   const [band, setBand] = useState("");
   const [type, setType] = useState("");
 
-  const areaOptions: MenuOption[] = [
-    { value: "", label: t.hero.anyArea },
-    ...DISTRICTS.map((d) => ({ value: d.slug, label: d.name, hint: t.hero.vacant(vacantByDistrict[d.slug] ?? 0), group: t.hero.districtsTitle })),
+  const cityOptions: MenuOption[] = [
+    { value: "", label: t.hero.anyCity },
+    ...CITIES.map((c) => ({ value: c.slug, label: c.name, hint: t.hero.vacant(vacant[c.slug] ?? 0) })),
   ];
+  const chosenCity = CITIES.find((c) => c.slug === city);
+  const areaOptions: MenuOption[] = [{ value: "", label: chosenCity ? t.hero.anyWard(chosenCity.name) : t.hero.anyWardAnywhere }, ...wardOptions(city, vacant, t)];
+  const pickWard = (value: string) => {
+    setWard(value);
+    // Picking a ward before a city settles the city too.
+    if (value) setCity(value.split("/")[0]!);
+  };
+  const pickCity = (value: string) => {
+    setCity(value);
+    if (!ward.startsWith(`${value}/`)) setWard("");
+  };
   const priceOptions: MenuOption[] = [{ value: "", label: t.hero.anyPrice }, ...PRICE_BANDS.map((b) => ({ value: b.slug, label: labelOf(t.labels.priceBand, b.slug) }))];
-  const typeOptions: MenuOption[] = [{ value: "", label: t.hero.anyType }, ...TYPES.map((type) => ({ value: type, label: t.labels.roomType[type] }))];
+  const typeOptions: MenuOption[] = [{ value: "", label: t.hero.anyType }, ...ROOM_TYPES.map((type) => ({ value: type, label: t.labels.roomType[type] }))];
 
   function submit() {
     const b = PRICE_BANDS.find((p) => p.slug === band);
     const query = toSearchQuery({
-      district: district || undefined,
+      city: city || undefined,
+      ward: ward ? ward.split("/")[1] : undefined,
       priceMin: b?.min || undefined,
       priceMax: b && b.max !== Number.MAX_SAFE_INTEGER ? b.max : undefined,
       types: type ? [type as RoomType] : undefined,
@@ -79,8 +102,12 @@ export function HeroSearch({ className, vacantByDistrict = {} }: { className?: s
         className,
       )}
     >
+      <Field icon={<Building />} label={t.hero.city} labelId={`${id}-city-label`} htmlFor={`${id}-city`} select>
+        <SelectMenu id={`${id}-city`} labelId={`${id}-city-label`} value={city} options={cityOptions} placeholder={t.hero.cityPlaceholder} onChange={pickCity} className={control} />
+      </Field>
+      <span aria-hidden className="mx-5 h-px bg-line md:mx-0 md:h-8 md:w-px" />
       <Field icon={<MapPin />} label={t.hero.area} labelId={`${id}-area-label`} htmlFor={`${id}-area`} select>
-        <SelectMenu id={`${id}-area`} labelId={`${id}-area-label`} value={district} options={areaOptions} placeholder={t.hero.areaPlaceholder} onChange={setDistrict} className={control} />
+        <SelectMenu id={`${id}-area`} labelId={`${id}-area-label`} value={ward} options={areaOptions} placeholder={t.hero.areaPlaceholder} onChange={pickWard} className={control} />
       </Field>
       <span aria-hidden className="mx-5 h-px bg-line md:mx-0 md:h-8 md:w-px" />
       <Field icon={<Wallet />} label={t.hero.price} labelId={`${id}-price-label`} htmlFor={`${id}-price`} select>

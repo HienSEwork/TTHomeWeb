@@ -1,22 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { areaStats, PRICE_BANDS, PROVINCE, searchProjects, type ProjectMatch } from "@tthome/data";
+import { areaStats, PRICE_BANDS, searchProjects, type ProjectMatch } from "@tthome/data";
 import { Container, EmptyState, Plate, buttonStyles, cn } from "@tthome/ui";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { JsonLd } from "@/components/json-ld";
-import { ProjectCard } from "@/components/project-card";
+import { RoomListingCard } from "@/components/room-listing-card";
 import { SearchMapLazy } from "@/components/search-map-lazy";
 import { areaHref, areaName, resolveAreaRoute, type AreaRoute } from "@/lib/area-route";
 import { labelOf, type Dictionary } from "@/lib/i18n";
 import { getServerI18n } from "@/lib/i18n/server";
 import { toApproxMapPins } from "@/lib/map-pins";
 
-type Props = { params: Promise<{ tinh: string; quan: string; slug?: string[] }> };
+type Props = { params: Promise<{ tinh: string; slug?: string[] }> };
 
 function matchesFor(route: AreaRoute): ProjectMatch[] {
   const max = route.band && route.band.max !== Number.MAX_SAFE_INTEGER ? route.band.max : undefined;
-  return searchProjects({ district: route.district.slug, ward: route.ward?.slug, priceMin: route.band?.min || undefined, priceMax: max, sort: "price_asc" });
+  return searchProjects({ city: route.city.slug, ward: route.ward?.slug, priceMin: route.band?.min || undefined, priceMax: max, sort: "price_asc" });
 }
 
 function title(route: AreaRoute, t: Dictionary): string {
@@ -25,8 +25,8 @@ function title(route: AreaRoute, t: Dictionary): string {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { tinh, quan, slug } = await params;
-  const route = resolveAreaRoute(tinh, quan, slug);
+  const { tinh, slug } = await params;
+  const route = resolveAreaRoute(tinh, slug);
   if (!route) return {};
   const matches = matchesFor(route);
   const rooms = matches.reduce((n, m) => n + m.rooms.length, 0);
@@ -40,17 +40,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function AreaPage({ params }: Props) {
-  const { tinh, quan, slug } = await params;
-  const route = resolveAreaRoute(tinh, quan, slug);
+  const { tinh, slug } = await params;
+  const route = resolveAreaRoute(tinh, slug);
   if (!route) notFound();
   const { lang, t, fmt } = await getServerI18n();
 
   const matches = matchesFor(route);
   const rooms = matches.reduce((n, m) => n + m.rooms.length, 0);
   const from = matches.length ? Math.min(...matches.map((m) => m.minPrice ?? Infinity)) : null;
-  const wards = areaStats().filter((s) => s.district.slug === route.district.slug);
+  const wards = areaStats().filter((s) => s.city.slug === route.city.slug);
   const name = areaName(route);
-  const placeRoute = { district: route.district, ward: route.ward };
+  const placeRoute = { city: route.city, ward: route.ward };
 
   const faqs = [
     { q: t.area.faqPriceQ(name), a: from ? t.area.faqPriceA(name, fmt.priceShort(from)) : t.area.faqPriceNone(name) },
@@ -60,7 +60,7 @@ export default async function AreaPage({ params }: Props) {
 
   const crumbs = [
     { href: "/tim-kiem", label: t.project.crumb },
-    { href: areaHref({ district: route.district }), label: route.district.name },
+    { href: areaHref({ city: route.city }), label: route.city.name },
     ...(route.ward ? [{ href: areaHref(placeRoute), label: route.ward.name }] : []),
     ...(route.band ? [{ label: labelOf(t.labels.priceBand, route.band.slug) }] : []),
   ];
@@ -73,7 +73,7 @@ export default async function AreaPage({ params }: Props) {
           <div className="mt-5 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
               <h1 className="text-title font-extrabold text-ink sm:text-[2.5rem] sm:leading-[1.1]">{title(route, t)}</h1>
-              <p className="mt-3 max-w-2xl text-ink-soft">{t.area.lead(name, PROVINCE.name)}</p>
+              <p className="mt-3 max-w-2xl text-ink-soft">{t.area.lead(name)}</p>
             </div>
             <dl className="flex items-stretch gap-3">
               <div className="flex flex-col items-center">
@@ -136,10 +136,16 @@ export default async function AreaPage({ params }: Props) {
               }
             />
           ) : (
-            <ul className="grid gap-5 sm:grid-cols-2">
-              {matches.map((m) => (
+            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {matches.map((m, i) => (
                 <li key={m.project.id} className="flex">
-                  <ProjectCard match={m} className="w-full" lang={lang} />
+                  <RoomListingCard
+                    listing={{ room: m.rooms.reduce((a, b) => (b.price < a.price ? b : a)), project: m.project }}
+                    otherRooms={m.rooms.length - 1}
+                    priority={i < 3}
+                    className="w-full"
+                    lang={lang}
+                  />
                 </li>
               ))}
             </ul>
@@ -178,13 +184,13 @@ export default async function AreaPage({ params }: Props) {
               <SearchMapLazy pins={toApproxMapPins(matches)} className="aspect-square" />
             </div>
           ) : null}
-          <nav aria-label={t.area.wardsNav(route.district.name)} className="rounded-card border border-line bg-surface p-4">
-            <h2 className="font-bold">{t.area.otherWards(route.district.name)}</h2>
+          <nav aria-label={t.area.wardsNav(route.city.name)} className="rounded-card border border-line bg-surface p-4">
+            <h2 className="font-bold">{t.area.otherWards(route.city.name)}</h2>
             <ul className="mt-3 space-y-2">
               {wards.map((s) => (
                 <li key={s.ward.slug}>
                   <Link
-                    href={areaHref({ district: s.district, ward: s.ward })}
+                    href={areaHref({ city: s.city, ward: s.ward })}
                     aria-current={s.ward.slug === route.ward?.slug ? "page" : undefined}
                     className="flex items-center gap-3 rounded-lg p-1.5 hover:bg-wash aria-[current=page]:bg-plate-tint"
                   >

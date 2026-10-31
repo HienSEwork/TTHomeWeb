@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { Heart, LayoutDashboard, Menu, Phone } from "lucide-react";
+import { Headset, Heart, LayoutDashboard, Menu, MessageCircle, Phone } from "lucide-react";
 import { SITE } from "@tthome/data";
 import { buttonStyles, cn } from "@tthome/ui";
 import { hasDemoSession } from "@/lib/demo-session";
@@ -11,6 +11,7 @@ import { useFavorites } from "@/lib/favorites";
 import { useI18n } from "@/lib/i18n/client";
 import { MAIN_NAV, isActive } from "@/lib/nav";
 import { BrandLockup } from "./brand-logo";
+import { ConsultDialog } from "./consult-dialog";
 import { Drawer } from "./drawer";
 import { SignInForm } from "./form-signin";
 import { LangSwitch } from "./lang-switch";
@@ -39,6 +40,14 @@ export function SiteHeader() {
   const signInReturn = useRef<HTMLElement | null>(null);
   const closeMenu = useCallback(() => setOpenOn(null), []);
   const closeSignIn = useCallback(() => setSignInOpen(false), []);
+  const [consultOpen, setConsultOpen] = useState(false);
+  const consultReturn = useRef<HTMLElement | null>(null);
+  const closeConsult = useCallback(() => setConsultOpen(false), []);
+  const openConsult = () => {
+    consultReturn.current = open ? toggle.current : (document.activeElement as HTMLElement | null);
+    setOpenOn(null);
+    setConsultOpen(true);
+  };
   const openSignIn = () => {
     signInReturn.current = open ? toggle.current : (document.activeElement as HTMLElement | null);
     setOpenOn(null);
@@ -65,13 +74,13 @@ export function SiteHeader() {
           : "border-transparent bg-alabaster",
       )}
     >
-      <div className={cn("mx-auto flex max-w-[1280px] items-center gap-6 px-4 transition-[height] duration-500 ease-out-expo sm:px-6", scrolled ? "h-16" : "h-20")}>
+      <div className={cn("mx-auto flex max-w-[1280px] items-center gap-6 px-4 2xl:max-w-[1360px] transition-[height] duration-500 ease-out-expo sm:px-6", scrolled ? "h-16" : "h-20")}>
         <Link href="/" aria-label={t.brand.homeLink} className="shrink-0">
           <BrandLockup tagline={t.brand.tagline} />
         </Link>
 
-        <nav aria-label={t.nav.main} className="hidden flex-1 justify-center lg:flex">
-          <ul className="flex items-center gap-8">
+        <nav aria-label={t.nav.main} className="hidden flex-1 justify-center xl:flex">
+          <ul className="flex items-center gap-5 2xl:gap-7">
             {MAIN_NAV.map((item) => {
               const active = isActive(pathname, item.href);
               return (
@@ -80,7 +89,7 @@ export function SiteHeader() {
                     href={item.href}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "relative py-3 text-[0.9375rem] font-medium transition-colors",
+                      "relative py-3 text-[0.875rem] font-medium whitespace-nowrap transition-colors 2xl:text-[0.9375rem]",
                       "after:absolute after:inset-x-0 after:bottom-1 after:h-0.5 after:rounded-full after:bg-gold after:transition-opacity",
                       active ? "text-gold-ink after:opacity-100" : "text-ink-soft after:opacity-0 hover:text-gold-ink",
                     )}
@@ -93,11 +102,13 @@ export function SiteHeader() {
           </ul>
         </nav>
 
-        <div className="ml-auto flex items-center gap-1 sm:gap-3 lg:ml-0">
-          <LangSwitch className="max-lg:hidden" />
-          <a href={ADMIN_URL} className="rounded-lg p-2 text-muted transition-colors hover:bg-ivory hover:text-gold-ink max-sm:hidden" aria-label={t.nav.admin} title={t.nav.admin}>
-            <LayoutDashboard aria-hidden className="size-5" />
-          </a>
+        <div className="ml-auto flex items-center gap-1 sm:gap-3 xl:ml-0">
+          <LangSwitch className="max-2xl:hidden" />
+          <Magnetic strength={0.2} className="max-sm:hidden">
+            <button type="button" onClick={openConsult} aria-haspopup="dialog" className={buttonStyles({ size: "md", className: "rounded-full px-5 whitespace-nowrap shadow-[var(--shadow-soft)]" })}>
+              {t.nav.consult}
+            </button>
+          </Magnetic>
           <Link
             href="/yeu-thich"
             aria-label={t.nav.favorites(favorites)}
@@ -117,23 +128,21 @@ export function SiteHeader() {
             ) : null}
           </Link>
           {signedIn ? (
-            <Link href="/tai-khoan/ho-so" className="px-2 py-2 text-[0.9375rem] font-semibold text-ink-soft transition-colors hover:text-gold-ink max-sm:hidden">
+            <Link href="/tai-khoan/ho-so" className="px-2 py-2 text-[0.9375rem] font-semibold whitespace-nowrap text-ink-soft transition-colors hover:text-gold-ink max-sm:hidden">
               {t.nav.account}
             </Link>
           ) : (
-            <button type="button" onClick={openSignIn} aria-haspopup="dialog" className="px-2 py-2 text-[0.9375rem] font-semibold text-ink-soft transition-colors hover:text-gold-ink max-sm:hidden">
+            <button type="button" onClick={openSignIn} aria-haspopup="dialog" className="px-2 py-2 text-[0.9375rem] font-semibold whitespace-nowrap text-ink-soft transition-colors hover:text-gold-ink max-sm:hidden">
               {t.nav.signIn}
             </button>
           )}
-          <Magnetic strength={0.2} className="max-sm:hidden">
-            <Link href="/ky-gui" className={buttonStyles({ size: "md", className: "rounded-full px-5 shadow-[var(--shadow-soft)]" })}>
-              {t.nav.consign}
-            </Link>
-          </Magnetic>
+          <a href={ADMIN_URL} className="rounded-lg p-2 text-muted transition-colors hover:bg-ivory hover:text-gold-ink max-sm:hidden" aria-label={t.nav.admin} title={t.nav.admin}>
+            <LayoutDashboard aria-hidden className="size-5" />
+          </a>
           <button
             ref={toggle}
             type="button"
-            className={buttonStyles({ variant: "ghost", size: "md", className: "px-2.5 lg:hidden" })}
+            className={buttonStyles({ variant: "ghost", size: "md", className: "px-2.5 xl:hidden" })}
             aria-expanded={open}
             aria-haspopup="dialog"
             onClick={() => setOpen(!open)}
@@ -144,7 +153,7 @@ export function SiteHeader() {
         </div>
       </div>
 
-      <Drawer open={open} onClose={closeMenu} title={t.nav.menuTitle} closeLabel={t.nav.closeMenu} returnFocus={toggle} className="lg:hidden">
+      <Drawer open={open} onClose={closeMenu} title={t.nav.menuTitle} closeLabel={t.nav.closeMenu} returnFocus={toggle} className="xl:hidden">
         <nav id="menu-di-dong" aria-label={t.nav.main}>
           <ul className="flex flex-col">
             {MAIN_NAV.map((item) => (
@@ -165,9 +174,10 @@ export function SiteHeader() {
             <LangSwitch size="lg" />
           </div>
           <div className="mt-6 grid gap-2">
-            <Link href="/ky-gui" onClick={closeMenu} className={buttonStyles({ size: "lg", className: "w-full rounded-full" })}>
-              {t.nav.consign}
-            </Link>
+            <button type="button" onClick={openConsult} aria-haspopup="dialog" className={buttonStyles({ size: "lg", className: "w-full rounded-full" })}>
+              <Headset aria-hidden />
+              {t.nav.consult}
+            </button>
             {signedIn ? (
               <Link href="/tai-khoan/ho-so" onClick={closeMenu} className={buttonStyles({ variant: "secondary", size: "lg", className: "w-full rounded-full" })}>
                 {t.nav.account}
@@ -177,9 +187,13 @@ export function SiteHeader() {
                 {t.nav.signIn}
               </button>
             )}
+            <a href={SITE.zalo} target="_blank" rel="noopener" className={buttonStyles({ variant: "ghost", size: "lg", className: "w-full" })}>
+              <MessageCircle aria-hidden />
+              {t.quickContact.zalo}
+            </a>
             <a href={SITE.hotlineHref} className={buttonStyles({ variant: "ghost", size: "lg", className: "w-full" })}>
               <Phone aria-hidden />
-              {t.common.call(SITE.hotline)}
+              {t.quickContact.support(SITE.hotline)}
             </a>
             <a href={ADMIN_URL} className={buttonStyles({ variant: "ghost", size: "lg", className: "w-full" })}>
               <LayoutDashboard aria-hidden />
@@ -188,6 +202,8 @@ export function SiteHeader() {
           </div>
         </nav>
       </Drawer>
+
+      <ConsultDialog open={consultOpen} onClose={closeConsult} returnFocus={consultReturn} />
 
       <Drawer open={signInOpen} onClose={closeSignIn} title={t.signIn.title} closeLabel={t.common.close} returnFocus={signInReturn}>
         <p className="text-sm text-muted">{t.signIn.lead}</p>

@@ -4,7 +4,7 @@ import { allAreaRoutes, areaHref } from "@/lib/area-route";
 
 const BASE = "https://tthome.vn";
 
-const STATIC = ["/", "/tim-kiem", "/khu-vuc", "/dat-lich", "/ky-gui", "/tuyen-ctv", "/tin-tuc", "/ve-chung-toi", "/lien-he", "/hoi-dap"];
+const STATIC = ["/", "/tim-kiem", "/khu-vuc", "/dat-lich", "/ky-gui", "/tuyen-ctv", "/tuyen-dung", "/tin-tuc", "/ve-chung-toi", "/lien-he", "/hoi-dap"];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

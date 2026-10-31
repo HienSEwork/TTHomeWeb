@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ApiListing } from "./search-api";
-import { districtId, searchLive, toProjectMatches, toSearchParams, wardId } from "./search-live";
+import { searchLive, toProjectMatches, toSearchParams } from "./search-live";
 
 const row = (over: Partial<ApiListing> = {}): ApiListing => ({
   room_id: "r1", project_code: "PRJ-A", room_slug: "a-1", project_name: "Nhà A", address: "1 Đường 3/2", room_type: "studio",
@@ -10,17 +10,8 @@ const row = (over: Partial<ApiListing> = {}): ApiListing => ({
 
 describe("toSearchParams", () => {
   it("maps site filters to API names", () => {
-    const p = toSearchParams({ q: "x", priceMax: 5_000_000, types: ["studio", "1pn"], amenities: ["aircon", "kitchen"], ev: true, sort: "price_asc", district: "ninh-kieu", ward: "xuan-khanh" });
-    expect(p).toMatchObject({ q: "x", price_max: 5_000_000, room_type: "studio,1pn", amenities: "1", ev_parking: true, sort: "PRICE_ASC", district_id: 916, ward_id: 31147, limit: 50 });
-  });
-});
-
-describe("ids", () => {
-  it("uses the Can Tho admin unit ids of the seed", () => {
-    expect(districtId("cai-rang")).toBe(918);
-    expect(wardId("ninh-kieu", "tan-an")).toBe(31141);
-    expect(wardId("cai-rang", "tan-an")).toBeUndefined();
-    expect(districtId("nowhere")).toBeUndefined();
+    const p = toSearchParams({ q: "x", priceMax: 5_000_000, types: ["studio", "1pn"], amenities: ["aircon", "kitchen"], ev: true, sort: "price_asc", city: "can-tho" });
+    expect(p).toMatchObject({ q: "x", price_max: 5_000_000, room_type: "studio,1pn", amenities: "1", ev_parking: true, sort: "PRICE_ASC", limit: 50 });
   });
 });
 
@@ -38,16 +29,18 @@ describe("toProjectMatches", () => {
 describe("searchLive", () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it("keeps only rooms inside Can Tho", async () => {
+  it("keeps only rooms inside the chosen city", async () => {
     const items = [row(), row({ room_id: "hcm", project_code: "PRJ-HCM", lat: 10.78, lng: 106.69 })];
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ items, total: 2 }) }));
-    expect((await searchLive({})).map((m) => m.project.code)).toEqual(["PRJ-A"]);
+    expect((await searchLive({ city: "can-tho" })).map((m) => m.project.code)).toEqual(["PRJ-A"]);
+    expect((await searchLive({ city: "ho-chi-minh" })).map((m) => m.project.code)).toEqual(["PRJ-HCM"]);
+    expect(await searchLive({})).toHaveLength(2);
   });
 
-  it("returns nothing for a district the database does not hold, without calling the API", async () => {
+  it("returns nothing for a ward filter, which the database cannot answer, without calling the API", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
-    expect(await searchLive({ district: "phong-dien" })).toEqual([]);
+    expect(await searchLive({ city: "can-tho", ward: "ninh-kieu" })).toEqual([]);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });

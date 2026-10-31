@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { AirVent, ArrowUpDown, CircleParking, Fingerprint, MapPin, PawPrint, Refrigerator, Ruler, Sofa, SunMedium, WashingMachine } from "lucide-react";
-import { findDistrict, roomSlug, TODAY } from "@tthome/data";
+import { findCity, findWard, roomSlug, TODAY } from "@tthome/data";
 import { cn } from "@tthome/ui";
 import { getI18n, type Lang } from "@/lib/i18n";
 import { cardBadge, roomHighlights, type Highlight, type RoomRef } from "@/lib/listing";
@@ -27,13 +27,19 @@ const BADGE_STYLE = {
   featured: "border-white/15 bg-ink/70 text-white",
 } as const;
 
-/** A vacant room: photo, where it is, monthly price, size and the few amenities that matter. */
-export function RoomListingCard({ listing, priority, className, lang }: { listing: RoomRef; priority?: boolean; className?: string; lang?: Lang }) {
+/**
+ * A vacant room: photo, where it is, monthly price, size and the few amenities that matter. `otherRooms` counts
+ * the building's other rooms that match the same search, for result lists that show one card per building.
+ */
+export function RoomListingCard({ listing, priority, className, lang, otherRooms = 0 }: { listing: RoomRef; priority?: boolean; className?: string; lang?: Lang; otherRooms?: number }) {
   const { t, fmt } = getI18n(lang);
   const highlights = roomHighlights(listing);
   const { room, project } = listing;
   const href = `/phong/${roomSlug(room, project)}`;
-  const district = findDistrict(project.districtSlug);
+  const city = findCity(project.citySlug);
+  const ward = findWard(project.citySlug, project.wardSlug);
+  // Ward, the district it belonged to before the 2025 merger (still how people name places), then the city.
+  const place = [ward?.name, ward?.formerArea?.replace(/,.*$/, ""), city?.shortName].filter(Boolean).join(", ");
   const badge = cardBadge(project, t.card.badge);
   const price = fmt.priceParts(room.price);
   const title = project.name;
@@ -62,8 +68,8 @@ export function RoomListingCard({ listing, priority, className, lang }: { listin
       <div className="flex flex-1 flex-col p-4">
         <p className="flex items-center gap-1 text-xs text-muted">
           <MapPin aria-hidden className="size-3.5 shrink-0 text-gold-deep" />
-          <span className="truncate">
-            {district?.name}, {t.common.city}
+          <span className="truncate" title={place}>
+            {place}
           </span>
         </p>
         <h3 className="mt-1.5 truncate text-[0.9375rem] leading-[1.3] font-semibold text-ink">
@@ -102,9 +108,10 @@ export function RoomListingCard({ listing, priority, className, lang }: { listin
           </ul>
         ) : null}
 
-        <p className="mt-auto flex items-center gap-1.5 pt-3 text-xs font-medium text-success">
+        <p className="mt-auto flex flex-wrap items-center gap-x-1.5 gap-y-1 pt-3 text-xs font-medium text-success">
           <span aria-hidden className="size-1.5 rounded-full bg-success" />
-          {moveIn}
+          <span className="whitespace-nowrap">{moveIn}</span>
+          {otherRooms > 0 ? <span className="ml-auto font-semibold whitespace-nowrap text-gold-ink">{t.card.otherRooms(otherRooms)}</span> : null}
         </p>
       </div>
     </article>

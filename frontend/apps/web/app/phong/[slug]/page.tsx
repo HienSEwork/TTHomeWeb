@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { MapPin, Phone } from "lucide-react";
-import { findDistrict, findWard, getRoomBySlug, projectAddress, ROOM_STATUS, roomSlug, similarRooms, SITE, TODAY } from "@tthome/data";
+import { findCity, findWard, getRoomBySlug, projectAddress, ROOM_STATUS, roomSlug, similarRooms, SITE, TODAY } from "@tthome/data";
 import { Badge, Container, buttonStyles } from "@tthome/ui";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { GalleryGrid } from "@/components/gallery-grid";
 import { JsonLd } from "@/components/json-ld";
 import { AmenityList } from "@/components/project-amenities";
 import { ProjectActions } from "@/components/project-actions";
-import { RoomCard } from "@/components/room-card";
+import { RoomListingCard } from "@/components/room-listing-card";
 import { areaHref } from "@/lib/area-route";
 import { localRoomName, projectCopy } from "@/lib/i18n/content";
 import { getServerI18n } from "@/lib/i18n/server";
@@ -42,8 +42,8 @@ export default async function RoomPage({ params }: Props) {
   const name = localRoomName(room.name, lang);
   const copy = projectCopy(project, lang);
 
-  const district = findDistrict(project.districtSlug)!;
-  const ward = findWard(project.districtSlug, project.wardSlug)!;
+  const city = findCity(project.citySlug)!;
+  const ward = findWard(project.citySlug, project.wardSlug)!;
   const status = ROOM_STATUS[room.status];
   const cost = monthlyCost(room, project.fees, Math.min(room.maxPeople, room.type === "2pn" ? 2 : 1), 1, t.cost);
   const similar = similarRooms(room, project, 4);
@@ -69,7 +69,7 @@ export default async function RoomPage({ params }: Props) {
           name: `${name}, ${project.name}`,
           image: room.images,
           floorSize: { "@type": "QuantitativeValue", value: room.area, unitCode: "MTK" },
-          address: { "@type": "PostalAddress", streetAddress: project.street, addressLocality: `${ward.name}, ${district.name}`, addressCountry: "VN" },
+          address: { "@type": "PostalAddress", streetAddress: project.street, addressLocality: ward.name, addressRegion: city.name, addressCountry: "VN" },
           offers: { "@type": "Offer", price: room.price, priceCurrency: "VND", availability: room.status === "available" ? "https://schema.org/InStock" : "https://schema.org/SoldOut" },
         }}
       />
@@ -78,8 +78,8 @@ export default async function RoomPage({ params }: Props) {
         <Breadcrumbs
           lang={lang}
           items={[
-            { href: areaHref({ district }), label: district.name },
-            { href: areaHref({ district, ward }), label: ward.name },
+            { href: areaHref({ city }), label: city.name },
+            { href: areaHref({ city, ward }), label: ward.name },
             { href: `/du-an/${project.slug}`, label: project.name },
             { label: name },
           ]}
@@ -204,10 +204,10 @@ export default async function RoomPage({ params }: Props) {
         <Container className="mt-16">
           <h2 className="text-xl font-extrabold">{t.room.similarTitle}</h2>
           <p className="mt-1 text-sm text-muted">{t.room.similarText}</p>
-          <ul className="mt-5 grid gap-4 md:grid-cols-2">
+          <ul className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {similar.map((s) => (
-              <li key={s.room.id}>
-                <RoomCard room={s.room} project={s.project} showProject lang={lang} />
+              <li key={s.room.id} className="flex">
+                <RoomListingCard listing={s} className="w-full" lang={lang} />
               </li>
             ))}
           </ul>

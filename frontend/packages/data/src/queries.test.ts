@@ -55,7 +55,7 @@ describe("slugs", () => {
     const project = PROJECTS[3]!;
     const room = project.rooms[0]!;
     const slug = roomSlug(room, project);
-    expect(slug.startsWith(`${project.wardSlug}-${project.districtSlug}-`)).toBe(true);
+    expect(slug.startsWith(`${project.wardSlug}-${project.citySlug}-`)).toBe(true);
     expect(getRoomBySlug(slug)?.room.id).toBe(room.id);
   });
 });

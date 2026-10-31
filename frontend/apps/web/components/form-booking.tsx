@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { Check } from "lucide-react";
-import { DISTRICTS } from "@tthome/data";
+import { CITIES } from "@tthome/data";
 import { Button, SelectField, TextField, cn } from "@tthome/ui";
 import { useI18n } from "@/lib/i18n/client";
 import { bookingDays, TIME_SLOTS, validateBooking, type BookingField, type BookingInput, type Errors } from "@/lib/validation";
@@ -13,13 +13,13 @@ const BUDGETS = ["under-2.5", "2.5-3.5", "3.5-5", "over-5"] as const;
 
 const MOVE_IN = ["now", "this-month", "next-month", "later"] as const;
 
-export type BookingTarget = { projectName: string; roomName?: string; districtSlug: string } | null;
+export type BookingTarget = { projectName: string; roomName?: string; citySlug: string; wardSlug: string } | null;
 
 export function BookingForm({ target }: { target: BookingTarget }) {
   const { lang, t, fmt } = useI18n();
   const days = bookingDays(7);
   const [input, setInput] = useState<BookingInput>({
-    area: target?.districtSlug ?? "",
+    area: target ? `${target.citySlug}/${target.wardSlug}` : "",
     budget: "",
     moveIn: "",
     date: "",
@@ -72,10 +72,15 @@ export function BookingForm({ target }: { target: BookingTarget }) {
       <FormSection title={t.booking.needTitle} description={t.booking.needText}>
         <SelectField label={t.booking.area} value={input.area} onChange={(e) => set("area", e.target.value)} error={errors.area}>
           <option value="">{t.booking.chooseDistrict}</option>
-          {DISTRICTS.map((d) => (
-            <option key={d.slug} value={d.slug}>
-              {d.name}
-            </option>
+          {CITIES.map((c) => (
+            <optgroup key={c.slug} label={c.name}>
+              <option value={c.slug}>{t.hero.anyWard(c.name)}</option>
+              {c.wards.map((w) => (
+                <option key={w.slug} value={`${c.slug}/${w.slug}`}>
+                  {w.name}
+                </option>
+              ))}
+            </optgroup>
           ))}
         </SelectField>
         <SelectField label={t.booking.budget} optional optionalLabel={t.common.optional} value={input.budget} onChange={(e) => set("budget", e.target.value)}>

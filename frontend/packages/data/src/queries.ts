@@ -1,5 +1,5 @@
 import { normalizeVi } from "@tthome/ui";
-import { AMENITY_NAME, DISTRICTS, findDistrict, findLandmark, findWard, PRICE_BANDS } from "./catalog";
+import { AMENITY_NAME, CITIES, findCity, findLandmark, findWard, PRICE_BANDS } from "./catalog";
 import { PROJECTS } from "./listings";
 import type { AreaStat, Project, ProjectMatch, Room, RoomType, SearchFilters, SortOption } from "./types";
 
@@ -28,9 +28,9 @@ export function minPrice(rooms: Room[]): number | null {
 }
 
 export function projectAddress(project: Project): string {
-  const district = findDistrict(project.districtSlug);
-  const ward = findWard(project.districtSlug, project.wardSlug);
-  return [project.street, ward?.name, district?.name].filter(Boolean).join(", ");
+  const city = findCity(project.citySlug);
+  const ward = findWard(project.citySlug, project.wardSlug);
+  return [project.street, ward?.name, city?.name].filter(Boolean).join(", ");
 }
 
 export function projectRoomTypes(project: Project): RoomType[] {
@@ -59,7 +59,7 @@ function roomMatches(room: Room, project: Project, f: SearchFilters): boolean {
 
 function projectMatches(project: Project, f: SearchFilters): boolean {
   if (project.status !== "active") return false;
-  if (f.district && project.districtSlug !== f.district) return false;
+  if (f.city && project.citySlug !== f.city) return false;
   if (f.ward && project.wardSlug !== f.ward) return false;
   if (f.pet && project.petPolicy === "none") return false;
   if (f.ev && !project.evParking) return false;
@@ -68,7 +68,7 @@ function projectMatches(project: Project, f: SearchFilters): boolean {
   if (f.q) {
     const needle = normalizeVi(f.q);
     const haystack = normalizeVi(
-      [project.name, projectAddress(project), project.code, findDistrict(project.districtSlug)?.name ?? ""].join(" "),
+      [project.name, projectAddress(project), project.code, findWard(project.citySlug, project.wardSlug)?.formerArea ?? ""].join(" "),
     );
     if (!needle.split(/\s+/).every((word) => haystack.includes(word))) return false;
   }
@@ -103,18 +103,18 @@ export function searchProjects(filters: SearchFilters = {}, projects: Project[] 
 /** Vacant rooms and starting price per ward, most vacant first. */
 export function areaStats(projects: Project[] = PROJECTS): AreaStat[] {
   const stats: AreaStat[] = [];
-  for (const district of DISTRICTS) {
-    for (const ward of district.wards) {
-      const here = projects.filter((p) => p.status === "active" && p.wardSlug === ward.slug && p.districtSlug === district.slug);
+  for (const city of CITIES) {
+    for (const ward of city.wards) {
+      const here = projects.filter((p) => p.status === "active" && p.wardSlug === ward.slug && p.citySlug === city.slug);
       const vacant = here.flatMap(vacantRooms);
-      stats.push({ district, ward, projects: here.length, vacant: vacant.length, minPrice: minPrice(vacant) });
+      stats.push({ city, ward, projects: here.length, vacant: vacant.length, minPrice: minPrice(vacant) });
     }
   }
   return stats.filter((s) => s.projects > 0).sort((a, b) => b.vacant - a.vacant);
 }
 
-export function districtStats(districtSlug: string, projects: Project[] = PROJECTS) {
-  const here = projects.filter((p) => p.status === "active" && p.districtSlug === districtSlug);
+export function cityStats(citySlug: string, projects: Project[] = PROJECTS) {
+  const here = projects.filter((p) => p.status === "active" && p.citySlug === citySlug);
   const vacant = here.flatMap(vacantRooms);
   return { projects: here.length, vacant: vacant.length, minPrice: minPrice(vacant) };
 }
@@ -136,7 +136,7 @@ export function getProjectById(id: string): Project | undefined {
 /** "/phong/{phuong}-{quan}-{du-an}-{ma-phong}" */
 export function roomSlug(room: Room, project: Project): string {
   const projectPart = project.slug.replace(PROJECT_CODE, "");
-  return `${project.wardSlug}-${project.districtSlug}-${projectPart}-${room.code.toLowerCase()}`;
+  return `${project.wardSlug}-${project.citySlug}-${projectPart}-${room.code.toLowerCase()}`;
 }
 
 export function getRoomBySlug(slug: string): { room: Room; project: Project } | undefined {
@@ -149,14 +149,14 @@ export function getRoomBySlug(slug: string): { room: Room; project: Project } | 
   return undefined;
 }
 
-/** Vacant rooms in the same district within ±25% of the price, nearest price first. */
+/** Vacant rooms in the same city within ±25% of the price, nearest price first. */
 export function similarRooms(room: Room, project: Project, limit = 6): { room: Room; project: Project }[] {
   const candidates: { room: Room; project: Project; gap: number }[] = [];
   for (const p of PROJECTS) {
     for (const r of p.rooms) {
       if (r.id === room.id || r.status !== "available") continue;
       const gap = Math.abs(r.price - room.price) / room.price;
-      const sameArea = p.districtSlug === project.districtSlug;
+      const sameArea = p.citySlug === project.citySlug;
       if (gap <= 0.25 && (sameArea || gap <= 0.08)) candidates.push({ room: r, project: p, gap: sameArea ? gap : gap + 0.5 });
     }
   }

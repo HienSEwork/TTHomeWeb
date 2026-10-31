@@ -1,15 +1,24 @@
 import type { Metadata } from "next";
-import { AMENITIES, DISTRICTS, LANDMARKS, PROJECTS, PROVINCE, ROOM_TYPE_LABEL } from "@tthome/data";
+import { AMENITIES, CITIES, LANDMARKS, PROJECTS, ROOM_TYPE_LABEL, type LandmarkKind } from "@tthome/data";
 import { Badge } from "@tthome/ui";
 import { PageHeader, Panel } from "@/components/page-parts";
 
 export const metadata: Metadata = { title: "Khu vực và tiện nghi" };
 
 const SCOPE = { room: "Phòng", project: "Tòa nhà", both: "Cả hai" } as const;
-const LANDMARK_KIND = { university: "Trường học", mall: "Trung tâm thương mại", industrial: "Khu công nghiệp", hospital: "Bệnh viện", other: "Khác" } as const;
+const LANDMARK_KIND: Record<LandmarkKind, string> = {
+  university: "Đại học",
+  college: "Cao đẳng",
+  vocational: "Trung cấp",
+  hospital: "Bệnh viện",
+  market: "Chợ",
+  mall: "Trung tâm thương mại",
+  industrial: "Khu công nghiệp",
+  other: "Khác",
+};
 
 export default function CatalogPage() {
-  const projectsIn = (district: string, ward?: string) => PROJECTS.filter((p) => p.districtSlug === district && (!ward || p.wardSlug === ward)).length;
+  const projectsIn = (city: string, ward?: string) => PROJECTS.filter((p) => p.citySlug === city && (!ward || p.wardSlug === ward)).length;
   const amenityUse = (code: string) => PROJECTS.filter((p) => p.amenities.includes(code) || p.rooms.some((r) => r.amenities.includes(code))).length;
 
   return (
@@ -17,17 +26,19 @@ export default function CatalogPage() {
       <PageHeader title="Khu vực và tiện nghi" description="Danh mục dùng cho bộ lọc trên web và đường dẫn trang khu vực. Đổi tên ở đây không làm đổi đường dẫn đã có." />
 
       <div className="grid gap-4 xl:grid-cols-[1.3fr_1fr]">
-        <Panel title={`Khu vực (${DISTRICTS.length} quận, ${DISTRICTS.reduce((n, d) => n + d.wards.length, 0)} phường)`}>
+        <Panel title={`Khu vực (${CITIES.length} thành phố, ${CITIES.reduce((n, c) => n + c.wards.length, 0)} phường, xã theo bản đồ từ 1/7/2025)`}>
           <ul className="divide-y divide-line">
-            {DISTRICTS.map((d) => (
+            {CITIES.map((d) => (
               <li key={d.slug} className="px-5 py-3">
                 <div className="flex items-baseline justify-between gap-3">
                   <p className="font-semibold text-ink">{d.name}</p>
                   <p className="text-sm text-muted tabular">{projectsIn(d.slug)} dự án</p>
                 </div>
-                <p className="text-xs text-muted">/phong-tro/{PROVINCE.slug}/{d.slug}</p>
+                <p className="text-xs text-muted">
+                  /phong-tro/{d.slug}, {d.wards.length} phường, xã. Dưới đây là các phường đang có dự án.
+                </p>
                 <ul className="mt-2 flex flex-wrap gap-1.5">
-                  {d.wards.map((w) => (
+                  {d.wards.filter((w) => projectsIn(d.slug, w.slug) > 0).map((w) => (
                     <li key={w.slug}>
                       <Badge tone="plate">
                         {w.name.replace("Phường ", "P. ")}

@@ -20,7 +20,7 @@ function findTarget(lang: Lang, projectParam?: string, roomParam?: string): Book
   const project = getProjectBySlug(projectParam) ?? PROJECTS.find((p) => p.code === projectParam.toUpperCase());
   if (!project) return null;
   const room = roomParam ? project.rooms.find((r) => r.code.toLowerCase() === roomParam.toLowerCase()) : undefined;
-  return { projectName: project.name, roomName: room ? localRoomName(room.name, lang) : undefined, districtSlug: project.districtSlug };
+  return { projectName: project.name, roomName: room ? localRoomName(room.name, lang) : undefined, citySlug: project.citySlug, wardSlug: project.wardSlug };
 }
 
 export default async function BookingPage({ searchParams }: Props) {

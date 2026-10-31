@@ -24,18 +24,20 @@ const clampShare = (x: number) => Math.min(MAX_SHARE, Math.max(MIN_SHARE, x));
  * the map (MapLibre is the heaviest script on the site) is only built once it is first opened, and its code is
  * fetched while the browser is idle; after that it stays mounted and keeps its position and choice. On wide
  * screens the edge between them can be dragged, and the map can be hidden or widened to the full page.
+ * `initialMap="hidden"` starts wide screens on the list alone, with a button to bring the map in.
  */
-export function ResultsLayout({ list, map }: { list: ReactNode; map: ReactNode }) {
+export function ResultsLayout({ list, map, initialMap = "split" }: { list: ReactNode; map: ReactNode; initialMap?: "split" | "hidden" }) {
   const { t } = useI18n();
   const [view, setView] = useState<"list" | "map">("list");
   const wide = useSyncExternalStore(subscribeWide, () => window.matchMedia(WIDE).matches, () => false);
   const [opened, setOpened] = useState(false);
-  const [wideMode, setWideMode] = useState<"split" | "hidden" | "full">("split");
+  const [wideMode, setWideMode] = useState<"split" | "hidden" | "full">(initialMap);
   const [share, setShare] = useState(0.4);
   const [dragging, setDragging] = useState(false);
   const shell = useRef<HTMLDivElement>(null);
-  if (view === "map" && !opened) setOpened(true);
-  const mapMounted = wide || opened;
+  // Once shown, the map stays mounted (hidden by CSS) so it keeps its position.
+  if ((view === "map" || (wide && wideMode !== "hidden")) && !opened) setOpened(true);
+  const mapMounted = opened;
   const mountedRef = useRef(mapMounted);
   useEffect(() => {
     mountedRef.current = mapMounted;
@@ -54,14 +56,25 @@ export function ResultsLayout({ list, map }: { list: ReactNode; map: ReactNode }
     window.scrollTo({ top: 0 });
   };
 
+  const wideModeRef = useRef(wideMode);
+  useEffect(() => {
+    wideModeRef.current = wideMode;
+  }, [wideMode]);
+
   useMapFocus(
     useCallback((e: MapFocusEvent) => {
-      if (e.kind === "select" && e.id && !window.matchMedia(WIDE).matches) {
+      if (e.kind !== "select" || !e.id) return;
+      const isWide = window.matchMedia(WIDE).matches;
+      if (isWide && wideModeRef.current !== "hidden") return;
+      if (isWide) {
+        setOpened(true);
+        setWideMode("split");
+      } else {
         setView("map");
         window.scrollTo({ top: 0 });
-        // The map is built on first open and missed this request; repeat it once it is listening.
-        if (!mountedRef.current) window.setTimeout(() => emitMapFocus(e), 1200);
       }
+      // The map is built on first open and missed this request; repeat it once it is listening.
+      if (!mountedRef.current || isWide) window.setTimeout(() => emitMapFocus(e), 1200);
     }, []),
   );
 
@@ -142,7 +155,10 @@ export function ResultsLayout({ list, map }: { list: ReactNode; map: ReactNode }
       {wideMode === "hidden" ? (
         <button
           type="button"
-          onClick={() => setWideMode("split")}
+          onClick={() => {
+            setOpened(true);
+            setWideMode("split");
+          }}
           className="fixed bottom-6 left-1/2 z-30 hidden h-11 -translate-x-1/2 items-center gap-2 rounded-full bg-[#1C1A17] px-5 text-sm font-semibold text-white shadow-[0_16px_40px_-12px_rgb(28_26_23/0.6)] hover:bg-black lg:inline-flex"
         >
           <MapIcon aria-hidden className="size-4" />

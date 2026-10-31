@@ -3,7 +3,8 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight, BadgePercent, CalendarCheck, Camera, Headset, PawPrint, PlugZap, ReceiptText, Sofa, Sparkles, SunMedium, Wallet } from "lucide-react";
-import { DISTRICTS, districtStats, photo, PROJECTS, PROVINCE, publishedPosts, SITE } from "@tthome/data";
+import { areaStats, CITIES, cityStats, photo, PROJECTS, publishedPosts, SITE } from "@tthome/data";
+import { areaHref } from "@/lib/area-route";
 import { buttonStyles, cn } from "@tthome/ui";
 import { BrandLogo } from "@/components/brand-logo";
 import { HeroBackdrop } from "@/components/hero-backdrop";
@@ -53,7 +54,8 @@ const REASONS: { icon: LucideIcon; key: "info" | "price" | "photos" | "booking" 
   { icon: CalendarCheck, key: "booking" },
 ];
 
-const AREA_SLUGS = ["ninh-kieu", "cai-rang", "binh-thuy", "phong-dien", "o-mon"];
+/** How many of the busiest wards each city puts in the home page mosaic. */
+const AREAS_PER_CITY: Record<string, number> = { "ho-chi-minh": 3, "can-tho": 2 };
 
 /**
  * The hero title, revealed a word at a time from `start` on. Gold words also carry a glint that passes
@@ -98,13 +100,19 @@ export default async function HomePage() {
   const featured = featuredRooms(5);
   const featuredIds = new Set(featured.map((r) => r.project.id));
   const newest = newestRooms(10).filter((r) => !featuredIds.has(r.project.id)).slice(0, 5);
-  const areas = AREA_SLUGS.map((slug, i) => {
-    const district = DISTRICTS.find((d) => d.slug === slug)!;
-    // A real building in the district stands in for the area, so the photo never shows somewhere else.
-    const showcase = PROJECTS.filter((p) => p.districtSlug === slug).sort((a, b) => b.views - a.views)[0]!;
-    return { district, stats: districtStats(slug), photo: showcase.images[i === 0 ? 0 : 1]! };
-  });
-  const vacantByDistrict = Object.fromEntries(DISTRICTS.map((d) => [d.slug, districtStats(d.slug).vacant]));
+  const stats = areaStats();
+  // The wards with the most vacant rooms, on the post-2025 map: a few from each city, busiest first.
+  const areas = CITIES.flatMap((c) => stats.filter((s) => s.city.slug === c.slug).slice(0, AREAS_PER_CITY[c.slug] ?? 0))
+    .sort((a, b) => b.vacant - a.vacant)
+    .map((s, i) => {
+      // A real building in the ward stands in for the area, so the photo never shows somewhere else.
+      const showcase = PROJECTS.filter((p) => p.citySlug === s.city.slug && p.wardSlug === s.ward.slug).sort((a, b) => b.views - a.views)[0]!;
+      return { ...s, photo: showcase.images[i === 0 ? 0 : 1]! };
+    });
+  const vacant: Record<string, number> = Object.fromEntries([
+    ...CITIES.map((c) => [c.slug, cityStats(c.slug).vacant] as const),
+    ...stats.map((s) => [`${s.city.slug}/${s.ward.slug}`, s.vacant] as const),
+  ]);
   const posts = publishedPosts()
     .slice(0, 3)
     .map((p) => localPost(p, lang));
@@ -159,7 +167,7 @@ export default async function HomePage() {
             {t.home.lead}
           </p>
 
-          <HeroSearch className="mt-10 w-full max-w-[980px] animate-rise [animation-delay:550ms]" vacantByDistrict={vacantByDistrict} />
+          <HeroSearch className="mt-10 w-full max-w-[1120px] animate-rise [animation-delay:550ms]" vacant={vacant} />
 
           <ul className="mt-6 flex animate-rise flex-wrap justify-center gap-2 [animation-delay:650ms]" aria-label={t.home.quickFilters}>
             {QUICK_FILTERS.map((f) => (
@@ -209,9 +217,9 @@ export default async function HomePage() {
             className="reveal"
           />
           <ul className="mt-10 grid auto-rows-[220px] gap-4 sm:grid-cols-2 lg:auto-rows-[200px] lg:grid-cols-12">
-            {areas.map(({ district, stats, photo }, i) => (
+            {areas.map(({ city, ward, vacant: free, minPrice, photo }, i) => (
               <li
-                key={district.slug}
+                key={`${city.slug}/${ward.slug}`}
                 style={stagger(i)}
                 className={cn(
                   "reveal",
@@ -219,10 +227,10 @@ export default async function HomePage() {
                   i === 0 && "row-span-2",
                 )}
               >
-                <Link href={`/phong-tro/${PROVINCE.slug}/${district.slug}`} className="group relative block h-full overflow-hidden rounded-[22px] bg-dune">
+                <Link href={areaHref({ city, ward })} className="group relative block h-full overflow-hidden rounded-[22px] bg-dune">
                   <Image
                     src={photo}
-                    alt={t.home.areaAlt(district.name)}
+                    alt={t.home.areaAlt(`${ward.name}, ${city.name}`)}
                     fill
                     sizes={i === 0 ? "(min-width: 1024px) 620px, 100vw" : i === 4 ? "(min-width: 640px) 1280px, 100vw" : "(min-width: 1024px) 620px, (min-width: 640px) 50vw, 100vw"}
                     className="object-cover transition-transform duration-600 ease-glide group-hover:scale-[1.04] motion-reduce:group-hover:scale-100"
@@ -231,10 +239,12 @@ export default async function HomePage() {
                   <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5 text-white transition-transform duration-600 ease-glide group-hover:-translate-y-1.5 motion-reduce:group-hover:translate-y-0 sm:p-6">
                     <span>
                       <span className="inline-flex rounded-full border border-white/25 bg-white/15 px-2.5 py-1 text-xs font-semibold backdrop-blur-md transition-[opacity,translate] duration-500 ease-glide [@media(hover:hover)]:translate-y-1 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:translate-y-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-visible:opacity-100">
-                        {t.home.vacant(stats.vacant)}
+                        {t.home.vacant(free)}
                       </span>
-                      <span className={cn("mt-2 block font-display font-bold tracking-[-0.02em]", i === 0 ? "text-3xl" : "text-xl")}>{district.name}</span>
-                      <span className="mt-0.5 block text-sm text-white/85">{fmt.fromPrice(stats.minPrice)}</span>
+                      <span className={cn("mt-2 block font-display font-bold tracking-[-0.02em]", i === 0 ? "text-3xl" : "text-xl")}>{ward.name}</span>
+                      <span className="mt-0.5 block text-sm text-white/85">
+                        {city.name}, {fmt.fromPrice(minPrice)}
+                      </span>
                     </span>
                     <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-full bg-white/90 text-ink transition-[background-color,translate] duration-500 ease-glide group-hover:translate-x-0.5 group-hover:bg-gold">
                       <ArrowRight className="size-4" />

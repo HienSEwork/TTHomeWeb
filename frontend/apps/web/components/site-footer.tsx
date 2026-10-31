@@ -3,6 +3,7 @@ import { Mail, MapPin, Phone } from "lucide-react";
 import { SITE } from "@tthome/data";
 import { getI18n, type Dictionary, type Lang } from "@/lib/i18n";
 import { BrandLogo } from "./brand-logo";
+import { SocialLinks } from "./social-links";
 
 type Footer = Dictionary["footer"];
 /** Footer entries that are plain text (not the formatting functions). */
@@ -25,6 +26,7 @@ const COLUMNS: { title: FooterKey; links: { href: string; label: FooterKey }[] }
       { href: "/ky-gui", label: "consign" },
       { href: "/chinh-sach/chinh-sach-ky-gui", label: "consignPolicy" },
       { href: "/tuyen-ctv", label: "partner" },
+      { href: "/tuyen-dung", label: "jobs" },
     ],
   },
   {
@@ -52,15 +54,21 @@ export function SiteFooter({ lang }: { lang?: Lang }) {
     <footer className="mt-24 border-t border-line bg-ivory">
       <div className="mx-auto grid max-w-[1280px] gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.3fr_repeat(4,1fr)]">
         <div className="max-w-xs">
-          <BrandLogo variant="full" height={96} alt={t.brand.logoAlt} />
+          <BrandLogo variant="full" height={104} alt={t.brand.logoAlt} />
           <p className="mt-5 text-sm leading-relaxed text-muted">{t.footer.tagline}</p>
+          <a
+            href={SITE.hotlineHref}
+            className="mt-5 flex items-center gap-3 rounded-2xl bg-gold-soft px-4 py-3 transition-colors hover:bg-[#f3e4c8]"
+          >
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-gold-deep shadow-[var(--shadow-soft)]">
+              <Phone aria-hidden className="size-[18px]" />
+            </span>
+            <span className="leading-tight">
+              <span className="block text-xs text-gold-ink">{t.footer.hotlineLabel}</span>
+              <span className="tabular block text-xl font-extrabold text-ink">{SITE.hotline}</span>
+            </span>
+          </a>
           <ul className="mt-5 space-y-2 text-sm text-ink-soft">
-            <li className="flex items-center gap-2">
-              <Phone aria-hidden className="size-4 text-gold-deep" />
-              <a href={SITE.hotlineHref} className="tabular font-semibold text-ink hover:text-gold-ink">
-                {SITE.hotline}
-              </a>
-            </li>
             <li className="flex items-center gap-2">
               <Mail aria-hidden className="size-4 text-gold-deep" />
               <a href={`mailto:${SITE.email}`} className="hover:text-gold-ink">
@@ -72,6 +80,7 @@ export function SiteFooter({ lang }: { lang?: Lang }) {
               <span>{SITE.address}</span>
             </li>
           </ul>
+          <SocialLinks lang={lang} className="mt-5" />
         </div>
 
         {COLUMNS.map((col) => (

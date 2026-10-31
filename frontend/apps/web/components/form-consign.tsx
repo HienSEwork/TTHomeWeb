@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useRef, useState, type FormEvent } from "react";
 import { Camera, X } from "lucide-react";
-import { DISTRICTS, type RoomType } from "@tthome/data";
+import { CITIES, ROOM_TYPE_LABEL, findCity, type RoomType } from "@tthome/data";
 import { Button, SelectField, TextAreaField, TextField, ToggleChip } from "@tthome/ui";
 import { useI18n } from "@/lib/i18n/client";
 import { validateConsign, type ConsignField, type ConsignInput, type Errors } from "@/lib/validation";
 import { ConsentCheck, FormErrorSummary, FormSection, FormSuccess } from "./form-parts";
 
-const TYPES: RoomType[] = ["room", "studio", "1pn", "2pn", "duplex", "shared", "dorm"];
+const TYPES = Object.keys(ROOM_TYPE_LABEL) as RoomType[];
 const MAX_PHOTOS = 20;
 
 export function ConsignForm() {
@@ -18,7 +18,8 @@ export function ConsignForm() {
   const [files, setFiles] = useState<File[]>([]);
   const [input, setInput] = useState<Omit<ConsignInput, "photos">>({
     address: "",
-    district: "",
+    city: "",
+    ward: "",
     roomCount: "",
     priceFrom: "",
     roomTypes: [],
@@ -58,19 +59,36 @@ export function ConsignForm() {
   }
 
   const price = Number(input.priceFrom.replace(/\D/g, ""));
+  const wards = findCity(input.city)?.wards ?? [];
 
   return (
-    <form noValidate onSubmit={submit} className="flex flex-col gap-8 rounded-card border border-line bg-surface p-5 sm:p-8">
+    <form noValidate onSubmit={submit} className="flex flex-col gap-8 rounded-[20px] border border-line bg-white p-5 shadow-[var(--shadow-soft)] sm:p-8">
       <FormSection title={t.consign.addressTitle}>
         <TextField label={t.consign.address} placeholder={t.consign.addressPlaceholder} value={input.address} onChange={(e) => set("address", e.target.value)} error={errors.address} wrapperClassName="sm:col-span-2" />
-        <SelectField label={t.consign.district} value={input.district} onChange={(e) => set("district", e.target.value)} error={errors.district}>
+        <SelectField
+          label={t.consign.city}
+          value={input.city}
+          onChange={(e) => {
+            const next = { ...input, city: e.target.value, ward: "" };
+            setInput(next);
+            if (tried) setErrors(validateConsign({ ...next, photos: files.length }, t.validation));
+          }}
+          error={errors.city}
+        >
           <option value="">{t.common.choose}</option>
-          {DISTRICTS.map((d) => (
-            <option key={d.slug} value={d.slug}>
-              {d.name}
+          {CITIES.map((c) => (
+            <option key={c.slug} value={c.slug}>
+              {c.name}
             </option>
           ))}
-          <option value="khac">{t.consign.otherArea}</option>
+        </SelectField>
+        <SelectField label={t.consign.ward} value={input.ward} onChange={(e) => set("ward", e.target.value)} error={errors.ward} disabled={!input.city}>
+          <option value="">{input.city ? t.common.choose : t.consign.pickCityFirst}</option>
+          {wards.map((w) => (
+            <option key={w.slug} value={w.slug}>
+              {w.name}
+            </option>
+          ))}
         </SelectField>
       </FormSection>
 

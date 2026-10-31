@@ -1,11 +1,11 @@
-import { DISTRICTS, LANDMARKS, PROJECTS, PROVINCE, projectAddress } from "@tthome/data";
+import { CITIES, LANDMARKS, PROJECTS, projectAddress } from "@tthome/data";
 import { normalizeVi } from "@tthome/ui";
 
 export type Suggestion = { kind: "project" | "area" | "landmark"; label: string; detail: string; href: string };
 
 const KIND_ORDER = { area: 0, landmark: 1, project: 2 } as const;
 
-/** Suggestions while typing: wards and districts, landmarks, then projects. */
+/** Suggestions while typing: cities and wards, landmarks, then projects. */
 export function suggest(query: string, limit = 7, near: (name: string) => string = (name) => `Gần ${name}`): Suggestion[] {
   const needle = normalizeVi(query);
   if (needle.length < 2) return [];
@@ -16,10 +16,11 @@ export function suggest(query: string, limit = 7, near: (name: string) => string
   };
 
   const out: Suggestion[] = [];
-  for (const d of DISTRICTS) {
-    if (hit(d.name)) out.push({ kind: "area", label: d.name, detail: PROVINCE.name, href: `/phong-tro/${PROVINCE.slug}/${d.slug}` });
-    for (const w of d.wards) {
-      if (hit(`${w.name} ${d.name}`)) out.push({ kind: "area", label: w.name, detail: d.name, href: `/phong-tro/${PROVINCE.slug}/${d.slug}/${w.slug}` });
+  for (const c of CITIES) {
+    if (hit(c.name)) out.push({ kind: "area", label: c.name, detail: c.shortName, href: `/phong-tro/${c.slug}` });
+    for (const w of c.wards) {
+      // Old district names still find the ward, so "quận 1" or "thủ đức" keep working after the merger.
+      if (hit(`${w.name} ${c.name} ${w.formerArea ?? ""}`)) out.push({ kind: "area", label: w.name, detail: w.formerArea ? `${c.name}, ${w.formerArea}` : c.name, href: `/phong-tro/${c.slug}/${w.slug}` });
     }
   }
   for (const l of LANDMARKS) {

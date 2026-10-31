@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Container, SectionHeader } from "@tthome/ui";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { ContactForm } from "@/components/form-contact";
@@ -26,6 +27,9 @@ export default async function PartnerPage() {
           <Breadcrumbs items={[{ label: t.ctv.crumb }]} lang={lang} />
           <h1 className="mt-6 max-w-3xl text-display font-extrabold text-balance text-ink">{t.ctv.title}</h1>
           <p className="mt-4 max-w-xl text-lg text-muted">{t.ctv.lead}</p>
+          <Link href="/tuyen-dung" className="mt-5 inline-block font-semibold text-gold-ink underline underline-offset-4 hover:text-ink">
+            {t.jobs.title}
+          </Link>
         </Container>
       </section>
 

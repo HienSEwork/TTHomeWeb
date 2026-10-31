@@ -4,11 +4,10 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { BadgePercent, MapPin, PawPrint, Phone, PlugZap } from "lucide-react";
 import {
   distanceKm,
-  findDistrict,
+  findCity,
   findWard,
   getProjectBySlug,
   LANDMARKS,
-  PROVINCE,
   projectAddress,
   ROOM_STATUS,
   roomSlug,
@@ -58,13 +57,17 @@ export default async function ProjectPage({ params }: Props) {
   const { lang, t, fmt } = await getServerI18n();
   const copy = projectCopy(project, lang);
 
-  const district = findDistrict(project.districtSlug)!;
-  const ward = findWard(project.districtSlug, project.wardSlug)!;
+  const city = findCity(project.citySlug)!;
+  const ward = findWard(project.citySlug, project.wardSlug)!;
   const vacant = vacantRooms(project);
   const from = minPrice(vacant);
   const listed = project.rooms.filter((r) => r.status !== "hidden").sort((a, b) => Number(b.status === "available") - Number(a.status === "available") || a.price - b.price);
   const nearby = LANDMARKS.map((l) => ({ l, km: distanceKm(l, project) })).filter((x) => x.km < 4).sort((a, b) => a.km - b.km);
-  const others = searchProjects({ district: project.districtSlug }).filter((m) => m.project.id !== project.id).slice(0, 3);
+  // The nearest buildings in the same city: wards are small since the merger, so the same ward is often empty.
+  const others = searchProjects({ city: project.citySlug })
+    .filter((m) => m.project.id !== project.id)
+    .sort((a, b) => distanceKm(a.project, project) - distanceKm(b.project, project))
+    .slice(0, 3);
   const pin = toApproxMapPins([{ project, rooms: vacant, minPrice: from, distanceKm: null }]);
   const url = `/du-an/${project.slug}`;
 
@@ -77,7 +80,7 @@ export default async function ProjectPage({ params }: Props) {
           name: project.name,
           description: copy.description,
           image: project.images,
-          address: { "@type": "PostalAddress", streetAddress: project.street, addressLocality: `${ward.name}, ${district.name}`, addressRegion: PROVINCE.name, addressCountry: "VN" },
+          address: { "@type": "PostalAddress", streetAddress: project.street, addressLocality: ward.name, addressRegion: city.name, addressCountry: "VN" },
           geo: { "@type": "GeoCoordinates", latitude: project.lat, longitude: project.lng },
           numberOfAvailableAccommodationUnits: vacant.length,
           petsAllowed: project.petPolicy !== "none",
@@ -89,8 +92,8 @@ export default async function ProjectPage({ params }: Props) {
           lang={lang}
           items={[
             { href: "/tim-kiem", label: t.project.crumb },
-            { href: areaHref({ district }), label: district.name },
-            { href: areaHref({ district, ward }), label: ward.name },
+            { href: areaHref({ city }), label: city.name },
+            { href: areaHref({ city, ward }), label: ward.name },
             { label: project.name },
           ]}
         />
@@ -271,7 +274,7 @@ export default async function ProjectPage({ params }: Props) {
 
       {others.length > 0 ? (
         <Container className="mt-16">
-          <h2 className="text-xl font-extrabold">{t.project.others(district.name)}</h2>
+          <h2 className="text-xl font-extrabold">{t.project.others(city.name)}</h2>
           <ul className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {others.map((m) => (
               <li key={m.project.id} className="flex">

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { DISTRICTS, PROJECTS, ROOM_STATUS, ROOM_TYPE_LABEL, findDistrict, findWard, type RoomStatus } from "@tthome/data";
+import { CITIES, PROJECTS, ROOM_STATUS, ROOM_TYPE_LABEL, findCity, findWard, type RoomStatus } from "@tthome/data";
 import { Badge, EmptyState, formatCount, formatPriceShort } from "@tthome/ui";
 import { Tabs } from "@/components/interactive";
 import { TableFrame, td, th, toolbarControl } from "@/components/page-parts";
@@ -19,7 +19,7 @@ export function ProjectsTable() {
   const [status, setStatus] = useState<RoomStatus | "">("");
 
   const projects = useMemo(
-    () => PROJECTS.filter((p) => (!district || p.districtSlug === district) && matchesQuery(query, p.name, p.code, p.street)),
+    () => PROJECTS.filter((p) => (!district || p.citySlug === district) && matchesQuery(query, p.name, p.code, p.street)),
     [district, query],
   );
   const rooms = useMemo(
@@ -51,7 +51,7 @@ export function ProjectsTable() {
         </label>
         <select id="room-district" value={district} onChange={(e) => setDistrict(e.target.value)} className={toolbarControl}>
           <option value="">Tất cả khu vực</option>
-          {DISTRICTS.map((d) => (
+          {CITIES.map((d) => (
             <option key={d.slug} value={d.slug}>
               {d.name}
             </option>
@@ -106,8 +106,8 @@ export function ProjectsTable() {
                       </Link>
                     </td>
                     <td className={`${td} text-ink-soft`}>
-                      {findWard(p.districtSlug, p.wardSlug)?.name}
-                      <span className="block text-xs text-muted">{findDistrict(p.districtSlug)?.name}</span>
+                      {findWard(p.citySlug, p.wardSlug)?.name}
+                      <span className="block text-xs text-muted">{findCity(p.citySlug)?.name}</span>
                     </td>
                     <td className={`${td} text-right tabular`}>
                       <span className="font-semibold text-ink">{vacant.length}</span>

@@ -1,14 +1,13 @@
-import type { Furniture, RoomType, SearchFilters, SortOption } from "@tthome/data";
+import { ROOM_TYPES, type Furniture, type RoomType, type SearchFilters, type SortOption } from "@tthome/data";
 
 /*
  * Filters live in the URL so a search can be shared and indexed:
  * /tim-kiem?q=&landmark=&radius=&exclusive=1&group=pet,ev,promo&price=min-max&type=studio,1pn
- *          &district=&ward=&furniture=&amenity=aircon,washer&balcony=1&window=1&sort=
+ *          &city=&ward=&furniture=&amenity=aircon,washer&balcony=1&window=1&sort=
  */
 
 type Params = Record<string, string | string[] | undefined>;
 
-const ROOM_TYPES: RoomType[] = ["studio", "duplex", "1pn", "2pn", "3pn", "shared", "dorm", "room"];
 const FURNITURE: Furniture[] = ["full", "basic", "none"];
 const SORTS: SortOption[] = ["newest", "price_asc", "price_desc", "nearest", "popular"];
 
@@ -36,7 +35,7 @@ export function parseSearchParams(params: Params): SearchFilters {
   const radius = Number(first(params.radius));
   return {
     q: first(params.q),
-    district: first(params.district),
+    city: first(params.city),
     ward: first(params.ward),
     landmark: first(params.landmark),
     radius: Number.isFinite(radius) && radius > 0 ? Math.min(radius, 10) : undefined,
@@ -59,7 +58,7 @@ export function parseSearchParams(params: Params): SearchFilters {
 export function toSearchQuery(f: SearchFilters): string {
   const q = new URLSearchParams();
   if (f.q) q.set("q", f.q);
-  if (f.district) q.set("district", f.district);
+  if (f.city) q.set("city", f.city);
   if (f.ward) q.set("ward", f.ward);
   if (f.landmark) q.set("landmark", f.landmark);
   if (f.radius) q.set("radius", String(f.radius));
@@ -80,7 +79,7 @@ export function toSearchQuery(f: SearchFilters): string {
 /** How many filters are on, not counting the keyword and sort order. */
 export function activeFilterCount(f: SearchFilters): number {
   return [
-    f.district || f.ward,
+    f.city || f.ward,
     f.landmark,
     f.priceMin || f.priceMax,
     f.types?.length,

@@ -159,6 +159,23 @@ const PROJECT_EN: Record<string, { description: string; promo?: string }> = {
   T5C4A2: { description: "Opposite Sense City, a 7-minute walk to Ninh Kiều Wharf. Suits people working in the city centre." },
   U8D3E6: { description: "New rooms near Ô Môn market and the Ô Môn power plants, from 2M VND." },
   V4E2A9: { description: "A quiet garden house on Lộ Vòng Cung, 3 km from FPT University Can Tho. Large yard and free parking." },
+  HA1B20: { description: "Right in the centre, a 5-minute walk to Bến Thành market and Bến Thành metro station. Studios with large windows and weekly cleaning." },
+  HB2C31: { description: "In a quiet alley near Tân Định market, surrounded by food stalls and cafés. The rooftop has a laundry area and seating for the evening.", promo: "50% off the first month" },
+  HC3D42: { description: "Serviced apartments in former District 3, near Campus A of the University of Economics (UEH). Basement parking, a receptionist and a washing machine in every unit." },
+  HD4E53: { description: "A 4-storey townhouse in a car-wide alley, for a group of friends or a small family. Pets welcome, no curfew." },
+  HE5F64: { description: "Near Bà Chiểu market and Campus 1 of Văn Lang University. Duplexes with a high loft and budget rooms for students." },
+  HF6A75: { description: "An apartment block on the Saigon River facing Landmark 81. Rooftop pool and basement parking with EV charging." },
+  HG7B86: { description: "On the Phan Xích Long food street, about 15 minutes from Tân Sơn Nhất airport. Fully furnished studios with a private kitchen.", promo: "Free parking for 3 months" },
+  HH8C97: { description: "On Cộng Hòa street, near Etown and the airport. Suits office workers, with a lift and basement parking." },
+  HJ9D08: { description: "Good-value rooms near Tân Bình market. Fingerprint locks and no curfew." },
+  HK1E19: { description: "Near the Industrial University and Campus 3 of Văn Lang University. Duplexes with a loft and plenty of student food around the alley.", promo: "300K VND/month off with a 12-month lease" },
+  HL2F2A: { description: "Former District 7, near Lotte Mart and Tôn Đức Thắng University. Lift, basement parking and an evening receptionist." },
+  HM3A3B: { description: "A 4.5 m street front near Vạn Hạnh Mall, for a café, a shop or a small office, with living space upstairs." },
+  HN4B4C: { description: "Quiet Thảo Điền, with a garden and pets welcome. Near Thảo Điền metro station and several international schools." },
+  HP5C5D: { description: "Next to the National University village (former Dĩ An), a walk to the University of Technology Campus 2 and the University of Science.", promo: "First month free for new students" },
+  HQ6D6E: { description: "Near Dĩ An market and the Sóng Thần industrial parks. Clean rooms with plenty of parking." },
+  HR7E7F: { description: "In the centre of former Thủ Dầu Một, near Thủ Dầu Một University and Becamex Tower." },
+  HS8F80: { description: "200 m from Back Beach, apartments with a balcony facing the sea. For long stays or remote work." },
 };
 
 const RULES_EN: Record<string, string> = {

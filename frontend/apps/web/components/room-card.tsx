@@ -18,7 +18,7 @@ export function RoomCard({ room, project, showProject, lang }: { room: Room; pro
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-bold text-ink">
+          <h3 className="min-w-0 font-bold text-ink">
             <Link href={href} className="after:absolute after:inset-0">
               {name}
             </Link>

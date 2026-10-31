@@ -3,6 +3,7 @@ export const MAIN_NAV = [
   { href: "/tim-kiem", key: "search" },
   { href: "/khu-vuc", key: "areas" },
   { href: "/ky-gui", key: "consign" },
+  { href: "/tuyen-dung", key: "jobs" },
   { href: "/tin-tuc", key: "guide" },
   { href: "/ve-chung-toi", key: "about" },
 ] as const;
